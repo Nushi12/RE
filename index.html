@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RealEstate World – Prototype District</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#9db7d1;font-family:system-ui,Segoe UI,Arial,sans-serif;color:#fff}
+  canvas{display:block}
+  #join{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,25,40,.82);z-index:10}
+  #card{background:#16212f;border:1px solid #2c3f56;border-radius:14px;padding:26px;width:min(480px,92vw);box-shadow:0 10px 40px #0008}
+  h1{margin:0 0 4px;font-size:22px} p.sub{margin:0 0 16px;color:#9fb3c8;font-size:14px}
+  label{font-size:13px;color:#9fb3c8}
+  input{width:100%;box-sizing:border-box;margin:6px 0 14px;padding:10px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824;color:#fff;font-size:16px}
+  .firms{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 16px}
+  .firm{border:2px solid #2c3f56;border-radius:10px;padding:8px 10px;cursor:pointer;background:#0f1824;font-size:13px}
+  .firm b{display:block;font-size:14px;margin-bottom:2px} .firm span{color:#9fb3c8;font-size:12px}
+  .firm.sel{border-color:var(--c);background:#1b2a3d}
+  button#go{width:100%;padding:12px;border:0;border-radius:10px;background:#3b82f6;color:#fff;font-size:16px;font-weight:600;cursor:pointer}
+  #hud{position:fixed;left:12px;top:12px;background:#0009;padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;display:none}
+  #hint{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);background:#0009;padding:7px 14px;border-radius:10px;font-size:13px;display:none}
+</style>
+</head>
+<body>
+<div id="join"><div id="card">
+  <h1>RealEstate World</h1>
+  <p class="sub">Prototype District &middot; New York. Pick a name and a brokerage, then walk into the shared city.</p>
+  <label for="name">Your agent name</label>
+  <input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off">
+  <label>Choose your brokerage</label>
+  <div class="firms" id="firms"></div>
+  <button id="go">Enter the city</button>
+</div></div>
+<div id="hud"></div>
+<div id="hint">WASD / arrows to move &middot; drag mouse or Q / E to rotate camera</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const FIRMS = [
+  {n:'Vantage Realty',     c:'#e74c3c', adv:'Better lead generation'},
+  {n:'Haven & Co.',        c:'#2ecc71', adv:'Relationships decay slower'},
+  {n:'Sterling Estates',   c:'#f1c40f', adv:'High-value listings'},
+  {n:'Northstar Realty',   c:'#3498db', adv:'Better market intelligence'},
+  {n:'Cornerstone Realty', c:'#e67e22', adv:'Stronger local networking'},
+  {n:'Elevate Properties', c:'#9b59b6', adv:'Faster information gathering'}
+];
+let selFirm = 0;
+const firmsEl = document.getElementById('firms');
+FIRMS.forEach((f,i)=>{
+  const d=document.createElement('div');
+  d.className='firm'+(i===0?' sel':''); d.style.setProperty('--c',f.c);
+  d.innerHTML='<b style="color:'+f.c+'">'+f.n+'</b><span>'+f.adv+'</span>';
+  d.onclick=()=>{selFirm=i;[...firmsEl.children].forEach((e,j)=>e.classList.toggle('sel',j===i));};
+  firmsEl.appendChild(d);
+});
+
+// ---------- Scene ----------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9db7d1);
+scene.fog = new THREE.Fog(0x9db7d1, 60, 140);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 300);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x667788,0.75));
+const sun = new THREE.DirectionalLight(0xffffff,0.8);
+sun.position.set(40,60,20); sun.castShadow=true;
+sun.shadow.camera.left=-60;sun.shadow.camera.right=60;sun.shadow.camera.top=60;sun.shadow.camera.bottom=-60;
+sun.shadow.mapSize.set(2048,2048);
+scene.add(sun);
+
+function box(w,h,d,color,x,y,z){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color}));
+  m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; scene.add(m); return m;
+}
+function label(text,color,scale){
+  const c=document.createElement('canvas'); c.width=512; c.height=128;
+  const g=c.getContext('2d'); g.font='bold 52px system-ui,Arial'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillStyle='rgba(10,18,28,.75)';
+  const w=Math.min(500,g.measureText(text).width+40);
+  g.beginPath(); g.roundRect ? g.roundRect(256-w/2,24,w,80,18) : g.rect(256-w/2,24,w,80); g.fill();
+  g.fillStyle=color||'#fff'; g.fillText(text,256,66);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));
+  s.scale.set(scale||4,(scale||4)/4,1); s.renderOrder=10; return s;
+}
+
+// Ground, roads, sidewalks
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(110,110),new THREE.MeshLambertMaterial({color:0x6f8f5a}));
+ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+function road(w,d,x,z){const r=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshLambertMaterial({color:0x3a3f47}));r.rotation.x=-Math.PI/2;r.position.set(x,0.02,z);r.receiveShadow=true;scene.add(r);}
+road(10,100,0,0); road(100,10,0,0);
+for(let i=-45;i<=45;i+=6){ // lane dashes
+  const a=new THREE.Mesh(new THREE.PlaneGeometry(0.3,2.5),new THREE.MeshBasicMaterial({color:0xf2d35e}));a.rotation.x=-Math.PI/2;a.position.set(0,0.03,i);scene.add(a);
+  const b=a.clone();b.rotation.z=Math.PI/2;b.position.set(i,0.03,0);scene.add(b);
+}
+
+// Buildings (also used for collision)
+const B=[
+  {x:-14,z:-14,w:10,d:10,h:22,c:0x8a9bb0},
+  {x:-14,z:-32,w:10,d:12,h:15,c:0xb59f8a},
+  {x:-32,z:-14,w:12,d:10,h:12,c:0x9aa7a0},
+  {x:-32,z:-32,w:12,d:12,h:26,c:0x7f8fa8},
+  {x:14,z:-14,w:10,d:10,h:18,c:0xc0a98f,name:'Vantage Realty Office',lc:'#e74c3c'},
+  {x:32,z:-14,w:12,d:10,h:10,c:0xa5b0b8},
+  {x:14,z:-32,w:10,d:12,h:24,c:0x8796ad},
+  {x:32,z:-32,w:12,d:12,h:14,c:0xb8a89a},
+  {x:-14,z:14,w:10,d:8,h:7,c:0xd6a06a,name:'Coffee Shop',lc:'#f5d7a0'},
+  {x:-14,z:32,w:10,d:12,h:16,c:0x93a0b5},
+  {x:-32,z:14,w:12,d:10,h:11,c:0xa9b5a3},
+  {x:-32,z:32,w:12,d:12,h:20,c:0x8392a6},
+  {x:32,z:32,w:12,d:12,h:13,c:0xbdb0a0}
+];
+B.forEach(b=>{
+  box(b.w,b.h,b.d,b.c,b.x,b.h/2,b.z);
+  box(b.w+0.6,0.4,b.d+0.6,0xd8d8d8,b.x,0.2,b.z); // base trim
+  if(b.name){const s=label(b.name,b.lc,7);s.position.set(b.x,b.h+2,b.z);scene.add(s);}
+});
+// Park (NE quadrant, walkable)
+const park=new THREE.Mesh(new THREE.PlaneGeometry(22,22),new THREE.MeshLambertMaterial({color:0x4f9d4a}));
+park.rotation.x=-Math.PI/2;park.position.set(20,0.03,20);park.receiveShadow=true;scene.add(park);
+[[14,14],[26,14],[14,26],[26,26],[20,20],[16,22],[24,18]].forEach(([x,z])=>{
+  const t=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.4,2.2,8),new THREE.MeshLambertMaterial({color:0x6b4a2b}));t.position.set(x,1.1,z);t.castShadow=true;scene.add(t);
+  const l=new THREE.Mesh(new THREE.ConeGeometry(1.8,4.2,8),new THREE.MeshLambertMaterial({color:0x2f7a3a}));l.position.set(x,4,z);l.castShadow=true;scene.add(l);
+});
+const ps=label('Central Park Corner','#c8f7c5',6);ps.position.set(20,5,20);scene.add(ps);
+
+function collide(p){
+  for(const b of B){
+    const hx=b.w/2+0.5,hz=b.d/2+0.5,dx=p.x-b.x,dz=p.z-b.z;
+    if(Math.abs(dx)<hx&&Math.abs(dz)<hz){
+      const ox=hx-Math.abs(dx),oz=hz-Math.abs(dz);
+      if(ox<oz)p.x=b.x+(dx<0?-hx:hx);else p.z=b.z+(dz<0?-hz:hz);
+    }
+  }
+}
+
+// ---------- Avatars ----------
+const avatars={}; let me=null, myId=null;
+function makeAvatar(p){
+  const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];
+  const g=new THREE.Group();
+  const mat=new THREE.MeshLambertMaterial({color:f.c});
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,1,16),mat);body.position.y=1;
+  const top=new THREE.Mesh(new THREE.SphereGeometry(0.5,16,12),mat);top.position.y=1.5;
+  const bot=new THREE.Mesh(new THREE.SphereGeometry(0.5,16,12),mat);bot.position.y=0.5;
+  const nose=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.15,0.3),new THREE.MeshLambertMaterial({color:0xffffff}));nose.position.set(0,1.6,0.5); // shows facing direction
+  [body,top,bot,nose].forEach(m=>{m.castShadow=true;g.add(m);});
+  const nt=label(p.name,'#ffffff',3.4);nt.position.y=3.1;g.add(nt);
+  const ft=label(p.firm,f.c,3.4);ft.position.y=2.55;g.add(ft);
+  g.position.set(p.x,0,p.z); scene.add(g);
+  return {g,tx:p.x,tz:p.z,try:p.ry||0};
+}
+function addPlayer(p){ if(!avatars[p.id]) avatars[p.id]=makeAvatar(p); }
+function updateHud(){
+  const n=Object.keys(avatars).length;
+  document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+n;
+}
+
+// ---------- Networking ----------
+const socket=io();
+socket.on('init',d=>{
+  myId=d.id;
+  Object.values(d.players).forEach(addPlayer);
+  me=d.players[myId]; me.ry=0;
+  document.getElementById('hud').style.display='block';
+  document.getElementById('hint').style.display='block';
+  updateHud();
+});
+socket.on('joined',p=>{addPlayer(p);updateHud();});
+socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
+socket.on('state',st=>{
+  for(const id in st){
+    if(id===myId) continue;
+    const a=avatars[id]; if(!a) continue;
+    a.tx=st[id].x;a.tz=st[id].z;a.try=st[id].ry;
+  }
+});
+
+// ---------- Input ----------
+const keys={}; let camYaw=0, camPitch=0.55, dragging=false;
+addEventListener('keydown',e=>{keys[e.code]=true;});
+addEventListener('keyup',e=>{keys[e.code]=false;});
+renderer.domElement.addEventListener('pointerdown',()=>dragging=true);
+addEventListener('pointerup',()=>dragging=false);
+addEventListener('pointermove',e=>{if(!dragging)return;camYaw-=e.movementX*0.005;camPitch=Math.max(0.15,Math.min(1.2,camPitch+e.movementY*0.004));});
+
+// ---------- Join ----------
+document.getElementById('go').onclick=()=>{
+  const name=document.getElementById('name').value.trim()||'Agent';
+  socket.emit('join',{name,firm:FIRMS[selFirm].n});
+  document.getElementById('join').style.display='none';
+};
+document.getElementById('name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('go').click();});
+
+// ---------- Loop ----------
+const clock=new THREE.Clock(); let sendT=0;
+function angleLerp(a,b,t){let d=((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;return a+d*t;}
+function loop(){
+  requestAnimationFrame(loop);
+  const dt=Math.min(clock.getDelta(),0.05);
+  if(me){
+    if(keys.KeyQ)camYaw+=1.8*dt; if(keys.KeyE)camYaw-=1.8*dt;
+    let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
+    let iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
+    const len=Math.hypot(ix,iz);
+    if(len>0){
+      ix/=len;iz/=len;
+      const s=Math.sin(camYaw),c=Math.cos(camYaw);
+      const dx=ix*c+iz*s, dz=-ix*s+iz*c;           // camera-relative move
+      me.x+=dx*8*dt; me.z+=dz*8*dt;
+      me.x=Math.max(-48,Math.min(48,me.x)); me.z=Math.max(-48,Math.min(48,me.z));
+      collide(me);
+      me.ry=Math.atan2(dx,dz);
+    }
+    const a=avatars[myId];
+    if(a){a.g.position.set(me.x,0,me.z);a.g.rotation.y=angleLerp(a.g.rotation.y,me.ry,0.25);}
+    sendT+=dt; if(sendT>0.066){sendT=0;socket.emit('move',{x:me.x,z:me.z,ry:me.ry});}
+    // follow camera
+    const dist=13;
+    camera.position.set(
+      me.x+Math.sin(camYaw)*Math.cos(camPitch)*dist,
+      1.5+Math.sin(camPitch)*dist,
+      me.z+Math.cos(camYaw)*Math.cos(camPitch)*dist);
+    camera.lookAt(me.x,1.6,me.z);
+  }
+  for(const id in avatars){
+    if(id===myId) continue;
+    const a=avatars[id];
+    a.g.position.x+=(a.tx-a.g.position.x)*Math.min(1,12*dt);
+    a.g.position.z+=(a.tz-a.g.position.z)*Math.min(1,12*dt);
+    a.g.rotation.y=angleLerp(a.g.rotation.y,a.try,0.2);
+  }
+  renderer.render(scene,camera);
+}
+loop();
+</script>
+</body>
+</html>
