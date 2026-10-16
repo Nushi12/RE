@@ -7,9 +7,9 @@ const server = http.createServer(app);
 const io = new Server(server);
 app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
 
-const FIRMS = ['Vantage Realty', 'Haven & Co.', 'Sterling Estates', 'Northstar Realty', 'Cornerstone Realty', 'Elevate Properties'];
+const FIRMS = ['Elevate Realty','Nexus Real Estate','Vantage Realty','Vertex Properties','Northstar Realty','Haven Real Estate','UrbanEdge Realty','Momentum Realty','Blackstone Estates','Sterling Estates','Aurelia Realty','Park & Crown','Summit Estates','Bellmont Properties'];
 const LIMIT = 48;
-const RANGES = { b: 2, s: 5, h: 3, hc: 5, j: 5, p: 3 };   // avatar look option counts
+const RANGES = { b: 3, s: 6, h: 6, hc: 6, j: 6, p: 4, o: 3 };   // avatar look option counts
 const players = {};
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function cleanLook(l = {}) {
@@ -22,7 +22,7 @@ io.on('connection', (socket) => {
   socket.on('join', (d = {}) => {
     const name = String(d.name || 'Agent').trim().slice(0, 16) || 'Agent';
     const firm = FIRMS.includes(d.firm) ? d.firm : FIRMS[0];
-    players[socket.id] = { id: socket.id, name, firm, look: cleanLook(d.look), x: (Math.random() - 0.5) * 6, z: 3 + Math.random() * 2, ry: 0 };
+    players[socket.id] = { id: socket.id, name, firm, look: cleanLook(d.look), x: (Math.random() - 0.5) * 6, z: 3 + Math.random() * 2, ry: 0, n: 0 };
     socket.emit('init', { id: socket.id, players });
     socket.broadcast.emit('joined', players[socket.id]);
   });
@@ -32,6 +32,7 @@ io.on('connection', (socket) => {
     p.x = clamp(Number(m.x) || 0, -LIMIT, LIMIT);
     p.z = clamp(Number(m.z) || 0, -LIMIT, LIMIT);
     p.ry = Number(m.ry) || 0;
+    p.n = clamp(parseInt(m.n) || 0, 0, 2);
   });
   socket.on('disconnect', () => {
     if (players[socket.id]) { delete players[socket.id]; io.emit('left', socket.id); }
@@ -40,7 +41,7 @@ io.on('connection', (socket) => {
 
 setInterval(() => {
   const s = {};
-  for (const id in players) s[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry };
+  for (const id in players) s[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry, n: players[id].n };
   io.emit('state', s);
 }, 66);
 
