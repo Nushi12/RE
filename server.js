@@ -5,7 +5,7 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-app.use(express.static('public'));
+   app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
 
 const FIRMS = ['Vantage Realty', 'Haven & Co.', 'Sterling Estates', 'Northstar Realty', 'Cornerstone Realty', 'Elevate Properties'];
 const LIMIT = 48;
