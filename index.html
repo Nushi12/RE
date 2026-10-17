@@ -22,20 +22,16 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 #hint{position:fixed;left:calc(50% - 170px);bottom:14px;transform:translateX(-50%);background:#0009;padding:7px 14px;border-radius:10px;font-size:13px;display:none}
 #panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:#0f1824ee;border-left:1px solid #2c3f56;padding:12px;overflow:auto;font-size:13px;line-height:1.5;display:none;z-index:5;box-sizing:border-box}#panel h3{margin:4px 0 8px;font-size:15px}.k{color:#9fb3c8;font-size:12px;margin:6px 0}.bar{height:8px;background:#2c3f56;border-radius:4px}.bar i{display:block;height:100%;background:#3b82f6;border-radius:4px}.box{background:#16212f;border:1px solid #2c3f56;border-radius:8px;padding:8px;margin:8px 0}.trav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}button.b{background:#1b2a3d;color:#fff;border:1px solid #2c3f56;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:12px;margin:3px 0}button.b:disabled{opacity:.5;cursor:default}button.go{background:#3b82f6;width:100%;font-size:13px}#panel table{width:100%;border-collapse:collapse}#panel td{border-top:1px solid #2c3f56;padding:5px 3px;cursor:pointer;vertical-align:top}#panel small{color:#9fb3c8}
 .go{width:100%;margin-top:14px;padding:12px;border:0;border-radius:10px;background:#3b82f6;color:#fff;font-size:15px;font-weight:600;cursor:pointer}.opt2{border:2px solid #2c3f56;border-radius:9px;padding:9px 11px;margin:6px 0;cursor:pointer;background:#0f1824;font-size:13px}#card .box{background:#0f1824;border:1px solid #2c3f56;border-radius:8px;padding:8px;margin:8px 0;font-size:13px}#card h2{margin:6px 0}
+.bubble{background:#0f1824;border:1px solid #3b82f6;border-radius:12px;padding:12px;margin:10px 0;line-height:1.5;font-size:14px}#card .go small{font-weight:400;opacity:.85}
+.hdr{display:flex;gap:10px;align-items:center;margin-bottom:8px}.lv{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}.tile{background:#16212f;border:1px solid #2c3f56;border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;color:#9fb3c8}.tile b{display:block;font-size:14px;color:#fff}.locs{display:grid;gap:6px}.loc{border:1px solid #2c3f56;border-radius:8px;padding:7px 9px;background:#16212f;cursor:pointer}.loc small{color:#9fb3c8}.loc.on{border-color:#3b82f6;background:#1a2c47}.loc.lock{opacity:.5;cursor:default}.step{padding:2px 0;font-size:12px}.step.on{color:#fff;font-weight:700}.step.dn{color:#6fcf97}.step.up{color:#7c8da1}.toast{background:#1d3a2a;border:1px solid #2e7d4f;border-radius:8px;padding:7px;margin:6px 0;font-size:12px}.chatbox{position:fixed;left:12px;bottom:12px;width:300px;z-index:6;display:none}#chatlog{font-size:12px;background:#0009;border-radius:8px;padding:6px;max-height:130px;overflow:auto;margin-bottom:4px}#chat{width:100%;box-sizing:border-box;padding:7px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824dd;color:#fff;font-size:13px}
 </style></head><body>
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
 <div id="s1"><h1>Create your agent</h1><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><button class="go" id="b1">Continue to licensing</button></div>
-<div id="s2"><h1>Market briefing</h1><p class="sub">Read this, then take the qualification test (4 of 5 to pass).</p>
-<div class="box"><b>Comparables ("comps")</b><br>Similar homes nearby that sold recently in a normal sale. Avoid foreclosures, very old sales, and very different homes.</div>
-<div class="box"><b>Valuing a home</b><br>Average the comps' price per sq ft, then multiply by the home's sq ft.</div>
-<div class="box"><b>Pricing</b><br>Too high: it sits and needs price cuts. Too low: it sells fast but the client loses money.</div>
-<div class="box"><b>Commission</b><br>Sales: about 4–6% of the price. Rentals: about 10–15% of one year of rent. You then split it with your firm.</div>
-<button class="go" id="b2">Take the qualification test</button></div>
-<div id="s3"><h1>Qualification test</h1><div id="quiz"></div></div>
+<div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
-<div id="panel"></div><div id="hud"></div><div id="hint">WASD / arrows to move &middot; drag mouse or Q / E to rotate camera</div>
+<div id="chatbox" class="chatbox"><div id="chatlog"></div><input id="chat" maxlength="140" placeholder="Enter to chat with nearby agents..." autocomplete="off"></div><div id="panel"></div><div id="hud"></div><div id="hint">WASD / arrows to move &middot; drag mouse or Q / E to rotate camera</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -46,22 +42,23 @@ const hex=n=>'#'+n.toString(16).padStart(6,'0');
 const look={b:1,s:2,h:0,hc:1,j:0,p:0,o:0};let selFirm=0;
 const OPTS=[['b','Build',['Slim','Average','Broad']],['s','Skin tone',SKIN],['h','Hair style',['Short','Long','Bun','Curly','Ponytail','Bald']],['hc','Hair color',HAIRC],['o','Outfit',['Blazer','Shirt','Dress']],['j','Top color',JACK],['p','Trousers',PANT]];
 const NB=[
-{name:'Upper East Side',lvl:1,ppsf:1300,seed:11,sky:0x9fc3e6,sw:0x8f8b82,brick:[0x8a4b3a,0x9c5b45,0x7a4a3c,0xa8683f,0x6e4036,0xb08968,0xa9a39a],h:[12.8,12.8,16,16,19.2],tw:28,cafe:'Corner Café',office:'Vantage Realty Office',park:'Neighborhood Park',
- pros:[{n:'Maya',sq:900,bd:2,bel:1.11,why:'is relocating for a new job in about 3 months',goal:'wants enough proceeds for a down payment',x:-7.2,z:17,ry:Math.PI/2,look:{b:0,s:2,h:1,hc:1,j:5,p:0,o:0}},
-       {n:'Robert',sq:1400,bd:3,bel:0.9,why:'is downsizing after retiring',goal:'is in no rush and wants the best price',x:7.2,z:-30,ry:-Math.PI/2,look:{b:2,s:1,h:0,hc:5,j:1,p:2,o:1}}]},
-{name:'Midtown',lvl:3,ppsf:1900,seed:23,sky:0xb8cde0,sw:0x7d7f84,brick:[0x6d8196,0x7f94a8,0x5b6f84,0x8fa3b5,0x4f6378,0xa3b1bd],h:[25.6,32,38.4,44.8],tw:60,cafe:'Midtown Deli',office:'Nexus Real Estate',park:'Plaza',
+{name:'Upper East Side',lvl:1,ppsf:1350,rppsf:5.0,style:'brownstone',road:0x373b42,trees:1,seed:11,sky:0x9fc3e6,sw:0x8f8b82,brick:[0x8a4b3a,0x9c5b45,0x7a4a3c,0xa8683f,0x6e4036,0xb08968,0xa9a39a],h:[12.8,12.8,16,16,19.2],tw:28,cafe:'Corner Café',office:'Vantage Realty Office',park:'Neighborhood Park',
+ pros:[{n:'Maya',sq:900,bd:2,bel:1.11,why:'is relocating for a new job in about 3 months',goal:'wants enough proceeds for a down payment',x:-7.2,z:18.5,ry:Math.PI/2,look:{b:0,s:2,h:1,hc:1,j:5,p:0,o:0}},
+       {n:'Robert',sq:1400,bd:3,bel:0.9,why:'is downsizing after retiring',goal:'is in no rush and wants the best price',x:7.2,z:-31,ry:-Math.PI/2,look:{b:2,s:1,h:0,hc:5,j:1,p:2,o:1}}]},
+{name:'Midtown',lvl:3,ppsf:1750,rppsf:5.4,style:'glass',road:0x2b2f36,trees:0,seed:23,sky:0xb8cde0,sw:0x7d7f84,brick:[0x6d8196,0x7f94a8,0x5b6f84,0x8fa3b5,0x4f6378,0xa3b1bd],h:[25.6,32,38.4,44.8],tw:60,cafe:'Midtown Deli',office:'Nexus Real Estate',park:'Plaza',
  pros:[{n:'Priya',sq:1100,bd:2,bel:1.15,why:'is an investor who wants to sell before year end',goal:'wants a quick, clean sale',x:7.2,z:24,ry:-Math.PI/2,look:{b:0,s:3,h:4,hc:0,j:3,p:0,o:2}},
        {n:'Daniel',sq:1700,bd:3,bel:0.88,why:'is settling an estate with family',goal:'just wants it to be fair and finished',x:-7.2,z:-22,ry:Math.PI/2,look:{b:2,s:4,h:5,hc:0,j:5,p:2,o:0}}]},
-{name:'SoHo',lvl:4,ppsf:2400,seed:37,sky:0xc9d3dc,sw:0x9a948a,brick:[0x7b6f63,0x9a8b78,0x6b5d52,0xa89a86,0x5f5148,0x8c7d6a],h:[12.8,16,16,19.2],tw:24,cafe:'SoHo Gallery Café',office:'Sterling Estates',park:'Courtyard',
- pros:[{n:'Elena',sq:1300,bd:2,bel:1.08,why:'inherited the loft and lives abroad',goal:'wants a hassle-free sale',x:-7.2,z:30,ry:Math.PI/2,look:{b:1,s:0,h:3,hc:4,j:2,p:1,o:2}},
-       {n:'Marcus',sq:2000,bd:3,bel:0.92,why:'is upgrading to a larger space',goal:'wants to buy next, so timing matters',x:7.2,z:14,ry:-Math.PI/2,look:{b:2,s:5,h:0,hc:0,j:4,p:3,o:1}}]}];
+{name:'SoHo',lvl:4,ppsf:2300,rppsf:7.8,style:'loft',road:0x5b534b,trees:0.75,seed:37,sky:0xc9d3dc,sw:0x9a948a,brick:[0x7b6f63,0x9a8b78,0x6b5d52,0xa89a86,0x5f5148,0x8c7d6a],h:[12.8,16,16,19.2],tw:24,cafe:'SoHo Gallery Café',office:'Sterling Estates',park:'Courtyard',
+ pros:[{n:'Elena',sq:1300,bd:2,bel:1.08,why:'inherited the loft and lives abroad',goal:'wants a hassle-free sale',x:-7.2,z:31,ry:Math.PI/2,look:{b:1,s:0,h:3,hc:4,j:2,p:1,o:2}},
+       {n:'Marcus',sq:2000,bd:3,bel:0.92,why:'is upgrading to a larger space',goal:'wants to buy next, so timing matters',x:7.2,z:18.5,ry:-Math.PI/2,look:{b:2,s:5,h:0,hc:0,j:4,p:3,o:1}}]}];
 
+NB.forEach((n,i)=>n.i=i);
 // ---------- scene ----------
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9fc3e6);scene.fog=new THREE.Fog(0x9fc3e6,70,170);
-const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,300);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.3,300);
+const renderer=new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
 document.body.appendChild(renderer.domElement);
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);fit();});
 scene.add(new THREE.HemisphereLight(0xffffff,0x8a8070,0.65));
 const sun=new THREE.DirectionalLight(0xfff1dc,0.7);sun.position.set(45,70,25);sun.castShadow=true;
 Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,far:200});sun.shadow.mapSize.set(2048,2048);scene.add(sun);
@@ -69,17 +66,17 @@ Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,far:200});s
 const UB=new THREE.BoxGeometry(1,1,1),mc={};
 const mat=c=>mc[c]||(mc[c]=new THREE.MeshLambertMaterial({color:c}));
 const wpos=(cx,cz,th,lx,lz)=>[cx+lx*Math.cos(th)+lz*Math.sin(th),cz-lx*Math.sin(th)+lz*Math.cos(th)];
-function wbox(cx,cz,th,lx,ly,lz,sx,sy,sz,c,sh){const[x,z]=wpos(cx,cz,th,lx,lz);const m=new THREE.Mesh(UB,mat(c));m.scale.set(sx,sy,sz);m.position.set(x,ly,z);m.rotation.y=th;m.castShadow=sh!==false;m.receiveShadow=true;scene.add(m);return m;}
-function plane(w,d,x,z,y,c){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat(c));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=true;scene.add(m);return m;}
+function wbox(cx,cz,th,lx,ly,lz,sx,sy,sz,c,sh){const[x,z]=wpos(cx,cz,th,lx,lz);const m=new THREE.Mesh(UB,mat(c));m.scale.set(sx,sy,sz);m.position.set(x,ly,z);m.rotation.y=th;m.castShadow=sh!==false;m.receiveShadow=true;world.add(m);return m;}
+function plane(w,d,x,z,y,c){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat(c));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=true;world.add(m);return m;}
 function label(text,color,scale){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.font='bold 52px system-ui,Arial';g.textAlign='center';g.textBaseline='middle';
  let tw=g.measureText(text).width;if(tw>440){g.font='bold '+Math.floor(52*440/tw)+'px system-ui,Arial';tw=440;}const w=tw+40;g.fillStyle='rgba(10,18,28,.75)';g.beginPath();g.rect(256-w/2,24,w,80);g.fill();g.fillStyle=color||'#fff';g.fillText(text,256,66);
  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(scale,scale/4,1);s.renderOrder=10;return s;}
 
-const B=[],winList=[];let seed=11,world=null;
+const B=[],winList=[],GATES=[];let seed=11,world=null;
 function buildWorld(cfg){if(world)scene.remove(world);world=new THREE.Group();scene.add(world);scene.background.set(cfg.sky);scene.fog.color.set(cfg.sky);
 // ground, roads, sidewalks
 plane(300,300,0,0,-0.01,0x7c7a74);
-plane(10,100,0,0,0.02,0x373b42);plane(100,10,0,0,0.021,0x373b42);
+plane(10,100,0,0,0.02,cfg.road);plane(100,10,0,0,0.021,cfg.road);
 for(const sx of[-1,1])for(const sz of[-1,1])plane(45,45,sx*27.5,sz*27.5,0.04,cfg.sw);
 plane(28,28,30,30,0.06,0x5aa050); // park
 for(let i=8;i<=48;i+=6)for(const s of[-1,1]){plane(0.3,2.5,0,s*i,0.03,0xf2d35e);plane(2.5,0.3,s*i,0,0.031,0xf2d35e);}
@@ -87,7 +84,7 @@ for(const s of[-1,1])for(let i=-4;i<=4;i+=1.2){plane(0.6,2.6,i,s*6.8,0.032,0xeee
 function tree(x,z,s){s=s||1;const t=new THREE.Mesh(new THREE.CylinderGeometry(0.2*s,0.28*s,2.6*s,7),mat(0x5b4129));t.position.set(x,1.3*s,z);t.castShadow=true;world.add(t);
  [[0,4.0,0,1.9],[0.6,3.4,0.3,1.4],[-0.5,3.6,-0.4,1.5]].forEach(([a,b,c,r])=>{const l=new THREE.Mesh(new THREE.IcosahedronGeometry(r*s,1),mat(0x4f9a45));l.position.set(x+a*s,b*s,z+c*s);l.castShadow=true;world.add(l);});}
 function lamp(x,z){const p=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.1,4.2,6),mat(0x22262b));p.position.set(x,2.1,z);world.add(p);const l=new THREE.Mesh(new THREE.SphereGeometry(0.28,8,6),new THREE.MeshBasicMaterial({color:0xfff2c0}));l.position.set(x,4.3,z);world.add(l);}
-for(const s of[-1,1])for(const j of[11,23,35,47]){tree(s*6.4,j,1);tree(s*6.4,-j,1);tree(j,s*6.4,1);tree(-j,s*6.4,1);}
+if(cfg.trees)for(const s of[-1,1])for(const j of[11,23,35,47]){const z=cfg.trees;tree(s*6.4,j,z);tree(s*6.4,-j,z);tree(j,s*6.4,z);tree(-j,s*6.4,z);}
 for(const s of[-1,1])for(const j of[17,29,41]){lamp(s*5.6,j);lamp(s*5.6,-j);lamp(j,s*5.6);lamp(-j,s*5.6);}
 [[22,22],[38,22],[22,38],[38,38],[30,30],[26,34],[34,26],[24,30]].forEach(([x,z])=>tree(x,z,1.15));
 
@@ -96,15 +93,19 @@ B.length=0;winList.length=0;seed=cfg.seed;const rnd=()=>{seed=(seed*16807)%21474
 const BRICK=cfg.brick;
 const pickC=()=>BRICK[Math.floor(rnd()*BRICK.length)],pickH=()=>cfg.h[Math.floor(rnd()*cfg.h.length)];
 function addB(cx,cz,w,d,h,col,fx,fz,shop){
-  const th=Math.atan2(fx,fz),sw=Math.abs(fx)>0.5;
+  const th=Math.atan2(fx,fz),sw=Math.abs(fx)>0.5,st=cfg.style,n=Math.floor(h/3.2);
   B.push({x:cx,z:cz,w:sw?d:w,d:sw?w:d});
-  wbox(cx,cz,th,0,h/2,0,w,h,d,col);wbox(cx,cz,th,0,h+0.25,0.15,w+0.5,0.5,d+0.5,0xd9cfc0);wbox(cx,cz,th,0,0.5,0,w+0.2,1,d+0.2,0x6f6a62);
-  const n=Math.floor(h/3.2),k=Math.max(3,Math.round(w/2.3));
-  for(let f=0;f<n;f++)for(let i=0;i<k;i++){const lx=-w/2+w*(i+0.5)/k;
-    if(f===0&&(shop||Math.abs(lx)<1.3))continue;
-    winList.push([...wpos(cx,cz,th,lx,d/2+0.06),f===0?2.3:1.9+f*3.2,th]);}
-  if(shop){wbox(cx,cz,th,0,2.2,d/2+0.06,w-1.2,2.8,0.12,0x7fb2c9,false);}
-  else{wbox(cx,cz,th,0,1.6,d/2+0.07,1.3,2.4,0.1,0x2a1d17,false);wbox(cx,cz,th,0,0.3,d/2+0.7,2.4,0.6,1.4,0xcfc8bb);wbox(cx,cz,th,0,0.75,d/2+0.35,2.0,0.3,0.7,0xcfc8bb);}
+  wbox(cx,cz,th,0,h/2,0,w,h,d,col);
+  if(st==='glass'){wbox(cx,cz,th,0,h+2,0,w*0.7,4,d*0.7,col);wbox(cx,cz,th,0,0.9,d/2+0.05,w-0.4,1.8,0.1,0x1b2027,false);
+    const k=Math.max(3,Math.round(w/1.7));for(let f=1;f<n;f++)for(let i=0;i<k;i++)winList.push([...wpos(cx,cz,th,-w/2+w*(i+0.5)/k,d/2+0.06),f*3.2+1.5,th,'g']);}
+  else if(st==='loft'){wbox(cx,cz,th,0,h+0.3,0.15,w+0.4,0.6,d+0.4,0x4a4038);const k=Math.max(3,Math.round(w/2));
+    for(let f=0;f<n;f++){for(let i=0;i<k;i++){const lx=-w/2+w*(i+0.5)/k;if(f===0&&(shop||Math.abs(lx)<1.2))continue;winList.push([...wpos(cx,cz,th,lx,d/2+0.06),f===0?2.4:1.9+f*3.2,th,'l']);}
+      if(f>0)wbox(cx,cz,th,w*0.28,f*3.2+0.2,d/2+0.55,w*0.5,0.12,1.1,0x1d1d1d,false);}
+    if(!shop)wbox(cx,cz,th,0,1.6,d/2+0.07,1.3,2.4,0.1,0x2a1d17,false);}
+  else{wbox(cx,cz,th,0,h+0.25,0.15,w+0.5,0.5,d+0.5,0xd9cfc0);wbox(cx,cz,th,0,0.5,0,w+0.2,1,d+0.2,0x6f6a62);const k=Math.max(3,Math.round(w/2.3));
+    for(let f=0;f<n;f++)for(let i=0;i<k;i++){const lx=-w/2+w*(i+0.5)/k;if(f===0&&(shop||Math.abs(lx)<1.3))continue;winList.push([...wpos(cx,cz,th,lx,d/2+0.06),f===0?2.3:1.9+f*3.2,th,'b']);}
+    if(!shop){wbox(cx,cz,th,0,1.6,d/2+0.07,1.3,2.4,0.1,0x2a1d17,false);wbox(cx,cz,th,0,0.3,d/2+0.7,2.4,0.6,1.4,0xcfc8bb);wbox(cx,cz,th,0,0.75,d/2+0.35,2.0,0.3,0.7,0xcfc8bb);}}
+  if(shop)wbox(cx,cz,th,0,2.2,d/2+0.06,w-1.2,2.8,0.12,0x7fb2c9,false);
 }
 for(const sx of[-1,1])for(const sz of[-1,1]){
   for(let i=0;i<4;i++){const o=7*i+19.5;addB(sx*12,sz*o,7,8,pickH(),pickC(),-sx,0);addB(sx*o,sz*12,7,8,pickH(),pickC(),0,-sz);}
@@ -112,13 +113,8 @@ for(const sx of[-1,1])for(const sz of[-1,1]){
   addB(sx*12,sz*12,8,8,cafe?9:office?15:pickH(),cafe?0xc9a27a:office?0x9aa3ab:pickC(),-sx,0,cafe||office);
   if(!(sx===1&&sz===1))addB(sx*30,sz*30,12,12,cfg.tw,pickC(),-sx,0);
 }
-(function buildWindows(){
-  const F=new THREE.InstancedMesh(new THREE.BoxGeometry(1.45,2.1,0.12),mat(0xe8e2d6),winList.length);
-  const P=new THREE.InstancedMesh(new THREE.BoxGeometry(1.15,1.75,0.16),new THREE.MeshLambertMaterial({color:0x2b3d52,emissive:0x0c1520}),winList.length);
-  const o=new THREE.Object3D();
-  winList.forEach((w,i)=>{o.position.set(w[0],w[2],w[1]);o.rotation.y=w[3];o.updateMatrix();F.setMatrixAt(i,o.matrix);P.setMatrixAt(i,o.matrix);});
-  world.add(F,P);
-})();
+(function buildWindows(){const spec={b:[[1.45,2.1,0.12,0xe8e2d6],[1.15,1.75,0.16,0x2b3d52,0x0c1520]],g:[[1.5,2.7,0.1,0x5d8fb0,0x0a1a2a]],l:[[1.1,2.9,0.12,0x2e2620],[0.85,2.5,0.16,0x3a4a5a,0x201a10]]},o=new THREE.Object3D();
+  for(const t in spec){const L=winList.filter(w=>w[4]===t);if(!L.length)continue;spec[t].forEach(([a,b,c,col,em])=>{const m=new THREE.InstancedMesh(new THREE.BoxGeometry(a,b,c),new THREE.MeshLambertMaterial({color:col,emissive:em||0}),L.length);L.forEach((w,i)=>{o.position.set(w[0],w[2],w[1]);o.rotation.y=w[3];o.updateMatrix();m.setMatrixAt(i,o.matrix);});world.add(m);});}})();
 // café details (corner at -12,12 facing the avenue) and firm office (12,-12)
 wbox(-12,12,Math.PI/2,0,3.9,4.9,5.6,0.25,1.8,0x2f6b4a);
 [[-6.8,10],[-6.8,12.5],[-6.8,15]].forEach(([x,z])=>{const t=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.4,0.9,10),mat(0x333333));t.position.set(x,0.5,z);world.add(t);
@@ -126,6 +122,10 @@ wbox(-12,12,Math.PI/2,0,3.9,4.9,5.6,0.25,1.8,0x2f6b4a);
 let s1=label(cfg.cafe,'#f5d7a0',6);s1.position.set(-6.6,5.2,12);world.add(s1);
 let s2=label(cfg.office,'#ff8a7a',7);s2.position.set(6.6,6.2,-12);world.add(s2);
 let s3=label(cfg.park,'#c8f7c5',6);s3.position.set(30,6.5,30);world.add(s3);
+GATES.length=0;
+if(cfg.style==='glass'){[14,-20,28,-36,40,-8].forEach((z,i)=>{const x=i%2?2.4:-2.4;wbox(x,z,0,0,0.6,0,1.8,1.0,4.2,0xf2c500);wbox(x,z,0,0,1.35,0,1.6,0.7,2.0,0x222222);B.push({x,z,w:1.8,d:4.2});});}
+for(const[gz,j]of[[-45,(cfg.i+1)%3],[45,(cfg.i+2)%3]]){const nm=NB[j];[-1,1].forEach(q=>wbox(0,0,0,q*5,3,gz,0.8,6,0.8,0x2b3a52));wbox(0,0,0,0,6.2,gz,10.8,0.7,0.8,0x2b3a52);
+  const sg=label('→ '+nm.name+' (Level '+nm.lvl+')','#ffe08a',6);sg.position.set(0,7.6,gz);world.add(sg);GATES.push({z:gz,to:j});}
 }
 buildWorld(NB[0]);
 function collide(p){for(const b of B){const hx=b.w/2+0.5,hz=b.d/2+0.5,dx=p.x-b.x,dz=p.z-b.z;
@@ -133,34 +133,39 @@ function collide(p){for(const b of B){const hx=b.w/2+0.5,hz=b.d/2+0.5,dx=p.x-b.x
 
 // ---------- humanoid avatars ----------
 function human(L,fc){
-  const g=new THREE.Group(),sk=mat(SKIN[L.s]),hr=mat(HAIRC[L.hc]),o=L.o||0,top=o===1?mat(0xdde7f1):mat(JACK[L.j]),pt=mat(PANT[L.p]),bw=[0.56,0.66,0.78][L.b];
+  const g=new THREE.Group(),sk=mat(SKIN[L.s]),hr=mat(HAIRC[L.hc]),o=L.o||0,jk=mat(JACK[L.j]),pt=mat(PANT[L.p]),sh=mat(o===1?0xcfdceb:0xf4f6f8),ch=[0.27,0.31,0.36][L.b],wa=ch*(L.b===0?0.68:0.8);
   const S=(r,x,y,z,m,sx,sy,sz,par)=>{const e=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),m);e.position.set(x,y,z);e.scale.set(sx||1,sy||1,sz||1);e.castShadow=true;(par||g).add(e);return e;};
   const C=(rt,rb,h,x,y,z,m,par)=>{const e=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,16),m);e.position.set(x,y,z);e.castShadow=true;(par||g).add(e);return e;};
-  const legs=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*0.12,0.9,0);g.add(p);C(0.095,0.06,0.86,0,-0.43,0,o===2?sk:pt,p);S(0.1,0,-0.88,0.07,mat(0x2b211c),1,0.55,1.8,p);return p;});
-  const t=C(bw*0.5,bw*(L.b===0?0.3:0.36),0.74,0,1.25,0,top);t.scale.z=0.62;
-  if(o===2){C(0.2,0.36,0.5,0,0.78,0,top);}
-  if(o===0)S(0.17,0,1.32,0.17,mat(0xeef3f8),0.75,1.6,0.3);
-  if(fc)S(0.04,bw*0.26,1.42,0.2,mat(fc));
-  [-1,1].forEach(s=>S(0.11,s*bw*0.5,1.53,0,top));
-  const arms=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*(bw/2+0.03),1.53,0);g.add(p);C(0.075,0.052,0.64,0,-0.32,0,o===1?top:top,p);S(0.065,0,-0.68,0,sk,1,1.2,0.8,p);return p;});
-  C(0.065,0.075,0.16,0,1.65,0,sk);
-  S(0.2,0,1.87,0,sk,0.92,1.12,1);S(0.035,0,1.84,0.2,sk,0.9,1.2,1.2);
-  [-1,1].forEach(s=>{S(0.04,s*0.19,1.86,0,sk,0.5,1,0.8);S(0.03,s*0.075,1.9,0.17,mat(0xffffff),1,0.8,0.5);S(0.016,s*0.075,1.9,0.19,mat(0x222222));S(0.04,s*0.075,1.945,0.18,hr,1.4,0.3,0.5);});
-  S(0.04,0,1.79,0.185,mat(0xb35a5a),1.3,0.35,0.4);
+  const legs=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*0.11,0.92,0);g.add(p);const lm=o===2?sk:pt;C(0.1,0.075,0.5,0,-0.27,0,lm,p);C(0.075,0.058,0.46,0,-0.7,0,lm,p);S(0.088,0,-0.93,0.06,mat(0x2b211c),1,0.5,1.9,p);return p;});
+  const prof=[[0.001,0.9],[wa,0.92],[wa,1.08],[ch*0.95,1.34],[ch,1.5],[ch*0.68,1.63],[0.095,1.7],[0.001,1.72]].map(a=>new THREE.Vector2(a[0],a[1]));
+  const tor=new THREE.Mesh(new THREE.LatheGeometry(prof,22),o===1?sh:jk);tor.scale.z=0.62;tor.castShadow=true;g.add(tor);
+  if(o===2)C(0.17,0.33,0.55,0,0.72,0,jk);
+  if(o!==2){const tie=fc||0x8b1e2d;
+    if(o===0){[-1,1].forEach(s=>{const l=new THREE.Mesh(UB,sh);l.scale.set(0.05,0.36,0.03);l.position.set(s*0.065,1.43,0.184);l.rotation.z=-s*0.3;g.add(l);});}
+    const t=new THREE.Mesh(UB,mat(tie));t.scale.set(0.045,0.34,0.02);t.position.set(0,1.36,0.186);g.add(t);
+    const col=new THREE.Mesh(new THREE.TorusGeometry(0.095,0.024,8,18),sh);col.rotation.x=Math.PI/2;col.position.set(0,1.69,0.005);g.add(col);}
+  const arms=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*(ch+0.03),1.54,0);g.add(p);const am=o===1?sh:jk,lo=o===2?sk:am;
+    C(0.06,0.05,0.33,0,-0.17,0,am,p);S(0.052,0,-0.34,0,lo,1,1,1,p);C(0.05,0.04,0.32,0,-0.51,0,lo,p);S(0.056,0,-0.7,0,sk,1,1.25,0.8,p);return p;});
+  C(0.055,0.065,0.14,0,1.74,0,sk);
+  S(0.19,0,1.92,0,sk,0.92,1.15,1);S(0.033,0,1.89,0.185,sk,0.9,1.2,1.2);
+  [-1,1].forEach(s=>{S(0.038,s*0.185,1.92,0,sk,0.5,1,0.8);S(0.028,s*0.072,1.94,0.165,mat(0xffffff),1,0.8,0.5);S(0.015,s*0.072,1.94,0.185,mat(0x222222));S(0.04,s*0.072,1.99,0.17,hr,1.4,0.28,0.5);});
+  S(0.04,0,1.835,0.175,mat(0xb35a5a),1.3,0.35,0.4);
   const h=L.h;
-  if(h!==5)S(0.215,0,1.94,-0.02,hr,1,0.78,1.05);
-  if(h===1){S(0.22,0,1.76,-0.08,hr,1,1.5,0.8);}
-  if(h===2)S(0.1,0,2.12,-0.14,hr);
-  if(h===3)S(0.3,0,1.97,-0.02,hr,1,0.95,1);
-  if(h===4){const q=C(0.05,0.02,0.42,0,1.78,-0.24,hr);q.rotation.x=-0.3;}
+  if(h!==5)S(0.2,0,2.0,-0.02,hr,1.02,0.8,1.05);
+  if(h===0)S(0.1,0,2.07,0.09,hr,1.6,0.32,1);
+  if(h===1){S(0.205,0,1.8,-0.08,hr,1,1.5,0.72);[-1,1].forEach(s=>S(0.05,s*0.17,1.84,0.0,hr,1,2.2,1));}
+  if(h===2)S(0.09,0,2.2,-0.12,hr);
+  if(h===3)for(let i=0;i<12;i++){const a=1+i*0.39;S(0.072,Math.sin(a)*0.2,1.98+(i%3)*0.045,Math.cos(a)*0.2-0.04,hr);}
+  if(h===3)[[0,2.1,-0.03],[0.09,2.08,0.0],[-0.09,2.08,0.0]].forEach(a=>S(0.075,a[0],a[1],a[2],hr));
+  if(h===4){const q=C(0.05,0.02,0.42,0,1.82,-0.24,hr);q.rotation.x=-0.3;}
   g.userData={legs,arms,phase:0,amp:0};return g;
 }
 function walkAnim(g,dist,dt){const u=g.userData;if(dist>0.0005){u.phase+=dist*5.2;u.amp+=(1-u.amp)*Math.min(1,dt*10);}else u.amp+=(0-u.amp)*Math.min(1,dt*8);
   const s=Math.sin(u.phase)*0.7*u.amp;u.legs[0].rotation.x=s;u.legs[1].rotation.x=-s;u.arms[0].rotation.x=-s*0.8;u.arms[1].rotation.x=s*0.8;}
 const avatars={};let me=null,myId=null,preview=null;
 function makeAvatar(p){const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];const root=new THREE.Group();const h=human(p.look||look,f.c);root.add(h);
-  const nt=label(p.name,'#ffffff',3.4);nt.position.y=2.8;root.add(nt);const ft=label(p.firm,hex(f.c),3.4);ft.position.y=2.45;root.add(ft);
-  root.position.set(p.x,0,p.z);scene.add(root);return{g:root,h,tx:p.x,tz:p.z,try:p.ry||0,px:p.x,pz:p.z};}
+  const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.8;root.add(nt);const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.45;root.add(ft);
+  root.position.set(p.x,0,p.z);scene.add(root);return{name:p.name,g:root,h,tx:p.x,tz:p.z,try:p.ry||0,px:p.x,pz:p.z};}
 function setPreview(){if(preview)scene.remove(preview);preview=human(look,FIRMS[selFirm].c);preview.position.set(0,0,6);scene.add(preview);}
 
 // ambient pedestrians (deterministic from clock, so every player sees them in the same place)
@@ -176,108 +181,179 @@ OPTS.forEach(([k,title,items])=>{const l=document.createElement('label');l.textC
   items.forEach((it,i)=>{const b=document.createElement('div');const col=typeof it==='number';b.className='opt'+(col?' sw':'')+(look[k]===i?' sel':'');if(col)b.style.background=hex(it);else b.textContent=it;
     b.onclick=()=>{look[k]=i;[...r.children].forEach((e,j)=>e.classList.toggle('sel',j===i));setPreview();};r.appendChild(b);});looksEl.appendChild(r);});
 const E=id=>document.getElementById(id);
-function show(i){['s0','s1','s2','s3','s4'].forEach((s,j)=>E(s).style.display=j===i?'block':'none');}
+function show(id){['s0','s1','s2','s4'].forEach(s=>E(s).style.display=s===id?'block':'none');}
 function renderFirms(){const el=E('firms');el.innerHTML='';[['Modern / Competitive',0],['Luxury',1]].forEach(([t,g])=>{const h=document.createElement('label');h.textContent=t;el.appendChild(h);const w=document.createElement('div');w.className='firms';
   FIRMS.forEach((f,i)=>{if(f.g!==g)return;const d=document.createElement('div');d.className='firm'+(i===selFirm?' sel':'');d.style.setProperty('--c',hex(f.c));d.innerHTML='<b style="color:'+hex(f.c)+'">'+f.n+'</b><span>'+f.t+'</span>';d.onclick=()=>{selFirm=i;renderFirms();setPreview();};w.appendChild(d);});el.appendChild(w);});}
 const socket=io();
-// Qualification test: edit this list to change questions. a = index of the correct option, w = why.
+// Rookie Agent licensing quiz. f = what Naomi says, q = question, o = options, a = correct index, w = why.
+// Game-learning quiz, not an official exam. Have the New York items reviewed against current state materials before release.
 const QZ=[
-{q:"Which sale is the BEST comparable for a 900 sq ft apartment?",o:["A foreclosure sale of a similar unit, last month","A similar-size unit nearby, normal sale 2 months ago","A much larger luxury penthouse, last month","A similar unit that sold 18 months ago"],a:1,w:"Good comps are similar, nearby, recent and a normal (arm's-length) sale. Foreclosures and stale sales distort the value."},
-{q:"A home is 1,000 sq ft and comparable sales average $1,200 per sq ft. What is its estimated value?",o:["$120,000","$1,200,000","$1,000,000","$2,200,000"],a:1,w:"Value = average price per sq ft × square feet = $1,200 × 1,000 = $1,200,000."},
-{q:"The seller insists on listing 15% above the market value. What is the most likely result?",o:["It sells faster","It sits on the market and needs price cuts","The buyer pays extra for confidence","Nothing changes"],a:1,w:"Overpriced homes tend to sit, lose momentum, and often sell for less after reductions."},
-{q:"What is the typical commission range on a sale in this game?",o:["1–2%","4–6%","10–15%","20–25%"],a:1,w:"Sales commonly pay about 4–6% of the price, shared between the two sides, and then split with your firm."},
-{q:"A rental is $3,000 a month and the fee is 12% of one year of rent. What is the fee?",o:["$360","$4,320","$36,000","$432"],a:1,w:"Annual rent = $3,000 × 12 = $36,000. Fee = $36,000 × 12% = $4,320 (rentals typically pay 10–15% of annual rent)."}];
-let qi=0,score=0;
-function quiz(){const q=QZ[qi];E('quiz').innerHTML='<div class=k>Question '+(qi+1)+' of '+QZ.length+'</div><p><b>'+q.q+'</b></p>'+q.o.map((o,i)=>'<div class=opt2 onclick="pick('+i+')">'+o+'</div>').join('')+'<div id=fb></div>';}
-function pick(i){const q=QZ[qi],fb=E('fb');if(fb.dataset.d)return;fb.dataset.d=1;if(i===q.a)score++;
+{f:"Real estate salesperson licenses in New York are issued by the New York State Department of State.",q:"Which New York State agency issues real estate salesperson licenses?",o:["NYC Department of Buildings","New York State Department of State","New York Attorney General","New York Department of Taxation"],a:1,w:"The Department of State licenses real estate salespeople and brokers."},
+{f:"To qualify for a salesperson license in New York you generally complete 77 hours of approved qualifying education.",q:"What education is generally required to qualify for a New York salesperson license?",o:["20 hours","45 hours","77 hours of approved qualifying education","152 hours for every applicant"],a:2,w:"Salesperson applicants generally need 77 hours of approved education. (Brokers need more.)"},
+{f:"New York's Property Condition Disclosure Act generally requires sellers of covered residential property to complete and deliver a disclosure statement, unless an exemption applies.",q:"Under the Property Condition Disclosure Act, what is generally required for a covered residential sale?",o:["The seller completes and delivers the disclosure statement unless an exemption applies","The buyer's agent completes it instead of the seller","No disclosures are required if the property is sold as-is","The seller can always substitute a $500 credit"],a:0,w:"The seller owes the disclosure statement unless an exemption applies. Selling as-is does not remove that duty."},
+{f:"A licensed salesperson performs brokerage activity under a licensed sponsoring broker, never on their own.",q:"A licensed salesperson generally performs brokerage activities under whom?",o:["Any landlord","A mortgage lender","A licensed sponsoring broker","A home inspector"],a:2,w:"Salespeople work under and through a sponsoring broker."},
+{f:"Agents must explain who they represent and give the required agency disclosures to buyers and sellers.",q:"A buyer asks whom the agent represents. What should the agent do?",o:["Explain the agency relationship and provide required disclosures","Avoid answering until closing","Say every agent represents the seller","Refer the question only to the lender"],a:0,w:"Be upfront about agency and provide the required disclosure forms."},
+{f:"Never hide or misrepresent a material fact, like a basement that floods. Follow the disclosure law.",q:"A seller tells you the basement floods in heavy rain. What is the best response?",o:["Keep it secret to secure the sale","Advertise the basement as dry","Follow applicable disclosure law and never misrepresent material facts","Wait for the buyer to discover it"],a:2,w:"Material facts must be handled honestly and disclosed as the law requires."},
+{f:"Fair housing laws forbid treating people differently because of protected traits, including family status such as having children.",q:"Which is an example of fair housing discrimination?",o:["Applying the same published criteria consistently","Refusing to show a home to a family because they have children","Providing accurate information to all buyers","Explaining the same application process to everyone"],a:1,w:"Refusing service because of familial status is discrimination. Consistent, equal treatment is the safe path."},
+{f:"Client deposit money is handled under the contract, your brokerage's procedures and the escrow rules. Never mix it with personal or office money.",q:"A buyer gives you a deposit check. What should you do?",o:["Deposit it into your personal account temporarily","Use it to pay an office bill","Handle it according to the contract, brokerage procedures and applicable escrow rules","Keep it until the buyer asks"],a:2,w:"Deposits are other people's money and must follow escrow rules. Mixing funds is a serious violation."},
+{f:"Advertising must be accurate. If a listing has an error, like the wrong square footage, correct it promptly.",q:"You discover a listing advertises the wrong square footage. What should you do?",o:["Leave it until someone complains","Correct the listing promptly and communicate the correction as appropriate","Increase the number to make it more attractive","Ask another agent to advertise the same number"],a:1,w:"Fix errors quickly. Accurate advertising protects clients and your license."},
+{f:"A salesperson is paid for brokerage work through their sponsoring broker, not directly by clients or other parties.",q:"Under New York licensing rules, how is a salesperson generally paid for licensed brokerage activity?",o:["Directly by anyone, regardless of the arrangement","Only in cash","Through the salesperson's sponsoring broker, subject to applicable rules","Only after becoming a property owner"],a:2,w:"Commissions flow through the sponsoring broker, which is why the game applies a firm split."}];
+let SEQ=[],si=0,score=0,mentorG=null;
+function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;}if(!on)return;mentorG=new THREE.Group();const h=human({b:2,s:3,h:0,hc:5,j:1,p:2,o:0},0x2ecc71);mentorG.add(h);const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.7;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}
+function modes(){mentor(true);E('lesson').innerHTML='<div class=bubble><b>Naomi</b> · Senior Agent<br>Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';}
+function start(m){SEQ=[];score=0;si=0;if(m==='g'){QZ.forEach((x,i)=>{SEQ.push({t:'s',i});SEQ.push({t:'q',i});});}else{[[0,5],[5,10]].forEach(([a,b])=>{for(let i=a;i<b;i++)SEQ.push({t:'s',i});for(let i=a;i<b;i++)SEQ.push({t:'q',i});});}lesson();}
+function lesson(){const st=SEQ[si],el=E('lesson');if(!st){finish();return;}const x=QZ[st.i],pr='<div class=k>Step '+(si+1)+' of '+SEQ.length+' · Score '+score+'</div>';
+  if(st.t==='s')el.innerHTML=pr+'<div class=bubble><b>Naomi</b><br>'+x.f+'</div><button class="go" onclick="adv()">Got it</button>';
+  else el.innerHTML=pr+'<div class=bubble><b>Naomi</b> asks:<br>'+x.q+'</div>'+x.o.map((o,i)=>'<div class=opt2 onclick="pick('+i+')"><b>'+'ABCD'[i]+'.</b> '+o+'</div>').join('')+'<div id=fb></div>';}
+function pick(i){const q=QZ[SEQ[si].i],fb=E('fb');if(fb.dataset.d)return;fb.dataset.d=1;if(i===q.a)score++;
   [...document.querySelectorAll('.opt2')].forEach((e,j)=>{e.style.borderColor=j===q.a?'#2ecc71':(j===i?'#e74c3c':'#2c3f56');});
-  fb.innerHTML='<div class=box>'+(i===q.a?'✔ Correct. ':'✘ Not quite. ')+q.w+'</div><button class="go" onclick="nextQ()">'+(qi===QZ.length-1?'See result':'Next')+'</button>';}
-function nextQ(){qi++;if(qi<QZ.length){quiz();return;}const ok=score>=4;
-  E('quiz').innerHTML='<h2>'+(ok?'🎓 You are licensed!':'Not yet licensed')+'</h2><p>You scored '+score+' / '+QZ.length+'. '+(ok?'Now choose the firm you will work for.':'You need 4 or more. Review the briefing and try again.')+'</p><button class="go" onclick="'+(ok?'show(4)':'retake()')+'">'+(ok?'Choose your firm':'Review the briefing')+'</button>';}
-function retake(){qi=0;score=0;show(2);}
-E('b0').onclick=()=>show(1);E('b1').onclick=()=>show(2);E('b2').onclick=()=>{qi=0;score=0;quiz();show(3);};
+  fb.innerHTML='<div class=bubble><b>Naomi</b><br>'+(i===q.a?'✔ Correct. ':'✘ Not quite. ')+q.w+'</div><button class="go" onclick="adv()">Next</button>';}
+function adv(){si++;lesson();}
+function finish(){const ok=score>=8;E('lesson').innerHTML='<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+(ok?'You scored '+score+' / 10. You are licensed to practice in the game. Your first client quest is unlocked: meet Maya near the Corner Café. Now choose your firm.':'You scored '+score+' / 10. You need 8 to pass. Let us go over it again.')+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';if(ok)G.badge=1;}
+function toFirm(){mentor(false);show('s4');}
+E('b0').onclick=()=>show('s1');E('b1').onclick=()=>{show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter')E('b1').click();});
-E('b4').onclick=()=>{const f=FIRMS[selFirm];NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look});E('join').style.display='none';};
-renderFirms();setPreview();show(0);
+E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look});E('join').style.display='none';};
+renderFirms();setPreview();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
 socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
-  me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
+  me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
 socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud();});
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
 socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;avatars[id].tx=st[id].x;avatars[id].tz=st[id].z;avatars[id].try=st[id].ry;avatars[id].n=st[id].n||0;avatars[id].g.visible=avatars[id].n===G.nb;}});
 
-NB[0].pros.push({n:"Leo",rent:1,sq:700,bd:1,bel:1.12,why:"is a landlord with a vacant one-bedroom",goal:"wants a reliable tenant quickly",x:7.4,z:-17,ry:-Math.PI/2,look:{b:1,s:1,h:3,hc:2,j:2,p:1,o:1}});
+NB[0].pros.push({n:"Leo",rent:1,sq:700,bd:1,bel:1.12,why:"is a landlord with a vacant one-bedroom",goal:"wants a reliable tenant quickly",x:7.4,z:-18.5,ry:-Math.PI/2,look:{b:1,s:1,h:3,hc:2,j:2,p:1,o:1}});
 NB[1].pros.push({n:"Nora",rent:1,sq:800,bd:1,bel:0.9,why:"is renting out her condo while she travels",goal:"wants steady income and a careful tenant",x:-7.4,z:12,ry:Math.PI/2,look:{b:0,s:2,h:2,hc:3,j:5,p:0,o:2}});
 NB[2].pros.push({n:"Theo",rent:1,sq:900,bd:2,bel:1.1,why:"owns a loft and wants it rented this month",goal:"wants top rent from a good tenant",x:7.4,z:-26,ry:-Math.PI/2,look:{b:2,s:3,h:0,hc:1,j:3,p:2,o:0}});
-// ---------- career + educational deal workbench ----------
-const G={xp:0,nb:0,deals:0,cash:0,cur:null,near:null,P:{}},NPCS=[];
-const f=n=>"$"+Math.round(n).toLocaleString("en-US"),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
+// ---------- career, deals, chat ----------
+const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,near:null,focus:null,P:{},offers:[],msgs:[],chat:[]},NPCS=[];
+const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
+const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
+const NYC="Co-ops need board approval; condos are easier to buy. Buyers pay a 1% mansion tax on purchases of $1M or more. Rental security deposits are capped at one month's rent, and landlords commonly want annual income of 40× the monthly rent. (Approximate figures for gameplay.)";
+function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group();g.add(human(look,null));const t=label(name+" · "+tag,col,2.8);t.position.y=2.95;g.add(t);const m=label("!",col,1.1);m.position.y=3.65;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z};}
 function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
-  NB[G.nb].pros.forEach((p,i)=>{const g=new THREE.Group();g.add(human(p.look,null));const t=label(p.n+(p.rent?" · Rental":" · Prospect"),"#ffd54a",3.4);t.position.y=2.8;g.add(t);
-    const m=label("!","#ffd54a",1.1);m.position.y=3.5;g.add(m);g.position.set(p.x,0,p.z);g.rotation.y=p.ry;scene.add(g);if(p.done)m.visible=false;NPCS.push({g,p,i,m});});}
+  NB[G.nb].pros.forEach((p,i)=>{const P=G.P[G.nb+"-"+i];if(P&&(P.lost||P.done))return;const n=mkNpc(p.look,p.n,p.rent?"Landlord":"Client","#ffd54a",p.x,p.z);n.t={k:"s",pi:i};n.name=p.n;NPCS.push(n);});
+  Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const n=mkNpc(b.look,b.n,P.p.rent?"Tenant?":"Buyer?","#7fd0ff",b.x,b.z);n.t={k:"b",pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});}
 function mk(p,ni,pi){let s=(ni+1)*97+(pi+1)*31;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};
-  const u=p.rent?10:1000,tp=NB[ni].ppsf*(p.rent?0.0033:1)*(0.97+0.06*r()),st=["Maple","Park","Grand","Lincoln","Union","Elm"],ad=()=>(100+Math.floor(r()*800))+" "+st[Math.floor(r()*6)]+" St";
+  const u=p.rent?10:1000,tp=(p.rent?NB[ni].rppsf:NB[ni].ppsf)*(0.97+0.06*r()),st=["Maple","Park","Grand","Lincoln","Union","Elm"],ad=()=>(100+Math.floor(r()*800))+" "+st[Math.floor(r()*6)]+" St";
   const C=[0,1,2].map(()=>{const sq=Math.round(p.sq*(0.88+0.24*r())/10)*10,pp=tp*(0.96+0.08*r());return{a:ad(),sq,m:1+Math.floor(r()*5),pr:Math.round(sq*pp/u)*u,note:p.rent?"Normal lease":"Normal sale",bad:0};});
   const fc=r()<0.5,sq=Math.round(p.sq*(0.95+0.1*r())/10)*10,pp=tp*(fc?0.7:0.86);
   C.splice(Math.floor(r()*4),0,{a:ad(),sq,m:fc?4:16,pr:Math.round(sq*pp/u)*u,note:fc?(p.rent?"Short-term sublet":"Foreclosure (distressed)"):(p.rent?"Old lease, stale rents":"Old sale, stale market"),bad:1});return{C,tp};}
-function gp(){const k=G.cur.ni+"-"+G.cur.pi;if(!G.P[k]){const p=NB[G.cur.ni].pros[G.cur.pi],m=mk(p,G.cur.ni,G.cur.pi);G.P[k]={p,rate:p.rent?12.5:5,c:m.C,tp:m.tp,ask:[0,0,0],inc:m.C.map(()=>1),st:0,price:0};}return G.P[k];}
-function est(P){const a=P.c.filter((c,i)=>P.inc[i]);if(!a.length)return null;const pp=a.reduce((s,c)=>s+c.pr/c.sq,0)/a.length;return{a,pp,v:Math.round(pp*P.p.sq/(P.p.rent?10:1000))*(P.p.rent?10:1000)};}
-function talk(){if(G.near!=null){G.cur={ni:G.nb,pi:G.near};render();}}
-function leave(){G.cur=null;render();}
-function go(i){if(lvl()<NB[i].lvl||i===G.nb)return;G.nb=i;G.cur=null;buildWorld(NB[i]);spawnNPCs();me.x=0;me.z=3;for(const id in avatars)if(id!==myId)avatars[id].g.visible=(avatars[id].n||0)===G.nb;render();}
-function ask(i){gp().ask[i]=1;render();}
-function tg(i){const P=gp();if(P.st===1){P.inc[i]^=1;render();}}
-function toStage(s){const P=gp();if(s===2){const e=est(P);if(!e)return;P.price=e.v;}P.st=s;render();}
-function pr(d){const P=gp();P.price=Math.max(P.p.rent?500:100000,P.price+d);render();}
-function rt(d){const P=gp(),r=P.p.rent;P.rate=Math.min(r?15:6,Math.max(r?10:4,P.rate+d));render();}
-const fp=(n,r)=>r?"$"+n.toFixed(2):f(n),SB=`<button class=b onclick="pr(-25000)">−25k</button><button class=b onclick="pr(-5000)">−5k</button><button class=b onclick="pr(5000)">+5k</button><button class=b onclick="pr(25000)">+25k</button>`,RB=`<button class=b onclick="pr(-100)">−$100</button><button class=b onclick="pr(-25)">−$25</button><button class=b onclick="pr(25)">+$25</button><button class=b onclick="pr(100)">+$100</button>`;
-function RATE(P){const r=P.p.rent;return `<div class=trav>Commission rate <button class=b onclick="rt(-0.5)">−</button><b>${P.rate}%</b><button class=b onclick="rt(0.5)">+</button></div><div class=k>${r?"Rentals typically pay 10–15% of one year of rent.":"Sales typically pay 4–6% of the price."}${P.rate>(r?13:5.5)?" A high rate can make clients push back.":""}</div>`;}
-function present(){const P=gp(),p=P.p,truth=P.tp*p.sq,r=P.price/truth,good=P.inc.every((x,i)=>x===(P.c[i].bad?0:1));const R=p.rent;let fin,days,xp,msg;
-  if(r>1.04){fin=truth*0.97;days=R?60:95;xp=60;msg=R?"Overpriced rent: vacant ~60 days, then leased for "+f(fin)+"/mo after cuts.":"Overpriced: it sat ~95 days, needed price cuts, and finally sold for "+f(fin)+".";}
-  else if(r<0.96){fin=P.price;days=R?3:7;xp=80;msg=R?"Underpriced rent: leased in days, but "+p.n+" lost about "+f(truth-P.price)+" every month.":"Underpriced: it sold in a week, but "+p.n+" left about "+f(truth-P.price)+" on the table.";}
-  else{fin=P.price;days=R?15:25;xp=150;msg=R?"Priced right: a market-supported rent leased in about 15 days.":"Priced right: a market-supported price sold in about 25 days.";}
-  if(good)xp+=30;const rt_=P.rate/100,gross=p.rent?fin*12*rt_:fin*rt_,side=p.rent?gross:gross*0.5,net=side*0.7;
-  P.res={fin,days,xp,msg,gross,side,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;p.done=1;P.st=3;NPCS.forEach(n=>{if(n.p===p)n.m.visible=false;});render();}
-function updateNear(){let b=null,bd=4.2;NPCS.forEach(n=>{if(n.p.done)return;const d=Math.hypot(me.x-n.p.x,me.z-n.p.z);if(d<bd){bd=d;b=n.i;}});G.near=b;
-  const t=b!=null?"Press F to talk to "+NB[G.nb].pros[b].n:"WASD to move · drag mouse or Q / E to rotate · find the gold ! prospects";if($("hint").textContent!==t)$("hint").textContent=t;}
+function PP(ni,pi){const k=ni+"-"+pi;if(!G.P[k]){const p=NB[ni].pros[pi],m=mk(p,ni,pi);G.P[k]={k,ni,pi,p,c:m.C,tp:m.tp,trust:3,sc:0,react:null,inc:m.C.map(()=>1),st:0,price:0,rate:p.rent?12.5:5,done:0,lost:0,fb:[],buyers:[],mb:-1,partner:null};}return G.P[k];}
+const curP=()=>G.cur?PP(G.cur.ni,G.cur.pi):null;
+function est(P){const a=P.c.filter((c,i)=>P.inc[i]);if(!a.length)return null;const u=P.p.rent?10:1000,pp=a.reduce((s,c)=>s+c.pr/c.sq,0)/a.length;return{a,pp,v:Math.round(pp*P.p.sq/u)*u};}
+function genBuyers(P){const p=P.p;let s=(P.ni+3)*131+P.pi*17;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};
+  const truth=P.tp*p.sq,R=p.rent,fit=R?truth*40*1.06:truth*1.045,low=R?truth*40*0.74:truth*0.78,nm=["Chris","Aisha","Tomas","Mei","Omar","Sofia","Ben","Lena","Raj"];
+  const spots=[[7.4,18.5],[-7.4,-18.5],[7.4,31],[-7.4,-31],[7.4,6.5],[-7.4,-6.5]].filter(a=>Math.hypot(a[0]-p.x,a[1]-p.z)>6).sort(()=>r()-0.5);
+  const kinds=[{bd:p.bd,m:fit,why:R?"wants to move within 30 days":"is ready to buy this season"},{bd:p.bd>1?p.bd-1:p.bd+1,m:fit,why:R?"is flexible on move-in date":"is relocating next year"},{bd:p.bd,m:low,why:R?"is a student sharing costs":"is a first-time buyer"}].sort(()=>r()-0.5);
+  return kinds.map((k,i)=>({n:nm[Math.floor(r()*9)],look:{b:Math.floor(r()*3),s:Math.floor(r()*6),h:Math.floor(r()*6),hc:Math.floor(r()*6),j:Math.floor(r()*6),p:Math.floor(r()*4),o:Math.floor(r()*3)},bd:k.bd,m:k.m,why:k.why,x:spots[i][0],z:spots[i][1],ask:[0,0,0],declined:0,res:null}));}
+function verdict(P,b){const p=P.p;if(b.bd!==p.bd)return "I need "+b.bd+" bedroom"+(b.bd>1?"s":"")+". This one has "+p.bd+".";if(p.rent?b.m<40*P.price:b.m<P.price)return p.rent?"My income does not meet the 40× rent requirement at "+f(P.price)+"/mo.":"That is above my budget of "+f(b.m)+".";return null;}
+const ETH=[["The seller mentions a past leak behind the wall. You…",[["Recommend disclosing it, as the law requires",1],["Suggest painting over it and staying quiet",-2],["Say it is probably fine to skip",-1]]],
+["A family with young children asks to see the unit. The owner says no kids. You…",[["Explain you cannot discriminate under fair housing law",1],["Quietly avoid showing them",-2],["Tell them the unit is taken",-2]]],
+["The owner asks you to hold the buyer's deposit in your personal account for a day. You…",[["Decline. Deposits follow the contract and escrow rules",1],["Agree, just for a day",-2],["Ask the buyer to wire it to you",-1]]],
+["The listing says 1,100 sq ft but it measures 950. You…",[["Correct the listing before advertising",1],["Leave it, nobody checks",-2],["Round it up a little",-1]]],
+["A tenant offers three months of cash rent upfront to skip screening. You…",[["Apply the same screening to everyone and respect the one-month deposit cap",1],["Accept the cash and skip screening",-2],["Accept the three months of deposit",-1]]]];
+function scen(P){const p=P.p,u=p.rent?10:1000,B=Math.round(P.tp*p.sq*p.bel/u)*u,rot=a=>{const r=(P.pi+P.sc)%3;return a.map((_,i)=>a[(i+r)%3]);};
+  if(P.sc===0)return{q:`${p.n} says: "${p.rent?"I would like to rent it for":"I think it is worth"} ${f(B)}${p.rent?"/mo":""}." ${p.n} also ${p.why}. How do you respond?`,o:rot([["Acknowledge the situation and promise to price it from real comparables that fit "+p.n+"'s timeline",1],["Say it is fine to list high and cut the price later",-1],["Say you will get back to "+p.n+" next week",0]])};
+  if(P.sc===1)return{q:`${p.n} ${p.goal}. What do you say?`,o:rot([[p.rent?"Explain you will screen tenants on income, credit and references":"Explain you will build the price from recent comparable sales so it supports that goal",1],["Promise a price higher than any other agent would offer",-1],["Say that part is not your concern",-2]])};
+  const e=ETH[p.rent?[4,1,3][P.ni]:(P.ni*2+P.pi)%4];return{q:e[0],o:rot(e[1])};}
+function leave(){G.cur=null;G.curB=null;G.focus=null;spawnNPCs();render();}
+function talk(){const t=G.near;if(!t)return;const n=NPCS.find(n=>n.t===t);if(!n)return;G.msgs=[];if(t.k==="s"){G.cur={ni:G.nb,pi:t.pi};G.curB=null;}else{G.curB={pi:t.pi,bi:t.bi};G.cur=null;}G.focus={x:n.x,z:n.z};n.g.rotation.y=Math.atan2(me.x-n.x,me.z-n.z);render();}
+function pickS(j){const P=curP(),o=scen(P).o[j],p=P.p;P.trust=Math.min(5,P.trust+o[1]);const lost=P.trust<=0;
+  P.react={t:lost?`${p.n}: "I do not think this is going to work. I will find another agent."`:o[1]>0?`${p.n}: "That makes sense. I feel good about working with you."`:o[1]===0?`${p.n}: "Hmm, okay..."`:`${p.n}: "I am not comfortable with that."`,lost};if(lost)P.lost=1;else P.sc++;render();}
+function cont(){const P=curP();P.react=null;if(P.lost){G.xp+=10;G.msgs.push(P.p.n+" walked away. Be more careful with your advice. (+10 XP for the lesson)");leave();return;}if(P.sc>=3)P.st=1;render();}
+function tg(i){const P=curP();if(P.st===1){P.inc[i]^=1;render();}}
+function toStage(s){const P=curP();if(s===2){const e=est(P);if(!e)return;P.price=e.v;}P.st=s;render();}
+function pr(d){const P=curP();P.price=Math.max(P.p.rent?500:100000,P.price+d);render();}
+function rt(d){const P=curP(),r=P.p.rent;P.rate=Math.min(r?15:6,Math.max(r?10:4,P.rate+d));render();}
+function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);G.msgs.push("✍ Listing signed at "+f(P.price)+(P.p.rent?"/mo":"")+". Walk the city and find a "+(P.p.rent?"tenant":"buyer")+" (blue ?). Then return to "+P.p.n+" to close.");leave();}
+function reduce(){const P=curP(),u=P.p.rent?10:1000;P.price=Math.round(P.price*0.95/u)*u;P.buyers.forEach(b=>{b.declined=0;b.res=null;});G.msgs.push("Price reduced to "+f(P.price)+". People who passed may reconsider.");spawnNPCs();render();}
+function askB(i){G.curB&&(PP(G.nb,G.curB.pi).buyers[G.curB.bi].ask[i]=1);render();}
+function showL(){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],v=verdict(P,b);if(!v){P.st=4;P.mb=G.curB.bi;b.res="✔ "+b.n+': "I love it. Let us make an offer!"';G.msgs.push("🎉 "+b.n+" wants to make an offer. Return to "+P.p.n+" to close the deal.");}else{b.declined=1;b.res="✘ "+b.n+': "'+v+'"';P.fb.push(b.n+": "+v);}render();}
+function invite(id){const P=curP();socket.emit("relay",{to:id,type:"cobroke",data:{k:P.k,txt:P.p.n+"'s listing at "+f(P.price)+(P.p.rent?"/mo":"")}});G.msgs.push("Invitation sent to "+avatars[id].name+".");render();}
+function acc(i){const o=G.offers.splice(i,1)[0];socket.emit("relay",{to:o.from,type:"cob-ok",data:{k:o.d.k}});G.xp+=20;G.msgs.push("You joined "+o.name+"'s deal. Chat with them to help. You earn 40% if it closes. (+20 XP)");render();}
+function dec(i){G.offers.splice(i,1);render();}
+function closeDeal(){const P=curP(),p=P.p,R=p.rent,truth=P.tp*p.sq,r=P.price/truth,good=P.inc.every((x,i)=>x===(P.c[i].bad?0:1));let xp,days,msg;
+  if(r>1.04){days=R?60:150;xp=60;msg="You had to cut the price to find a taker, so it took much longer.";}
+  else if(r<0.96){days=R?10:25;xp=80;msg=p.n+" got a fast "+(R?"lease":"sale")+" but left about "+f(truth-P.price)+(R?" a month":"")+" on the table.";}
+  else{days=R?30:75;xp=150;msg="Priced right. A market-supported "+(R?"rent":"price")+" attracted a qualified "+(R?"tenant":"buyer")+".";}
+  if(good)xp+=30;xp+=P.trust*5;const fin=P.price,q=P.rate/100,gross=R?fin*12*q:fin*q,side=R?gross:gross*0.5,net0=side*0.7,net=P.partner?net0*0.6:net0;
+  if(P.partner)socket.emit("relay",{to:P.partner.id,type:"cob-pay",data:{amt:Math.round(net0*0.4),xp:60}});
+  P.res={fin,days,xp,msg,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;render();}
+function go(i){if(lvl()<NB[i].lvl||i===G.nb)return;const prev=G.nb;G.nb=i;G.cur=null;G.curB=null;G.focus=null;G.msgs=[];Object.keys(G.P).forEach(k=>{if(G.P[k].lost&&G.P[k].ni===i)delete G.P[k];});
+  buildWorld(NB[i]);spawnNPCs();me.x=0;me.z=((i+1)%3===prev)?-41:41;for(const id in avatars)if(id!==myId)avatars[id].g.visible=(avatars[id].n||0)===G.nb;render();}
+function updateNear(){if(G.focus)return;let b=null,bd=4.2;NPCS.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;
+  let t=b?"Press F to talk to "+b.name:"WASD move · drag rotate · Enter chat · F talk";
+  for(const g of GATES){if(Math.abs(me.x)<5.5&&Math.abs(me.z-g.z)<2.5){if(lvl()>=NB[g.to].lvl){go(g.to);return;}t="🔒 "+NB[g.to].name+" unlocks at level "+NB[g.to].lvl;}}
+  if($("hint").textContent!==t)$("hint").textContent=t;}
+function convCam(){const T=G.focus,mx=(me.x+T.x)/2,mz=(me.z+T.z)/2,dx=T.x-me.x,dz=T.z-me.z,l=Math.hypot(dx,dz)||1,px=-dz/l,pz=dx/l,D=6.8;
+  const c=[1,-1].map(k=>[mx+(-dx/l*0.5+px*0.87*k)*D,mz+(-dz/l*0.5+pz*0.87*k)*D]).sort((a,b)=>(Math.abs(a[0])+0.05*Math.abs(a[1]))-(Math.abs(b[0])+0.05*Math.abs(b[1])))[0];
+  camera.position.set(c[0],3.2,c[1]);camera.lookAt(mx,1.3,mz);me.ry=Math.atan2(dx,dz);}
+let PW=0;function fit(){if(PW)camera.setViewOffset(innerWidth,innerHeight,PW/2,0,innerWidth,innerHeight);else camera.clearViewOffset();}
+function studio(on){if(world)world.visible=!on;platform.visible=on;PEDS.forEach(p=>p.h.visible=!on);const c=on?0x1c2a3c:NB[G.nb].sky;scene.background.set(c);scene.fog.color.set(c);}
+const platform=new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,0.12,40),new THREE.MeshLambertMaterial({color:0x2a3b52}));platform.position.set(-0.3,-0.06,5.8);scene.add(platform);platform.visible=false;
+// ----- chat + agent collaboration -----
+function chatLog(){$("chatlog").innerHTML=G.chat.slice(-6).map(m=>`<div><b style="color:${hex(m.c)}">${m.name}</b>: ${m.t}</div>`).join("");$("chatlog").scrollTop=1e5;}
+function bubble(id,t){const a=avatars[id];if(!a)return;if(a.bub)a.g.remove(a.bub);const s=label(t.slice(0,44),"#ffffff",4.4);s.position.y=3.5;a.g.add(s);a.bub=s;clearTimeout(a.bt);a.bt=setTimeout(()=>{a.g.remove(a.bub);a.bub=null;},6000);}
+socket.on("chat",m=>{if((m.n||0)!==G.nb)return;const fm=FIRMS.find(x=>x.n===m.firm)||FIRMS[0];G.chat.push({name:m.name,t:String(m.t).replace(/</g,"&lt;"),c:fm.c});chatLog();bubble(m.id,m.t);});
+$("chat").addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Enter"){if($("chat").value.trim())socket.emit("chat",$("chat").value);$("chat").value="";$("chat").blur();}});
+socket.on("relay",m=>{if(m.type==="cobroke")G.offers.push({from:m.from,name:m.name,d:m.data});
+  else if(m.type==="cob-ok"){const P=G.P[m.data.k];if(P){P.partner={id:m.from,name:m.name};G.msgs.push("🤝 "+m.name+" joined your listing as co-broker.");}}
+  else if(m.type==="cob-pay"){G.cash+=m.data.amt;G.xp+=m.data.xp;G.msgs.push("💰 "+m.name+" closed the deal you co-brokered. You earned "+f(m.data.amt)+" and +"+m.data.xp+" XP.");}render();});
+// ----- panel UI -----
 function money(P,price){const r=P.p.rent,q=P.rate/100;if(r){const a=price*12,c=a*q;return `<div class=box><b>Your commission (game rules)</b><br>Annual rent = ${f(price)} × 12 = ${f(a)}<br>Fee = ${f(a)} × ${P.rate}% = ${f(c)}<br>Your share = ${f(c)} × 70% firm split = <b>${f(c*0.7)}</b></div>`;}
   const c=price*q,s=c*0.5;return `<div class=box><b>Your commission (game rules)</b><br>Gross = ${f(price)} × ${P.rate}% = ${f(c)}<br>Listing side = ${f(c)} × 50% = ${f(s)}<br>Your share = ${f(s)} × 70% firm split = <b>${f(s*0.7)}</b></div>`;}
-function bench(){const P=gp(),p=P.p,U=p.rent?10:1000,B=Math.round(P.tp*p.sq*p.bel/U)*U;let h=`<h3>${p.n} · ${p.sq} sq ft · ${p.bd} bed${p.rent?" · rental":""}</h3>`;
-  if(P.st===0){const q=[["Ask about their situation",p.n+" "+p.why+"."],["Ask about their goals",p.n+" "+p.goal+"."],["Check the property",p.bd+" bed · "+p.sq+" sq ft · well kept"]],n=P.ask.reduce((a,b)=>a+b,0),rel=1+2*n;
-    h+=`<div class=box>"${p.rent?"I would like to rent it for":"I think my place is worth"} <b>${f(B)}${p.rent?"/mo":""}</b>."</div><div class=k>Relationship level ${rel}/10 ${n===3?"· 🟡 Considering selling":""}</div>`;
-    q.forEach((x,i)=>{h+=P.ask[i]?`<div class=box>✔ ${x[1]}</div>`:`<button class=b onclick="ask(${i})">${x[0]}</button>`;});
-    if(n===3)h+=`<button class="b go" onclick="toStage(1)">Run the numbers →</button>`;}
-  if(P.st===1){const e=est(P);h+=`<div class=k>Step 1: choose comparables. Tap a row to include or exclude it. Use similar size, recent, normal sales.</div><table>`+P.c.map((c,i)=>`<tr onclick="tg(${i})"><td>${P.inc[i]?"☑":"☐"}</td><td>${c.a}<br><small>${c.sq} sf · ${c.m} mo ago · ${c.note}</small></td><td>${f(c.pr)}${p.rent?"/mo":""}<br><small>${fp(c.pr/c.sq,p.rent)}/sf${p.rent?"/mo":""}</small></td></tr>`).join("")+"</table>";
-    if(e)h+=`<div class=box><b>The math</b><br>Avg $/sf = (${e.a.map(c=>fp(c.pr/c.sq,p.rent)).join(" + ")}) ÷ ${e.a.length} = <b>${fp(e.pp,p.rent)}</b><br>Value = ${fp(e.pp,p.rent)} × ${p.sq} sf = <b>${f(e.v)}</b></div><button class="b go" onclick="toStage(2)">Set list price →</button>`;}
-  if(P.st===2){const e=est(P),d=(P.price/e.v-1)*100;h+=`<div class=k>Step 2: your estimate is ${f(e.v)}. ${p.n} expects ${f(B)} (${B>=e.v?"+":""}${((B/e.v-1)*100).toFixed(0)}% vs your value). Pick a list price and pitch it.</div><div class=box style="text-align:center;font-size:18px"><b>${f(P.price)}</b><br><small>${d>=0?"+":""}${d.toFixed(1)}% vs your estimate</small></div>
-    <div class=trav>${p.rent?RB:SB}</div>`+RATE(P)+money(P,P.price)+`<div class=k>Rule of thumb: priced above the market → long days on market; below → quick sale but lost value.</div><button class="b go" onclick="present()">Present to ${p.n}</button>`;}
-  if(P.st===3){const r=P.res,lv=lvl();h+=`<div class=box><b>${r.msg}</b></div><div class=box>Market value (all good comps) = <b>${f(r.truth)}</b><br>${r.good?"✔ You screened the comps correctly (+30 XP).":"✘ Your comps included a distorted sale. Always screen out foreclosures and stale sales."}</div>`+money(P,r.fin)+`<div class=box>Time on market: ${r.days} days · <b>+${r.xp} XP</b></div>`;
-    if(lv>r.L0)h+=`<div class=box>🎉 <b>Level up! You are level ${lv}.</b>${NB.filter(n=>n.lvl>r.L0&&n.lvl<=lv).map(n=>"<br>Unlocked: "+n.name).join("")}</div>`;}
-  return h+(P.st===3?`<button class=b onclick="leave()">Back to the street</button>`:`<button class=b onclick="leave()">Walk away</button>`);}
-function render(){const nb=NB[G.nb],L=lvl(),nx=60*L*L,pv=60*(L-1)*(L-1);
-  let h=`<h3>Career dashboard</h3><div class=k>Level <b>${L}</b> · ${nb.name}</div><div class=bar><i style="width:${Math.min(100,(G.xp-pv)/(nx-pv)*100)}%"></i></div><div class=k>XP ${G.xp}/${nx} · Deals ${G.deals} · Commission <b>${f(G.cash)}</b></div><div class=trav>`;
-  NB.forEach((n,i)=>{h+=L>=n.lvl?`<button class=b ${i===G.nb?"disabled":""} onclick="go(${i})">${i===G.nb?"📍 ":""}${n.name}</button>`:`<button class=b disabled>🔒 ${n.name} (level ${n.lvl})</button>`;});
-  h+="</div>";
-  h+=G.cur?bench():`<h3>Market briefing</h3><div class=box>Average price: <b>${f(nb.ppsf)}/sq ft</b> (fictional game data)<br>Typical time on market: ~25 days<br><b>Sales:</b> 4–6% of the price (you choose), split 50/50 between the two sides, then 70% to you after the firm split<br><b>Rentals:</b> 10–15% of one year of rent, then 70% to you after the firm split</div><div class=box><b>How to value a home</b><br>1. Choose comparable sales (similar, recent, normal sale)<br>2. Average their price per sq ft<br>3. Multiply by the home's sq ft</div><div class=k>Walk to a gold "!" prospect and press F.</div>`;
-  $("panel").innerHTML=h;}
+const SB=`<button class=b onclick="pr(-25000)">−25k</button><button class=b onclick="pr(-5000)">−5k</button><button class=b onclick="pr(5000)">+5k</button><button class=b onclick="pr(25000)">+25k</button>`,RB=`<button class=b onclick="pr(-100)">−$100</button><button class=b onclick="pr(-25)">−$25</button><button class=b onclick="pr(25)">+$25</button><button class=b onclick="pr(100)">+$100</button>`;
+function RATE(P){const r=P.p.rent;return `<div class=trav>Commission rate <button class=b onclick="rt(-0.5)">−</button><b>${P.rate}%</b><button class=b onclick="rt(0.5)">+</button></div><div class=k>${r?"Rentals typically pay 10–15% of one year of rent.":"Sales typically pay 4–6% of the price."}${P.rate>(r?13:5.5)?" A high rate can make clients push back.":""}</div>`;}
+function coBroke(P){const o=Object.keys(avatars).filter(id=>id!==myId&&avatars[id].g.visible);return `<div class=box><b>🤝 Work with another agent</b><br>${P.partner?"Partner: <b>"+P.partner.name+"</b> (earns 40% of the commission when you close)":o.length?o.map(id=>`<button class=b onclick="invite('${id}')">Invite ${avatars[id].name}</button>`).join(" "):"No other live agents here yet. Open the game in a second tab to try it."}</div>`;}
+function bench(){const P=curP(),p=P.p,R=p.rent,U=R?10:1000,sfx=R?"/mo":"",B=Math.round(P.tp*p.sq*p.bel/U)*U;let h=`<h3>${p.n} · ${p.sq} sq ft · ${p.bd} bed${R?" · rental":""}</h3>`;
+  if(P.st===0){h+=`<div class=k>Client trust ${"♥".repeat(P.trust)+"♡".repeat(5-P.trust)} · wrong advice can make a client walk away</div>`;
+    if(P.react)h+=`<div class=box>${P.react.t}</div><button class="b go" onclick="cont()">Continue</button>`;else{const s=scen(P);h+=`<div class=box>${s.q}</div>`+s.o.map((o,j)=>`<button class=b style="width:100%;text-align:left;white-space:normal" onclick="pickS(${j})">${o[0]}</button>`).join("");}}
+  else if(P.st===1){const e=est(P);h+=`<div class=k>Step 1: choose comparables${R?" (similar units that recently leased)":""}. Tap a row to include or exclude it. Use similar size, recent, normal deals.</div><table>`+P.c.map((c,i)=>`<tr onclick="tg(${i})"><td>${P.inc[i]?"☑":"☐"}</td><td>${c.a}<br><small>${c.sq} sf · ${c.m} mo ago · ${c.note}</small></td><td>${f(c.pr)}${sfx}<br><small>${fp(c.pr/c.sq,R)}/sf${sfx}</small></td></tr>`).join("")+"</table>";
+    if(e)h+=`<div class=box><b>The math</b><br>Avg $/sf = (${e.a.map(c=>fp(c.pr/c.sq,R)).join(" + ")}) ÷ ${e.a.length} = <b>${fp(e.pp,R)}</b><br>Value = ${fp(e.pp,R)} × ${p.sq} sf = <b>${f(e.v)}${sfx}</b></div><button class="b go" onclick="toStage(2)">Set list price →</button>`;}
+  else if(P.st===2){const e=est(P),d=(P.price/e.v-1)*100;h+=`<div class=k>Step 2: your estimate is ${f(e.v)}${sfx}. ${p.n} expects ${f(B)} (${B>=e.v?"+":""}${((B/e.v-1)*100).toFixed(0)}% vs your value). Pick a list price.</div><div class=box style="text-align:center;font-size:18px"><b>${f(P.price)}${sfx}</b><br><small>${d>=0?"+":""}${d.toFixed(1)}% vs your estimate</small></div><div class=trav>${R?RB:SB}</div>`+RATE(P)+money(P,P.price)+`<div class=k>Price too high and buyers will say no. Too low and ${p.n} loses money.</div><button class="b go" onclick="sign()">Sign the listing</button>`;}
+  else if(P.st===3){h+=`<div class=box><b>Listing active at ${f(P.price)}${sfx}</b><br>Find a ${R?"tenant":"buyer"} in the city (blue ?), then return here to close.</div>`;
+    if(P.fb.length)h+=`<div class=box><b>Feedback so far</b><br>${P.fb.join("<br>")}</div>`;const tip=P.partner&&P.buyers.find(b=>!verdict(P,b));if(tip)h+=`<div class=box>🤝 ${P.partner.name}'s tip: <b>${tip.n}</b> looks like a strong match.</div>`;
+    h+=`<button class=b onclick="reduce()">Reduce price 5%</button>`+coBroke(P);}
+  else if(P.st===4){h+=`<div class=box>✔ ${P.buyers[P.mb].n} wants to ${R?"lease":"buy"} at ${f(P.price)}${sfx}. Ready to close?</div>`+RATE(P)+money(P,P.price)+`<button class="b go" onclick="closeDeal()">Close the deal</button>`;}
+  else{const r=P.res,lv=lvl();h+=`<div class=box><b>${r.msg}</b></div><div class=box>Market value (all good comps) = <b>${f(r.truth)}${sfx}</b><br>${r.good?"✔ You screened the comps correctly (+30 XP).":"✘ Your comps included a distorted sale. Screen out foreclosures and stale deals."}</div><div class=box>Closed at <b>${f(r.fin)}${sfx}</b> in ${r.days} days · you earned <b>${f(r.net)}</b> · <b>+${r.xp} XP</b>${P.partner?"<br>40% went to your co-broker "+P.partner.name+".":""}</div>`;
+    if(lv>r.L0)h+=`<div class=box>🎉 <b>Level up! You are level ${lv}.</b>${NB.filter(n=>n.lvl>r.L0&&n.lvl<=lv).map(n=>"<br>Unlocked: <b>"+n.name+"</b>. Walk to the gate at the end of the avenue or pick it under Locations.").join("")}</div>`;}
+  return h+(P.st===5?`<button class=b onclick="leave()">Back to the street</button>`:P.st===0&&P.react?"":`<button class=b onclick="leave()">Walk away</button>`);}
+function benchB(){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],p=P.p,R=p.rent;let h=`<h3>${b.n} · ${R?"prospective tenant":"prospective buyer"}</h3><div class=k>Listing: ${p.n}'s ${p.bd} bed · ${p.sq} sf at ${f(P.price)}${R?"/mo":""}</div>`+(R?`<div class=k>Tip: NYC landlords commonly want annual income of 40× the monthly rent.</div>`:"");
+  [["Ask about their "+(R?"income":"budget"),R?"Annual income: "+f(b.m):"Budget up to "+f(b.m)],["Ask what they need","Needs "+b.bd+" bedroom"+(b.bd>1?"s":"")],["Ask about timing",b.n+" "+b.why+"."]].forEach((x,i)=>h+=b.ask[i]?`<div class=box>✔ ${x[1]}</div>`:`<button class=b onclick="askB(${i})">${x[0]}</button>`);
+  h+=b.res?`<div class=box>${b.res}</div>`:`<button class="b go" onclick="showL()">Show the listing</button>`;return h+`<button class=b onclick="leave()">Back to the street</button>`;}
+function quest(){const nb=NB[G.nb],ps=Object.values(G.P),act=ps.find(P=>!P.done&&!P.lost&&P.st>=3)||ps.find(P=>!P.done&&!P.lost&&P.ni===G.nb),cur=act?[1,2,2,3,4][act.st]:0;
+  const next=nb.pros.find((p,i)=>{const P=G.P[G.nb+"-"+i];return !(P&&(P.done||P.lost));});
+  const S=["Meet a client","Earn their trust","Run comps and price the listing","Find a buyer or tenant in the city","Return and close the deal"];
+  let h=`<h3>Quest${act?" · "+act.p.n:""}</h3><div class=box>`+S.map((s,i)=>`<div class="step ${i<cur?"dn":i===cur?"on":"up"}">${i<cur?"✔":i===cur?"▶":"○"} ${s}</div>`).join("")+`</div>`;
+  if(!act&&next)h+=`<div class=k>Next client: <b>${next.n}</b> (gold !). Walk up and press F.</div>`;
+  const B=BR[G.nb];return h+`<h3>Market briefing · ${nb.name}</h3><div class=box>${B.d}<br>Sales ≈ <b>${B.sale}</b> · Rentals ≈ <b>${B.rent}</b><br>Typical time to sell: ${B.dom} (Manhattan listings often take a few months). Rentals usually lease in about a month.</div><div class=box><b>NYC basics</b><br>${NYC}</div><div class=box><b>Valuing a rental</b><br>Average the monthly rent per sq ft of similar leased units, then multiply by sq ft. Fee: 10–15% of one year of rent.</div>`;}
+function render(){const L=lvl(),nx=60*L*L,pv=60*(L-1)*(L-1),fm=FIRMS[G.fi];
+  let h=`<div class=hdr><div class=lv>${L}</div><div><b>${G.name}</b><br><span style="color:${hex(fm.c)}">${fm.n}</span></div></div><div class=bar><i style="width:${Math.min(100,(G.xp-pv)/(nx-pv)*100)}%"></i></div><div class=k style="text-align:right">${G.xp} / ${nx} XP${G.badge?" · 🏅 Rookie Agent":""}</div><div class=tiles><div class=tile><b>${G.deals}</b>Deals</div><div class=tile><b>${f(G.cash)}</b>Commission</div><div class=tile><b>${G.rep}</b>Reputation</div></div>`;
+  G.offers.forEach((o,i)=>h+=`<div class=toast>🤝 <b>${o.name}</b> invites you to co-broke ${o.d.txt}. You earn 40% if it closes.<br><button class=b onclick="acc(${i})">Accept</button><button class=b onclick="dec(${i})">Decline</button></div>`);
+  G.msgs.slice(-2).forEach(m=>h+=`<div class=toast>${m}</div>`);
+  h+=`<h3>Locations</h3><div class=locs>`+NB.map((n,i)=>L>=n.lvl?`<div class="loc ${i===G.nb?"on":""}" onclick="go(${i})"><b>${i===G.nb?"📍 ":"➜ "}${n.name}</b><br><small>${BR[i].d}</small></div>`:`<div class="loc lock"><b>🔒 ${n.name}</b><br><small>Unlocks at level ${n.lvl}</small></div>`).join("")+`</div>`;
+  h+=G.cur?bench():G.curB?benchB():quest();$("panel").innerHTML=h;}
+studio(true);
 
 // ---------- input + loop ----------
 const keys={};let camYaw=0,camPitch=0.42,dragging=false;
-addEventListener('keydown',e=>{if(document.activeElement.tagName==='INPUT')return;keys[e.code]=true;if(e.code==='KeyF')talk();});addEventListener('keyup',e=>{keys[e.code]=false;});
+addEventListener('keydown',e=>{if(document.activeElement.tagName==='INPUT')return;keys[e.code]=true;if(e.code==='KeyF')talk();});
+addEventListener('keydown',e=>{if(e.code==='Enter'&&document.activeElement.tagName!=='INPUT'&&G.joined)document.getElementById('chat').focus();});addEventListener('keyup',e=>{keys[e.code]=false;});
 renderer.domElement.addEventListener('pointerdown',()=>dragging=true);addEventListener('pointerup',()=>dragging=false);
-addEventListener('pointermove',e=>{if(!dragging)return;camYaw-=e.movementX*0.005;camPitch=Math.max(0.12,Math.min(1.2,camPitch+e.movementY*0.004));});
+addEventListener('pointermove',e=>{if(dragging&&!me&&preview)preview.rotation.y+=e.movementX*0.01;if(!dragging)return;camYaw-=e.movementX*0.005;camPitch=Math.max(0.12,Math.min(1.2,camPitch+e.movementY*0.004));});
 const clock=new THREE.Clock();let sendT=0;
 const angLerp=(a,b,t)=>a+((((b-a+Math.PI)%(Math.PI*2))+Math.PI*2)%(Math.PI*2)-Math.PI)*t;
 function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),0.05);updatePeds(Date.now()/1000,dt);
   if(me){
     if(keys.KeyQ)camYaw+=1.8*dt;if(keys.KeyE)camYaw-=1.8*dt;
     let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);const len=Math.hypot(ix,iz);
-    if(len>0){ix/=len;iz/=len;const s=Math.sin(camYaw),c=Math.cos(camYaw),dx=ix*c+iz*s,dz=-ix*s+iz*c;
+    if(len>0&&!G.focus){ix/=len;iz/=len;const s=Math.sin(camYaw),c=Math.cos(camYaw),dx=ix*c+iz*s,dz=-ix*s+iz*c;
       me.x=Math.max(-48,Math.min(48,me.x+dx*6*dt));me.z=Math.max(-48,Math.min(48,me.z+dz*6*dt));collide(me);me.ry=Math.atan2(dx,dz);}
     const a=avatars[myId];if(a){const dist=Math.hypot(me.x-a.g.position.x,me.z-a.g.position.z);a.g.position.set(me.x,0,me.z);a.g.rotation.y=angLerp(a.g.rotation.y,me.ry,0.25);walkAnim(a.h,dist,dt);}
     updateNear(dt);sendT+=dt;if(sendT>0.066){sendT=0;socket.emit('move',{x:me.x,z:me.z,ry:me.ry,n:G.nb});}
-    const dd=11;camera.position.set(me.x+Math.sin(camYaw)*Math.cos(camPitch)*dd,1.8+Math.sin(camPitch)*dd,me.z+Math.cos(camYaw)*Math.cos(camPitch)*dd);camera.lookAt(me.x,1.5,me.z);
-  }else{camera.position.set(0,1.9,11);camera.lookAt(-1.7,1.5,6);if(preview)preview.rotation.y+=dt*0.6;}
+    if(G.focus){convCam();}else{const dd=11;camera.position.set(me.x+Math.sin(camYaw)*Math.cos(camPitch)*dd,1.8+Math.sin(camPitch)*dd,me.z+Math.cos(camYaw)*Math.cos(camPitch)*dd);camera.lookAt(me.x,1.5,me.z);}
+  }else{camera.position.set(0,1.5,10.2);camera.lookAt(-1.2,1.1,6);if(preview&&!dragging)preview.rotation.y+=dt*0.5;}
   for(const id in avatars){if(id===myId)continue;const a=avatars[id],ox=a.g.position.x,oz=a.g.position.z;
     a.g.position.x+=(a.tx-ox)*Math.min(1,12*dt);a.g.position.z+=(a.tz-oz)*Math.min(1,12*dt);a.g.rotation.y=angLerp(a.g.rotation.y,a.try,0.2);
     walkAnim(a.h,Math.hypot(a.g.position.x-ox,a.g.position.z-oz),dt);}

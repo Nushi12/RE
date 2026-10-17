@@ -34,6 +34,17 @@ io.on('connection', (socket) => {
     p.ry = Number(m.ry) || 0;
     p.n = clamp(parseInt(m.n) || 0, 0, 2);
   });
+  socket.on('chat', (t) => {
+    const p = players[socket.id];
+    if (!p) return;
+    t = String(t || '').trim().slice(0, 140);
+    if (t) io.emit('chat', { id: socket.id, name: p.name, firm: p.firm, n: p.n, t });
+  });
+  socket.on('relay', (m = {}) => {
+    const p = players[socket.id];
+    if (!p || !players[m.to] || JSON.stringify(m.data || {}).length > 600) return;
+    io.to(m.to).emit('relay', { from: socket.id, name: p.name, type: String(m.type).slice(0, 20), data: m.data });
+  });
   socket.on('disconnect', () => {
     if (players[socket.id]) { delete players[socket.id]; io.emit('left', socket.id); }
   });
