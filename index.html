@@ -27,12 +27,14 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 </style></head><body>
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
-<div id="s1"><h1>Create your agent</h1><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><button class="go" id="b1">Continue to licensing</button></div>
+<div id="s1"><h1>Create your agent</h1><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub">Loading realistic agent model…</p><button class="go" id="b1">Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
 <div id="chatbox" class="chatbox"><div id="chatlog"></div><input id="chat" maxlength="140" placeholder="Enter to chat with nearby agents..." autocomplete="off"></div><div id="panel"></div><div id="hud"></div><div id="hint">WASD / arrows to move &middot; drag mouse or Q / E to rotate camera</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const FIRMS=[{n:'Elevate Realty',g:0,c:0x9b59b6,t:'Growth-focused, fast-moving'},{n:'Nexus Real Estate',g:0,c:0x1abc9c,t:'Network and partnership driven'},{n:'Vantage Realty',g:0,c:0xe74c3c,t:'Strong lead generation'},{n:'Vertex Properties',g:0,c:0xe67e22,t:'Competitive, results first'},{n:'Northstar Realty',g:0,c:0x3498db,t:'Market-intelligence focused'},{n:'Haven Real Estate',g:0,c:0x2ecc71,t:'Relationship-first culture'},{n:'UrbanEdge Realty',g:0,c:0x95a5a6,t:'City-savvy and modern'},{n:'Momentum Realty',g:0,c:0xf39c12,t:'High-energy, high-volume'},
@@ -40,7 +42,7 @@ const FIRMS=[{n:'Elevate Realty',g:0,c:0x9b59b6,t:'Growth-focused, fast-moving'}
 const SKIN=[0xf8dcc3,0xf1c9a5,0xd9a47a,0xb67c55,0x8a5a3c,0x5c3a26],HAIRC=[0x1a1410,0x4a2f1d,0x8a5a2b,0xd6b25e,0xb5532b,0x9a9a9a],JACK=[0x1f2a44,0x6b6f76,0x2f4f3a,0x7a2e2e,0xc9b79c,0x3b5b8c],PANT=[0x2c3e5c,0xc8b08a,0x3a3a3a,0x6b4f3a];
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 const look={b:1,s:2,h:0,hc:1,j:0,p:0,o:0};let selFirm=0;
-const OPTS=[['b','Build',['Slim','Average','Broad']],['s','Skin tone',SKIN],['h','Hair style',['Short','Long','Bun','Curly','Ponytail','Bald']],['hc','Hair color',HAIRC],['o','Outfit',['Blazer','Shirt','Dress']],['j','Top color',JACK],['p','Trousers',PANT]];
+const OPTS=[['b','Build',['Slim','Average','Broad']],['s','Skin tone',SKIN],['h','Hair style',['Short','Long','Bun','Curly','Ponytail','Bald']],['hc','Hair color',HAIRC],['o','Outfit palette',['Classic','Light','Statement']],['j','Top color',JACK],['p','Trousers',PANT]];
 const NB=[
 {name:'Upper East Side',lvl:1,ppsf:1350,rppsf:5.0,style:'brownstone',road:0x373b42,trees:1,seed:11,sky:0x9fc3e6,sw:0x8f8b82,brick:[0x8a4b3a,0x9c5b45,0x7a4a3c,0xa8683f,0x6e4036,0xb08968,0xa9a39a],h:[12.8,12.8,16,16,19.2],tw:28,cafe:'Corner Café',office:'Vantage Realty Office',park:'Neighborhood Park',
  pros:[{n:'Maya',sq:900,bd:2,bel:1.11,why:'is relocating for a new job in about 3 months',goal:'wants enough proceeds for a down payment',x:-7.2,z:18.5,ry:Math.PI/2,look:{b:0,s:2,h:1,hc:1,j:5,p:0,o:0}},
@@ -160,19 +162,112 @@ function human(L,fc){
   if(h===4){const q=C(0.05,0.02,0.42,0,1.82,-0.24,hr);q.rotation.x=-0.3;}
   g.userData={legs,arms,phase:0,amp:0};return g;
 }
-function walkAnim(g,dist,dt){const u=g.userData;if(dist>0.0005){u.phase+=dist*5.2;u.amp+=(1-u.amp)*Math.min(1,dt*10);}else u.amp+=(0-u.amp)*Math.min(1,dt*8);
-  const s=Math.sin(u.phase)*0.7*u.amp;u.legs[0].rotation.x=s;u.legs[1].rotation.x=-s;u.arms[0].rotation.x=-s*0.8;u.arms[1].rotation.x=s*0.8;}
+// ---------- realistic GLB avatar pipeline ----------
+// Maya is the first visible rigged character: it includes clothes, hair, textures and an idle clip.
+// The anatomical base rig is also served from /assets for the future modular clothing system.
+const realisticCharacters=new Set();
+let mayaGLTF=null,mayaLoadPromise=null;
+function loadMayaGLTF(){
+  if(mayaGLTF)return Promise.resolve(mayaGLTF);
+  if(!mayaLoadPromise){
+    mayaLoadPromise=new Promise((resolve,reject)=>{
+      const loader=new THREE.GLTFLoader();
+      loader.load('/assets/idle-standing-maya-3d-person-animated.glb',g=>{mayaGLTF=g;resolve(g);},undefined,e=>reject(e));
+    });
+  }
+  return mayaLoadPromise;
+}
+function statusAvatar(text){const el=document.getElementById('avatarAssetStatus');if(el)el.textContent=text;}
+function boneNamed(root,names){let found=null;root.traverse(o=>{if(!found&&names.includes(String(o.name||'').toLowerCase()))found=o;});return found;}
+function tintGLBCharacter(root,L){
+  if(!root)return;
+  const skin=SKIN[L.s]||SKIN[1],hair=HAIRC[L.hc]||HAIRC[1],top=JACK[L.j]||JACK[0],pants=PANT[L.p]||PANT[0];
+  root.traverse(o=>{
+    const on=String(o.name||'').toLowerCase();
+    if(on.includes('ponytail01')){
+      o.visible=L.h!==5;
+    }
+    if(on.includes('hairline')||on.includes('fine scalp roots'))o.visible=L.h!==5;
+    if(!o.isMesh||!o.material)return;
+    const arr=Array.isArray(o.material)?o.material:[o.material];
+    arr.forEach(m=>{
+      if(!m.color)return;
+      const mn=String(m.name||'').toLowerCase();
+      if(mn.includes('anatomical body.body'))m.color.setHex(skin);
+      else if(mn.includes('plum satin')){m.color.setHex(top);if(L.o===1)m.color.lerp(new THREE.Color(0xffffff),0.42);else if(L.o===2)m.color.lerp(new THREE.Color(0x6f1834),0.3);}
+      else if(mn.includes('charcoal tailored trousers'))m.color.setHex(pants);
+      else if(mn.includes('ponytail01')||mn.includes('fine hair roots')||mn.includes('eyebrow'))m.color.setHex(hair);
+      m.needsUpdate=true;
+    });
+    o.castShadow=true;o.receiveShadow=true;
+  });
+  // Subtle body-build variation until the wardrobe system gets modular body meshes.
+  const model=root.userData && root.userData.__avatarModel;
+  if(model){const factor=[0.94,1,1.07][L.b]||1;model.scale.x=model.userData.__baseScaleX*factor;}
+}
+function upgradeToRealistic(target,L){
+  if(!target||target.userData.realistic||target.userData.installPending)return;
+  target.userData.installPending=true;
+  loadMayaGLTF().then(gltf=>{
+    if(target.userData.realistic)return;
+    const model=THREE.SkeletonUtils.clone(gltf.scene);
+    // Materials are cloned per person so one player's outfit/skin choices do not recolor everyone.
+    model.traverse(o=>{if(o.isMesh&&o.material){o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();}});
+    let bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+    if(size.y>0){model.scale.multiplyScalar(1.92/size.y);model.updateMatrixWorld(true);bounds=new THREE.Box3().setFromObject(model);model.position.y-=bounds.min.y;}
+    model.updateMatrixWorld(true);model.userData.__baseScaleX=model.scale.x;
+    // Keep the current avatar Group, nameplate, position and rotation; replace only its procedural body.
+    while(target.children.length)target.remove(target.children[0]);
+    target.add(model);target.userData.realistic=true;target.userData.installPending=false;target.userData.__avatarModel=model;target.userData.look={...L};
+    target.userData.mixer=new THREE.AnimationMixer(model);
+    const idle=gltf.animations.find(a=>/idle[_ ]standing/i.test(a.name))||gltf.animations[0];
+    if(idle){target.userData.idleAction=target.userData.mixer.clipAction(idle);target.userData.idleAction.play();}
+    target.userData.bones={
+      leftLeg:boneNamed(model,['thigh_l']),rightLeg:boneNamed(model,['thigh_r']),
+      leftArm:boneNamed(model,['upperarm_l']),rightArm:boneNamed(model,['upperarm_r']),
+      head:boneNamed(model,['head']),neck:boneNamed(model,['neck_01']),spine:boneNamed(model,['spine_03'])
+    };
+    const wasTalking=!!target.userData.talking;target.userData.phase=0;target.userData.amp=0;target.userData.walking=false;target.userData.talking=wasTalking;
+    tintGLBCharacter(target,L);realisticCharacters.add(target);
+    if(document.getElementById('avatarAssetStatus'))statusAvatar('Realistic 3D agent loaded. Skin, hair and clothing colors update in the preview. This first model has one base outfit; more clothing styles can be added as compatible GLBs.');
+  }).catch(err=>{
+    target.userData.installPending=false;
+    console.warn('Could not load realistic avatar; keeping the built-in character.',err);
+    statusAvatar('Realistic model could not load; using the built-in avatar for this session.');
+  });
+}
+function walkAnim(g,dist,dt){const u=g.userData||{};
+  if(u.realistic){
+    if(dist>0.0005){u.phase=(u.phase||0)+dist*5.2;u.amp+=(1-u.amp)*Math.min(1,dt*10);}else u.amp+=(0-u.amp)*Math.min(1,dt*8);
+    u.walking=dist>0.0005;return;
+  }
+  if(dist>0.0005){u.phase+=dist*5.2;u.amp+=(1-u.amp)*Math.min(1,dt*10);}else u.amp+=(0-u.amp)*Math.min(1,dt*8);
+  const s=Math.sin(u.phase)*0.7*u.amp;u.legs[0].rotation.x=s;u.legs[1].rotation.x=-s;u.arms[0].rotation.x=-s*0.8;u.arms[1].rotation.x=s*0.8;
+}
+function updateRealisticCharacters(dt,t){
+  for(const g of realisticCharacters){
+    if(!g.parent){realisticCharacters.delete(g);continue;}
+    const u=g.userData;if(u.mixer)u.mixer.update(dt);
+    const b=u.bones||{},step=Math.sin((u.phase||0))*0.42*(u.amp||0);
+    if(b.leftLeg)b.leftLeg.rotation.x+=step;
+    if(b.rightLeg)b.rightLeg.rotation.x-=step;
+    if(b.leftArm)b.leftArm.rotation.x-=step*0.42;
+    if(b.rightArm)b.rightArm.rotation.x+=step*0.42;
+    if(u.talking){const pulse=Math.sin(t*10.5)*0.055;if(b.head)b.head.rotation.x+=pulse;if(b.neck)b.neck.rotation.x+=pulse*0.35;if(b.spine)b.spine.rotation.x+=Math.sin(t*5)*0.018;}
+  }
+}
+
 const avatars={};let me=null,myId=null,preview=null;
-function makeAvatar(p){const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];const root=new THREE.Group();const h=human(p.look||look,f.c);root.add(h);
+function makeAvatar(p){const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];const root=new THREE.Group();const L=p.look||look;const h=human(L,f.c);root.add(h);upgradeToRealistic(h,L);
   const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.8;root.add(nt);const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.45;root.add(ft);
   root.position.set(p.x,0,p.z);scene.add(root);return{name:p.name,g:root,h,tx:p.x,tz:p.z,try:p.ry||0,px:p.x,pz:p.z};}
-function setPreview(){if(preview)scene.remove(preview);preview=human(look,FIRMS[selFirm].c);preview.position.set(0,0,6);scene.add(preview);}
+function setPreview(){if(preview)scene.remove(preview);preview=human(look,FIRMS[selFirm].c);preview.position.set(0,0,6);scene.add(preview);upgradeToRealistic(preview,look);}
 
 // ambient pedestrians (deterministic from clock, so every player sees them in the same place)
 const PEDS=[];[['z',7,-46,46,1.5,0],['z',-7.2,-46,46,1.3,40],['z',7.4,-46,46,1.7,95],['x',7,-46,46,1.4,20],['x',-7.2,-46,46,1.6,70],['x',7.3,-46,46,1.2,130],['z',-6.8,-46,46,1.5,150],['x',-7,-46,46,1.3,10]]
- .forEach((d,i)=>{const L={b:i%2,s:(i*3)%5,h:i%3,hc:(i*2)%5,j:(i*2+1)%5,p:i%3};const h=human(L,null);scene.add(h);PEDS.push({h,d});});
+ .forEach((d,i)=>{const L={b:i%2,s:(i*3)%5,h:i%3,hc:(i*2)%5,j:(i*2+1)%5,p:i%3,o:i%3};const h=human(L,null);scene.add(h);upgradeToRealistic(h,L);PEDS.push({h,d});});
 function updatePeds(t,dt){PEDS.forEach(({h,d})=>{const[ax,fx,lo,hi,sp,off]=d,L=hi-lo,u=(t*sp+off)%(2*L),dir=u<L?1:-1,pos=u<L?lo+u:hi-(u-L);
-  const nx=ax==='z'?fx:pos,nz=ax==='z'?pos:fx;const dist=Math.hypot(nx-h.position.x,nz-h.position.z);if(dist<5)walkAnim(h,dist,dt);
+  const nx=ax==='z'?fx:pos,nz=ax==='z'?pos:fx;const dist=Math.hypot(nx-h.position.x,nz-h.position.z);walkAnim(h,dist,dt);
   h.position.set(nx,0,nz);h.rotation.y=ax==='z'?(dir>0?0:Math.PI):(dir>0?Math.PI/2:-Math.PI/2);});}
 
 // ---------- UI ----------
@@ -199,17 +294,30 @@ const QZ=[
 {f:"Advertising must be accurate. If a listing has an error, like the wrong square footage, correct it promptly.",q:"You discover a listing advertises the wrong square footage. What should you do?",o:["Leave it until someone complains","Correct the listing promptly and communicate the correction as appropriate","Increase the number to make it more attractive","Ask another agent to advertise the same number"],a:1,w:"Fix errors quickly. Accurate advertising protects clients and your license."},
 {f:"A salesperson is paid for brokerage work through their sponsoring broker, not directly by clients or other parties.",q:"Under New York licensing rules, how is a salesperson generally paid for licensed brokerage activity?",o:["Directly by anyone, regardless of the arrangement","Only in cash","Through the salesperson's sponsoring broker, subject to applicable rules","Only after becoming a property owner"],a:2,w:"Commissions flow through the sponsoring broker, which is why the game applies a firm split."}];
 let SEQ=[],si=0,score=0,mentorG=null;
-function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;}if(!on)return;mentorG=new THREE.Group();const h=human({b:2,s:3,h:0,hc:5,j:1,p:2,o:0},0x2ecc71);mentorG.add(h);const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.7;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}
-function modes(){mentor(true);E('lesson').innerHTML='<div class=bubble><b>Naomi</b> · Senior Agent<br>Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';}
+// Browser speech follows the same Naomi text displayed in the training/career dashboard.
+let voiceEnabled=true,mentorBody=null,activeNaomiUtterance=null;
+function setNaomiTalking(on){if(mentorBody&&mentorBody.userData)mentorBody.userData.talking=!!on;}
+function stopNaomiSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeNaomiUtterance=null;setNaomiTalking(false);}
+function speakNaomi(text){
+  if(!voiceEnabled||!text||!('speechSynthesis' in window))return;
+  window.speechSynthesis.cancel();setNaomiTalking(false);
+  const u=new SpeechSynthesisUtterance(String(text).replace(/<[^>]*>/g,' '));u.lang='en-US';u.rate=0.96;u.pitch=1.02;u.volume=0.95;
+  const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/en[-_]US/i.test(v.lang)&&/samantha|zira|jenny|aria|susan|serena|google us english/i.test(v.name))||voices.find(v=>/en[-_]US/i.test(v.lang));if(voice)u.voice=voice;
+  u.onstart=()=>setNaomiTalking(true);u.onend=()=>setNaomiTalking(false);u.onerror=()=>setNaomiTalking(false);activeNaomiUtterance=u;window.speechSynthesis.speak(u);
+}
+function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button>';}
+function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
+function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}if(!on){stopNaomiSpeech();return;}mentorG=new THREE.Group();const L={b:2,s:3,h:4,hc:5,j:1,p:2,o:0};const h=human(L,0x2ecc71);mentorBody=h;mentorG.add(h);upgradeToRealistic(h,L);const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.7;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}
+function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
 function start(m){SEQ=[];score=0;si=0;if(m==='g'){QZ.forEach((x,i)=>{SEQ.push({t:'s',i});SEQ.push({t:'q',i});});}else{[[0,5],[5,10]].forEach(([a,b])=>{for(let i=a;i<b;i++)SEQ.push({t:'s',i});for(let i=a;i<b;i++)SEQ.push({t:'q',i});});}lesson();}
 function lesson(){const st=SEQ[si],el=E('lesson');if(!st){finish();return;}const x=QZ[st.i],pr='<div class=k>Step '+(si+1)+' of '+SEQ.length+' · Score '+score+'</div>';
-  if(st.t==='s')el.innerHTML=pr+'<div class=bubble><b>Naomi</b><br>'+x.f+'</div><button class="go" onclick="adv()">Got it</button>';
-  else el.innerHTML=pr+'<div class=bubble><b>Naomi</b> asks:<br>'+x.q+'</div>'+x.o.map((o,i)=>'<div class=opt2 onclick="pick('+i+')"><b>'+'ABCD'[i]+'.</b> '+o+'</div>').join('')+'<div id=fb></div>';}
+  if(st.t==='s'){el.innerHTML=voiceButton()+pr+'<div class=bubble><b>Naomi</b><br>'+x.f+'</div><button class="go" onclick="adv()">Got it</button>';speakNaomi(x.f);}
+  else{el.innerHTML=voiceButton()+pr+'<div class=bubble><b>Naomi</b> asks:<br>'+x.q+'</div>'+x.o.map((o,i)=>'<div class=opt2 onclick="pick('+i+')"><b>'+'ABCD'[i]+'.</b> '+o+'</div>').join('')+'<div id=fb></div>';speakNaomi(x.q);}}
 function pick(i){const q=QZ[SEQ[si].i],fb=E('fb');if(fb.dataset.d)return;fb.dataset.d=1;if(i===q.a)score++;
   [...document.querySelectorAll('.opt2')].forEach((e,j)=>{e.style.borderColor=j===q.a?'#2ecc71':(j===i?'#e74c3c':'#2c3f56');});
-  fb.innerHTML='<div class=bubble><b>Naomi</b><br>'+(i===q.a?'✔ Correct. ':'✘ Not quite. ')+q.w+'</div><button class="go" onclick="adv()">Next</button>';}
+  const feedback=(i===q.a?'Correct. ':'Not quite. ')+q.w;fb.innerHTML='<div class=bubble><b>Naomi</b><br>'+(i===q.a?'✔ Correct. ':'✘ Not quite. ')+q.w+'</div><button class="go" onclick="adv()">Next</button>';speakNaomi(feedback);}
 function adv(){si++;lesson();}
-function finish(){const ok=score>=8;E('lesson').innerHTML='<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+(ok?'You scored '+score+' / 10. You are licensed to practice in the game. Your first client quest is unlocked: meet Maya near the Corner Café. Now choose your firm.':'You scored '+score+' / 10. You need 8 to pass. Let us go over it again.')+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';if(ok)G.badge=1;}
+function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Your first client quest is unlocked: meet Maya near the Corner Café. Now choose your firm.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok)G.badge=1;}
 function toFirm(){mentor(false);show('s4');}
 E('b0').onclick=()=>show('s1');E('b1').onclick=()=>{show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter')E('b1').click();});
@@ -230,7 +338,7 @@ const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,nea
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
 const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
 const NYC="Co-ops need board approval; condos are easier to buy. Buyers pay a 1% mansion tax on purchases of $1M or more. Rental security deposits are capped at one month's rent, and landlords commonly want annual income of 40× the monthly rent. (Approximate figures for gameplay.)";
-function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group();g.add(human(look,null));const t=label(name+" · "+tag,col,2.8);t.position.y=2.95;g.add(t);const m=label("!",col,1.1);m.position.y=3.65;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z};}
+function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group();const h=human(look,null);g.add(h);upgradeToRealistic(h,look);const t=label(name+" · "+tag,col,2.8);t.position.y=2.95;g.add(t);const m=label("!",col,1.1);m.position.y=3.65;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z};}
 function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
   NB[G.nb].pros.forEach((p,i)=>{const P=G.P[G.nb+"-"+i];if(P&&(P.lost||P.done))return;const n=mkNpc(p.look,p.n,p.rent?"Landlord":"Client","#ffd54a",p.x,p.z);n.t={k:"s",pi:i};n.name=p.n;NPCS.push(n);});
   Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const n=mkNpc(b.look,b.n,P.p.rent?"Tenant?":"Buyer?","#7fd0ff",b.x,b.z);n.t={k:"b",pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});}
@@ -357,6 +465,6 @@ function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),0
   for(const id in avatars){if(id===myId)continue;const a=avatars[id],ox=a.g.position.x,oz=a.g.position.z;
     a.g.position.x+=(a.tx-ox)*Math.min(1,12*dt);a.g.position.z+=(a.tz-oz)*Math.min(1,12*dt);a.g.rotation.y=angLerp(a.g.rotation.y,a.try,0.2);
     walkAnim(a.h,Math.hypot(a.g.position.x-ox,a.g.position.z-oz),dt);}
-  renderer.render(scene,camera);}
+  updateRealisticCharacters(dt,clock.elapsedTime);renderer.render(scene,camera);}
 loop();
 </script></body></html>
