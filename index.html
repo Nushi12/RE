@@ -11,7 +11,9 @@ h1{margin:0 0 2px;font-size:21px}.sub{margin:0 0 12px;color:#9fb3c8;font-size:13
 label{font-size:12px;color:#9fb3c8;display:block;margin:8px 0 4px}
 input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824;color:#fff;font-size:15px}
 .row{display:flex;gap:6px;flex-wrap:wrap}
-.opt{border:2px solid #2c3f56;border-radius:8px;padding:5px 10px;cursor:pointer;background:#0f1824;font-size:12px}
+.opt{border:2px solid #2c3f56;border-radius:8px;padding:5px 10px;cursor:pointer;background:#0f1824;color:#ffffff;font-family:inherit;font-size:12px;font-weight:600}
+.opt.sel{background:#243b55;color:#ffffff}
+.opt:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 .sw{width:26px;height:26px;border-radius:50%;padding:0}
 .opt.sel{border-color:#fff}
 .firms{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -25,13 +27,12 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 .bubble{background:#0f1824;border:1px solid #3b82f6;border-radius:12px;padding:12px;margin:10px 0;line-height:1.5;font-size:14px}#card .go small{font-weight:400;opacity:.85}
 .hdr{display:flex;gap:10px;align-items:center;margin-bottom:8px}.lv{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}.tile{background:#16212f;border:1px solid #2c3f56;border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;color:#9fb3c8}.tile b{display:block;font-size:14px;color:#fff}.locs{display:grid;gap:6px}.loc{border:1px solid #2c3f56;border-radius:8px;padding:7px 9px;background:#16212f;cursor:pointer}.loc small{color:#9fb3c8}.loc.on{border-color:#3b82f6;background:#1a2c47}.loc.lock{opacity:.5;cursor:default}.step{padding:2px 0;font-size:12px}.step.on{color:#fff;font-weight:700}.step.dn{color:#6fcf97}.step.up{color:#7c8da1}.toast{background:#1d3a2a;border:1px solid #2e7d4f;border-radius:8px;padding:7px;margin:6px 0;font-size:12px}.chatbox{position:fixed;left:12px;bottom:12px;width:300px;z-index:6;display:none}#chatlog{font-size:12px;background:#0009;border-radius:8px;padding:6px;max-height:130px;overflow:auto;margin-bottom:4px}#chat{width:100%;box-sizing:border-box;padding:7px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824dd;color:#fff;font-size:13px}
 
-.creator-version{font-size:11px;color:#6fcf97;letter-spacing:.04em;margin:5px 0 8px;font-weight:700}
 .creator-note{font-size:11px;color:#9fb3c8;line-height:1.45;margin:7px 0}
 .opt:disabled{opacity:.42;cursor:not-allowed}
 </style></head><body>
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
-<div id="s1"><h1>Create your agent</h1><div class="creator-version">AVATAR CREATOR BUILD 2026-10-18-C</div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub">Loading realistic agent model…</p><button class="go" id="b1">Continue to licensing</button></div>
+<div id="s1"><h1>Create your agent</h1><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub">Loading realistic agent model…</p><button class="go" id="b1">Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
@@ -289,7 +290,7 @@ function upgradeToRealistic(target,L){
   }).catch(err=>{
     target.userData.installPending=false;console.warn('Could not load avatar model '+file,err);
     if(target.userData.isPreview&&requestToken===previewToken){
-      const fallback=human(L,FIRMS[selFirm].c);target.add(fallback);target.visible=true;const old=preview;preview=target;scene.add(target);if(old&&old!==target)scene.remove(old);statusAvatar('Could not load '+file+'; using the basic fallback. Check that the GLB is in the repository root or public/assets.');
+      const fallback=human(L,FIRMS[selFirm].c);target.add(fallback);target.visible=true;const old=preview;preview=target;scene.add(target);if(old&&old!==target)scene.remove(old);statusAvatar('Model file '+file+' is missing from the deployed game. Upload the supplied GLB files to the repository root or public/assets, then redeploy.');
     }
   });
 }
@@ -421,7 +422,7 @@ function toFirm(){mentor(false);show('s4');}
 E('b0').onclick=()=>show('s1');E('b1').onclick=()=>{show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter')E('b1').click();});
 E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look});E('join').style.display='none';};
-renderFirms();renderLookOptions();statusAvatar('AVATAR CREATOR BUILD 2026-10-18-C · Choose Female/Male and an outfit to load a different 3D model.');setPreview();show('s0');
+renderFirms();renderLookOptions();statusAvatar('Choose a character and outfit.');setPreview();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
 socket.on('init',d=>{myId=d.id;previewToken++;if(preview){scene.remove(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
   me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
