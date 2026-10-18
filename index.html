@@ -24,10 +24,14 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 .go{width:100%;margin-top:14px;padding:12px;border:0;border-radius:10px;background:#3b82f6;color:#fff;font-size:15px;font-weight:600;cursor:pointer}.opt2{border:2px solid #2c3f56;border-radius:9px;padding:9px 11px;margin:6px 0;cursor:pointer;background:#0f1824;font-size:13px}#card .box{background:#0f1824;border:1px solid #2c3f56;border-radius:8px;padding:8px;margin:8px 0;font-size:13px}#card h2{margin:6px 0}
 .bubble{background:#0f1824;border:1px solid #3b82f6;border-radius:12px;padding:12px;margin:10px 0;line-height:1.5;font-size:14px}#card .go small{font-weight:400;opacity:.85}
 .hdr{display:flex;gap:10px;align-items:center;margin-bottom:8px}.lv{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}.tile{background:#16212f;border:1px solid #2c3f56;border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;color:#9fb3c8}.tile b{display:block;font-size:14px;color:#fff}.locs{display:grid;gap:6px}.loc{border:1px solid #2c3f56;border-radius:8px;padding:7px 9px;background:#16212f;cursor:pointer}.loc small{color:#9fb3c8}.loc.on{border-color:#3b82f6;background:#1a2c47}.loc.lock{opacity:.5;cursor:default}.step{padding:2px 0;font-size:12px}.step.on{color:#fff;font-weight:700}.step.dn{color:#6fcf97}.step.up{color:#7c8da1}.toast{background:#1d3a2a;border:1px solid #2e7d4f;border-radius:8px;padding:7px;margin:6px 0;font-size:12px}.chatbox{position:fixed;left:12px;bottom:12px;width:300px;z-index:6;display:none}#chatlog{font-size:12px;background:#0009;border-radius:8px;padding:6px;max-height:130px;overflow:auto;margin-bottom:4px}#chat{width:100%;box-sizing:border-box;padding:7px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824dd;color:#fff;font-size:13px}
+
+.creator-version{font-size:11px;color:#6fcf97;letter-spacing:.04em;margin:5px 0 8px;font-weight:700}
+.creator-note{font-size:11px;color:#9fb3c8;line-height:1.45;margin:7px 0}
+.opt:disabled{opacity:.42;cursor:not-allowed}
 </style></head><body>
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
-<div id="s1"><h1>Create your agent</h1><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub">Loading realistic agent model…</p><button class="go" id="b1">Continue to licensing</button></div>
+<div id="s1"><h1>Create your agent</h1><div class="creator-version">AVATAR CREATOR BUILD 2026-10-18-C</div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub">Loading realistic agent model…</p><button class="go" id="b1">Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
@@ -41,8 +45,19 @@ const FIRMS=[{n:'Elevate Realty',g:0,c:0x9b59b6,t:'Growth-focused, fast-moving'}
 {n:'Blackstone Estates',g:1,c:0xb0bec5,t:'Elite, discreet service'},{n:'Sterling Estates',g:1,c:0xf1c40f,t:'High-value listings'},{n:'Aurelia Realty',g:1,c:0xd4af37,t:'Boutique, white-glove'},{n:'Park & Crown',g:1,c:0xe0607e,t:'Prestige and heritage'},{n:'Summit Estates',g:1,c:0x5dade2,t:'Top-tier clientele'},{n:'Bellmont Properties',g:1,c:0xa569bd,t:'Refined and exclusive'}];
 const SKIN=[0xf8dcc3,0xf1c9a5,0xd9a47a,0xb67c55,0x8a5a3c,0x5c3a26],HAIRC=[0x1a1410,0x4a2f1d,0x8a5a2b,0xd6b25e,0xb5532b,0x9a9a9a],JACK=[0x1f2a44,0x6b6f76,0x2f4f3a,0x7a2e2e,0xc9b79c,0x3b5b8c],PANT=[0x2c3e5c,0xc8b08a,0x3a3a3a,0x6b4f3a];
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
-const look={b:1,s:2,h:0,hc:1,j:0,p:0,o:0};let selFirm=0;
-const OPTS=[['b','Build',['Slim','Average','Broad']],['s','Skin tone',SKIN],['h','Hair style',['Short','Long','Bun','Curly','Ponytail','Bald']],['hc','Hair color',HAIRC],['o','Outfit palette',['Classic','Light','Statement']],['j','Top color',JACK],['p','Trousers',PANT]];
+const look={sex:0,fit:1,height:1,b:1,s:2,h:4,hc:1,j:0,p:0,o:0};let selFirm=0;
+const BASE_OPTS=[
+ ['sex','Character type',['Female','Male']],
+ ['fit','Professional outfit',null],
+ ['b','Build',['Slim','Average','Broad']],
+ ['height','Height',['Shorter','Average','Taller']],
+ ['s','Skin tone',SKIN],
+ ['h','Hair style',null],
+ ['hc','Hair color',HAIRC],
+ ['j','Jacket / top color',JACK],
+ ['p','Trousers color',PANT],
+ ['o','Color finish',['Classic','Light','Statement']]
+];
 const NB=[
 {name:'Upper East Side',lvl:1,ppsf:1350,rppsf:5.0,style:'brownstone',road:0x373b42,trees:1,seed:11,sky:0x9fc3e6,sw:0x8f8b82,brick:[0x8a4b3a,0x9c5b45,0x7a4a3c,0xa8683f,0x6e4036,0xb08968,0xa9a39a],h:[12.8,12.8,16,16,19.2],tw:28,cafe:'Corner Café',office:'Vantage Realty Office',park:'Neighborhood Park',
  pros:[{n:'Maya',sq:900,bd:2,bel:1.11,why:'is relocating for a new job in about 3 months',goal:'wants enough proceeds for a down payment',x:-7.2,z:18.5,ry:Math.PI/2,look:{b:0,s:2,h:1,hc:1,j:5,p:0,o:0}},
@@ -162,79 +177,129 @@ function human(L,fc){
   if(h===4){const q=C(0.05,0.02,0.42,0,1.82,-0.24,hr);q.rotation.x=-0.3;}
   g.userData={legs,arms,phase:0,amp:0};return g;
 }
-// ---------- realistic GLB avatar pipeline ----------
-// Maya is the first visible rigged character: it includes clothes, hair, textures and an idle clip.
-// The anatomical base rig is also served from /assets for the future modular clothing system.
+// ---------- RealEstate World avatar pipeline: distinct models + working outfit choices ----------
+// Female: Maya smart-casual model or woman.glb in the blazer look.
+// Male: man.glb smart-casual model or businessman.glb in the formal suit.
 const realisticCharacters=new Set();
-let mayaGLTF=null,mayaLoadPromise=null;
-function loadMayaGLTF(){
-  if(mayaGLTF)return Promise.resolve(mayaGLTF);
-  if(!mayaLoadPromise){
-    mayaLoadPromise=new Promise((resolve,reject)=>{
+const avatarGLTFCache=Object.create(null);
+const avatarLoadPromises=Object.create(null);
+const atlasTextureCache=Object.create(null);
+let previewToken=0;
+function avatarAssetFor(L){
+  const sex=Number(L.sex)||0, fit=Number(L.fit)||0;
+  if(sex===1) return fit===1?'businessman.glb':'man.glb';
+  return fit===1?'woman.glb':'idle-standing-maya-3d-person-animated.glb';
+}
+function loadAvatarGLTF(file){
+  if(avatarGLTFCache[file])return Promise.resolve(avatarGLTFCache[file]);
+  if(!avatarLoadPromises[file]){
+    avatarLoadPromises[file]=new Promise((resolve,reject)=>{
       const loader=new THREE.GLTFLoader();
-      loader.load('/assets/idle-standing-maya-3d-person-animated.glb',g=>{mayaGLTF=g;resolve(g);},undefined,e=>reject(e));
+      loader.load('/assets/'+file,g=>{avatarGLTFCache[file]=g;resolve(g);},undefined,e=>reject(e));
     });
   }
-  return mayaLoadPromise;
+  return avatarLoadPromises[file];
 }
 function statusAvatar(text){const el=document.getElementById('avatarAssetStatus');if(el)el.textContent=text;}
 function boneNamed(root,names){let found=null;root.traverse(o=>{if(!found&&names.includes(String(o.name||'').toLowerCase()))found=o;});return found;}
-function tintGLBCharacter(root,L){
+function clamp01(v){return Math.max(0,Math.min(1,v));}
+function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;if(max!==min){const d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break;}h/=6;}return[h,s,l];}
+function hslToRgb(h,s,l){let r,g,b;if(s===0){r=g=b=l;}else{const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return[Math.round(r*255),Math.round(g*255),Math.round(b*255)];}
+function hslFromHex(hexColor){return rgbToHsl((hexColor>>16)&255,(hexColor>>8)&255,hexColor&255);}
+function mixHex(a,b,t){const ar=(a>>16)&255,ag=(a>>8)&255,ab=a&255,br=(b>>16)&255,bg=(b>>8)&255,bb=b&255;return (Math.round(ar+(br-ar)*t)<<16)|(Math.round(ag+(bg-ag)*t)<<8)|Math.round(ab+(bb-ab)*t);}
+function recolorAtlasTexture(sourceTexture,file,L){
+  if(!sourceTexture||!sourceTexture.image)return sourceTexture;
+  const key=[file,L.s,L.hc,L.j,L.p,L.o].join('|');if(atlasTextureCache[key])return atlasTextureCache[key];
+  try{
+    const image=sourceTexture.image,w=image.naturalWidth||image.videoWidth||image.width,h=image.naturalHeight||image.videoHeight||image.height;if(!w||!h)return sourceTexture;
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const cx=canvas.getContext('2d',{willReadFrequently:true});cx.drawImage(image,0,0,w,h);const im=cx.getImageData(0,0,w,h),d=im.data;
+    const skinTarget=hslFromHex(SKIN[L.s]||SKIN[2]),hairTarget=hslFromHex(HAIRC[L.hc]||HAIRC[1]);
+    let topHex=JACK[L.j]||JACK[0];if(L.o===1)topHex=mixHex(topHex,0xffffff,0.42);else if(L.o===2)topHex=mixHex(topHex,0x6f1834,0.58);
+    const topTarget=hslFromHex(topHex),pantTarget=hslFromHex(PANT[L.p]||PANT[0]);
+    for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2];if(d[i+3]===0)continue;const [hh,ss,ll]=rgbToHsl(r,g,b);let target=null,newL=ll;
+      // The supplied static GLBs pack body, hair, and clothes into one UV atlas. Recolor likely regions
+      // independently while retaining per-pixel shading and texture detail.
+      const skinLike=(r>g*1.04&&g>b*1.035&&(hh<0.105||hh>0.965)&&ss>0.16&&ll>0.27);
+      const hairLike=!skinLike&&(r>g*1.035&&g>b*1.015&&(hh<0.14||hh>0.965)&&ss>0.19&&ll<0.36);
+      if(skinLike){target=skinTarget;newL=clamp01(ll*(target[2]/0.63));}
+      else if(hairLike){target=hairTarget;newL=clamp01(ll*(target[2]/0.22));}
+      else{
+        const fabricHue=((hh>=0.52&&hh<=0.79)||(hh>=0.105&&hh<=0.29));
+        if(fabricHue&&ss>0.15&&ll<0.68){target=ll<0.23?pantTarget:topTarget;newL=ll;}
+      }
+      if(target){const rgb=hslToRgb(target[0],Math.max(0.12,Math.min(0.95,target[1])),Math.max(0.035,Math.min(0.96,newL)));d[i]=rgb[0];d[i+1]=rgb[1];d[i+2]=rgb[2];}
+    }
+    cx.putImageData(im,0,0);const tex=sourceTexture.clone();tex.image=canvas;tex.needsUpdate=true;atlasTextureCache[key]=tex;return tex;
+  }catch(e){console.warn('Atlas recolor skipped for '+file,e);return sourceTexture;}
+}
+function tintGLBCharacter(root,L,file){
   if(!root)return;
   const skin=SKIN[L.s]||SKIN[1],hair=HAIRC[L.hc]||HAIRC[1],top=JACK[L.j]||JACK[0],pants=PANT[L.p]||PANT[0];
   root.traverse(o=>{
     const on=String(o.name||'').toLowerCase();
-    if(on.includes('ponytail01')){
-      o.visible=L.h!==5;
+    if(file==='idle-standing-maya-3d-person-animated.glb'){
+      // Maya's GLB separates ponytail, skin, top, and trousers into independent meshes/materials.
+      if(on.includes('ponytail01'))o.visible=L.h!==5;
+      if(on.includes('hairline')||on.includes('fine scalp roots'))o.visible=L.h!==5;
     }
-    if(on.includes('hairline')||on.includes('fine scalp roots'))o.visible=L.h!==5;
     if(!o.isMesh||!o.material)return;
     const arr=Array.isArray(o.material)?o.material:[o.material];
     arr.forEach(m=>{
-      if(!m.color)return;
-      const mn=String(m.name||'').toLowerCase();
-      if(mn.includes('anatomical body.body'))m.color.setHex(skin);
-      else if(mn.includes('plum satin')){m.color.setHex(top);if(L.o===1)m.color.lerp(new THREE.Color(0xffffff),0.42);else if(L.o===2)m.color.lerp(new THREE.Color(0x6f1834),0.3);}
-      else if(mn.includes('charcoal tailored trousers'))m.color.setHex(pants);
-      else if(mn.includes('ponytail01')||mn.includes('fine hair roots')||mn.includes('eyebrow'))m.color.setHex(hair);
+      if(!m.color)return;const mn=String(m.name||'').toLowerCase();
+      if(file==='idle-standing-maya-3d-person-animated.glb'){
+        if(mn.includes('anatomical body.body'))m.color.setHex(skin);
+        else if(mn.includes('plum satin')){m.color.setHex(top);if(L.o===1)m.color.lerp(new THREE.Color(0xffffff),0.42);else if(L.o===2)m.color.lerp(new THREE.Color(0x6f1834),0.3);}
+        else if(mn.includes('charcoal tailored trousers'))m.color.setHex(pants);
+        else if(mn.includes('ponytail01')||mn.includes('fine hair roots')||mn.includes('eyebrow'))m.color.setHex(hair);
+      }else if(m.map){m.map=recolorAtlasTexture(m.map,file,L);}
       m.needsUpdate=true;
     });
     o.castShadow=true;o.receiveShadow=true;
   });
-  // Subtle body-build variation until the wardrobe system gets modular body meshes.
-  const model=root.userData && root.userData.__avatarModel;
-  if(model){const factor=[0.94,1,1.07][L.b]||1;model.scale.x=model.userData.__baseScaleX*factor;}
+}
+function finishPreviewTarget(target,L,file){
+  if(!target.userData.isPreview)return;
+  if(target.userData.previewToken!==previewToken)return;
+  const old=preview;preview=target;target.visible=true;scene.add(target);if(old&&old!==target)scene.remove(old);
+  statusAvatar('Loaded '+file.replace('.glb','').replaceAll('-',' ')+'. Character type and outfit selections load different 3D models.');
 }
 function upgradeToRealistic(target,L){
   if(!target||target.userData.realistic||target.userData.installPending)return;
-  target.userData.installPending=true;
-  loadMayaGLTF().then(gltf=>{
+  target.userData.installPending=true;const file=avatarAssetFor(L);const requestToken=target.userData.previewToken;
+  loadAvatarGLTF(file).then(gltf=>{
+    if(target.userData.isPreview&&requestToken!==previewToken)return;
     if(target.userData.realistic)return;
     const model=THREE.SkeletonUtils.clone(gltf.scene);
-    // Materials are cloned per person so one player's outfit/skin choices do not recolor everyone.
     model.traverse(o=>{if(o.isMesh&&o.material){o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();}});
     let bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
-    if(size.y>0){model.scale.multiplyScalar(1.92/size.y);model.updateMatrixWorld(true);bounds=new THREE.Box3().setFromObject(model);model.position.y-=bounds.min.y;}
-    model.updateMatrixWorld(true);model.userData.__baseScaleX=model.scale.x;
-    // Keep the current avatar Group, nameplate, position and rotation; replace only its procedural body.
-    while(target.children.length)target.remove(target.children[0]);
-    target.add(model);target.userData.realistic=true;target.userData.installPending=false;target.userData.__avatarModel=model;target.userData.look={...L};
+    if(size.y>0)model.scale.setScalar(1.92/size.y);
+    const buildFactor=[0.91,1,1.09][L.b]||1;
+    const heightFactor=[0.92,1,1.08][L.height]||1;
+    model.scale.x*=buildFactor;model.scale.z*=buildFactor;model.scale.y*=heightFactor;
+    model.updateMatrixWorld(true);bounds=new THREE.Box3().setFromObject(model);model.position.y-=bounds.min.y;model.updateMatrixWorld(true);
+    while(target.children.length)target.remove(target.children[0]);target.add(model);
+    target.userData.realistic=true;target.userData.installPending=false;target.userData.__avatarModel=model;target.userData.modelFile=file;target.userData.look={...L};
     target.userData.mixer=new THREE.AnimationMixer(model);
     const idle=gltf.animations.find(a=>/idle[_ ]standing/i.test(a.name))||gltf.animations[0];
     if(idle){target.userData.idleAction=target.userData.mixer.clipAction(idle);target.userData.idleAction.play();}
-    target.userData.bones={
-      leftLeg:boneNamed(model,['thigh_l']),rightLeg:boneNamed(model,['thigh_r']),
-      leftArm:boneNamed(model,['upperarm_l']),rightArm:boneNamed(model,['upperarm_r']),
-      head:boneNamed(model,['head']),neck:boneNamed(model,['neck_01']),spine:boneNamed(model,['spine_03'])
-    };
-    const wasTalking=!!target.userData.talking;target.userData.phase=0;target.userData.amp=0;target.userData.walking=false;target.userData.talking=wasTalking;
-    tintGLBCharacter(target,L);realisticCharacters.add(target);
-    if(document.getElementById('avatarAssetStatus'))statusAvatar('Realistic 3D agent loaded. Skin, hair and clothing colors update in the preview. This first model has one base outfit; more clothing styles can be added as compatible GLBs.');
+    target.userData.bones={leftLeg:boneNamed(model,['thigh_l']),rightLeg:boneNamed(model,['thigh_r']),leftArm:boneNamed(model,['upperarm_l']),rightArm:boneNamed(model,['upperarm_r']),head:boneNamed(model,['head']),neck:boneNamed(model,['neck_01']),spine:boneNamed(model,['spine_03'])};
+    target.userData.phase=0;target.userData.amp=0;target.userData.walking=false;target.userData.talking=!!target.userData.talking;
+    tintGLBCharacter(model,L,file);realisticCharacters.add(target);
+    if(target.userData.isPreview)finishPreviewTarget(target,L,file);
   }).catch(err=>{
-    target.userData.installPending=false;
-    console.warn('Could not load realistic avatar; keeping the built-in character.',err);
-    statusAvatar('Realistic model could not load; using the built-in avatar for this session.');
+    target.userData.installPending=false;console.warn('Could not load avatar model '+file,err);
+    if(target.userData.isPreview&&requestToken===previewToken){
+      const fallback=human(L,FIRMS[selFirm].c);target.add(fallback);target.visible=true;const old=preview;preview=target;scene.add(target);if(old&&old!==target)scene.remove(old);statusAvatar('Could not load '+file+'; using the basic fallback. Check that the GLB is in the repository root or public/assets.');
+    }
   });
+}
+function normalizeLook(source,seedName){
+  const L=Object.assign({sex:0,fit:1,height:1,b:1,s:2,h:4,hc:1,j:0,p:0,o:0},source||{});
+  const hash=String(seedName||'NPC').split('').reduce((n,c)=>(n*31+c.charCodeAt(0))>>>0,7);
+  if(!source||!Object.prototype.hasOwnProperty.call(source,'sex'))L.sex=hash%2;
+  if(!source||!Object.prototype.hasOwnProperty.call(source,'fit'))L.fit=(hash>>>1)%2;
+  if(!source||!Object.prototype.hasOwnProperty.call(source,'height'))L.height=1;
+  return L;
 }
 function walkAnim(g,dist,dt){const u=g.userData||{};
   if(u.realistic){
@@ -258,23 +323,57 @@ function updateRealisticCharacters(dt,t){
 }
 
 const avatars={};let me=null,myId=null,preview=null;
-function makeAvatar(p){const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];const root=new THREE.Group();const L=p.look||look;const h=human(L,f.c);root.add(h);upgradeToRealistic(h,L);
+function makeAvatar(p){const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];const root=new THREE.Group();const L=normalizeLook(p.look||look,p.name);const h=human(L,f.c);root.add(h);upgradeToRealistic(h,L);
   const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.8;root.add(nt);const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.45;root.add(ft);
   root.position.set(p.x,0,p.z);scene.add(root);return{name:p.name,g:root,h,tx:p.x,tz:p.z,try:p.ry||0,px:p.x,pz:p.z};}
-function setPreview(){if(preview)scene.remove(preview);preview=human(look,FIRMS[selFirm].c);preview.position.set(0,0,6);scene.add(preview);upgradeToRealistic(preview,look);}
+function setPreview(){
+  const token=++previewToken;const next=new THREE.Group();next.position.set(0,0,6);next.visible=false;next.userData.isPreview=true;next.userData.previewToken=token;
+  // Keep the old preview visible while the requested model loads, avoiding the old avatar flashing back in.
+  upgradeToRealistic(next,normalizeLook(look,'Player preview'));
+}
 
 // ambient pedestrians (deterministic from clock, so every player sees them in the same place)
 const PEDS=[];[['z',7,-46,46,1.5,0],['z',-7.2,-46,46,1.3,40],['z',7.4,-46,46,1.7,95],['x',7,-46,46,1.4,20],['x',-7.2,-46,46,1.6,70],['x',7.3,-46,46,1.2,130],['z',-6.8,-46,46,1.5,150],['x',-7,-46,46,1.3,10]]
- .forEach((d,i)=>{const L={b:i%2,s:(i*3)%5,h:i%3,hc:(i*2)%5,j:(i*2+1)%5,p:i%3,o:i%3};const h=human(L,null);scene.add(h);upgradeToRealistic(h,L);PEDS.push({h,d});});
+ .forEach((d,i)=>{const L={sex:i%2,fit:(i>>1)%2,height:1,b:i%3,s:(i*3)%5,h:i%3,hc:(i*2)%5,j:(i*2+1)%5,p:i%4,o:i%3};const h=human(L,null);scene.add(h);upgradeToRealistic(h,L);PEDS.push({h,d});});
 function updatePeds(t,dt){PEDS.forEach(({h,d})=>{const[ax,fx,lo,hi,sp,off]=d,L=hi-lo,u=(t*sp+off)%(2*L),dir=u<L?1:-1,pos=u<L?lo+u:hi-(u-L);
   const nx=ax==='z'?fx:pos,nz=ax==='z'?pos:fx;const dist=Math.hypot(nx-h.position.x,nz-h.position.z);walkAnim(h,dist,dt);
   h.position.set(nx,0,nz);h.rotation.y=ax==='z'?(dir>0?0:Math.PI):(dir>0?Math.PI/2:-Math.PI/2);});}
 
-// ---------- UI ----------
+// ---------- Avatar creator UI ----------
 const looksEl=document.getElementById('looks');
-OPTS.forEach(([k,title,items])=>{const l=document.createElement('label');l.textContent=title;looksEl.appendChild(l);const r=document.createElement('div');r.className='row';
-  items.forEach((it,i)=>{const b=document.createElement('div');const col=typeof it==='number';b.className='opt'+(col?' sw':'')+(look[k]===i?' sel':'');if(col)b.style.background=hex(it);else b.textContent=it;
-    b.onclick=()=>{look[k]=i;[...r.children].forEach((e,j)=>e.classList.toggle('sel',j===i));setPreview();};r.appendChild(b);});looksEl.appendChild(r);});
+function selectedAsset(){return avatarAssetFor(look);}
+function renderLookOptions(){
+  looksEl.innerHTML='';
+  const female=Number(look.sex)===0, modelFile=selectedAsset();
+  const outfitItems=female?['Smart casual · plum top','Blazer & trousers']:['Smart casual','Business suit'];
+  const defs=[
+    ['sex','Character type',['Female','Male']],
+    ['fit','Professional outfit',outfitItems],
+    ['b','Build',['Slim','Average','Broad']],
+    ['height','Height',['Shorter','Average','Taller']],
+    ['s','Skin tone',SKIN],
+    ['hc','Hair color',HAIRC],
+    ['j','Jacket / top color',JACK],
+    ['p','Trousers color',PANT],
+    ['o','Color finish',['Classic','Light','Statement']]
+  ];
+  if(modelFile==='idle-standing-maya-3d-person-animated.glb')defs.splice(5,0,['h','Hair style',[{label:'Ponytail',value:4},{label:'Bald',value:5}]]);
+  defs.forEach(([k,title,items])=>{
+    const l=document.createElement('label');l.textContent=title;looksEl.appendChild(l);const r=document.createElement('div');r.className='row';
+    items.forEach((it,i)=>{
+      const isObj=it&&typeof it==='object',value=isObj?it.value:i,label=isObj?it.label:it;
+      const col=typeof label==='number';const b=document.createElement('button');b.type='button';b.className='opt'+(col?' sw':'')+(Number(look[k])===value?' sel':'');b.setAttribute('aria-label',title+': '+(col?hex(label):label));
+      if(col)b.style.background=hex(label);else b.textContent=label;
+      b.onclick=()=>{look[k]=value;if(k==='sex'){renderLookOptions();}else if(k==='fit'){renderLookOptions();}else{[...r.children].forEach((e,j)=>e.classList.toggle('sel',Number(items[j]&&typeof items[j]==='object'?items[j].value:j)===value));}
+        setPreview();};r.appendChild(b);
+    });looksEl.appendChild(r);
+  });
+  const note=document.createElement('p');note.className='creator-note';
+  note.textContent=modelFile==='idle-standing-maya-3d-person-animated.glb'
+    ? 'This is the animated female model. Skin, hair, top, trouser colors and ponytail/bald toggle update its separate materials/parts.'
+    : 'This is a distinct scanned character model. Character type and outfit switch real GLB models; height, build and color palettes update the model. Its hair silhouette is baked into this asset.';
+  looksEl.appendChild(note);
+}
 const E=id=>document.getElementById(id);
 function show(id){['s0','s1','s2','s4'].forEach(s=>E(s).style.display=s===id?'block':'none');}
 function renderFirms(){const el=E('firms');el.innerHTML='';[['Modern / Competitive',0],['Luxury',1]].forEach(([t,g])=>{const h=document.createElement('label');h.textContent=t;el.appendChild(h);const w=document.createElement('div');w.className='firms';
@@ -307,7 +406,7 @@ function speakNaomi(text){
 }
 function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button>';}
 function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
-function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}if(!on){stopNaomiSpeech();return;}mentorG=new THREE.Group();const L={b:2,s:3,h:4,hc:5,j:1,p:2,o:0};const h=human(L,0x2ecc71);mentorBody=h;mentorG.add(h);upgradeToRealistic(h,L);const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.7;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}
+function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}if(!on){stopNaomiSpeech();return;}mentorG=new THREE.Group();const L={sex:0,fit:1,height:1,b:2,s:3,h:4,hc:5,j:1,p:2,o:0};const h=human(L,0x2ecc71);mentorBody=h;mentorG.add(h);upgradeToRealistic(h,L);const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.7;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}
 function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
 function start(m){SEQ=[];score=0;si=0;if(m==='g'){QZ.forEach((x,i)=>{SEQ.push({t:'s',i});SEQ.push({t:'q',i});});}else{[[0,5],[5,10]].forEach(([a,b])=>{for(let i=a;i<b;i++)SEQ.push({t:'s',i});for(let i=a;i<b;i++)SEQ.push({t:'q',i});});}lesson();}
 function lesson(){const st=SEQ[si],el=E('lesson');if(!st){finish();return;}const x=QZ[st.i],pr='<div class=k>Step '+(si+1)+' of '+SEQ.length+' · Score '+score+'</div>';
@@ -322,9 +421,9 @@ function toFirm(){mentor(false);show('s4');}
 E('b0').onclick=()=>show('s1');E('b1').onclick=()=>{show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter')E('b1').click();});
 E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look});E('join').style.display='none';};
-renderFirms();setPreview();show('s0');
+renderFirms();renderLookOptions();statusAvatar('AVATAR CREATOR BUILD 2026-10-18-C · Choose Female/Male and an outfit to load a different 3D model.');setPreview();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
-socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
+socket.on('init',d=>{myId=d.id;previewToken++;if(preview){scene.remove(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
   me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
 socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud();});
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
@@ -338,7 +437,7 @@ const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,nea
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
 const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
 const NYC="Co-ops need board approval; condos are easier to buy. Buyers pay a 1% mansion tax on purchases of $1M or more. Rental security deposits are capped at one month's rent, and landlords commonly want annual income of 40× the monthly rent. (Approximate figures for gameplay.)";
-function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group();const h=human(look,null);g.add(h);upgradeToRealistic(h,look);const t=label(name+" · "+tag,col,2.8);t.position.y=2.95;g.add(t);const m=label("!",col,1.1);m.position.y=3.65;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z};}
+function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group();const L=normalizeLook(look,name);const h=human(L,null);g.add(h);upgradeToRealistic(h,L);const t=label(name+" · "+tag,col,2.8);t.position.y=2.95;g.add(t);const m=label("!",col,1.1);m.position.y=3.65;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z};}
 function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
   NB[G.nb].pros.forEach((p,i)=>{const P=G.P[G.nb+"-"+i];if(P&&(P.lost||P.done))return;const n=mkNpc(p.look,p.n,p.rent?"Landlord":"Client","#ffd54a",p.x,p.z);n.t={k:"s",pi:i};n.name=p.n;NPCS.push(n);});
   Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const n=mkNpc(b.look,b.n,P.p.rent?"Tenant?":"Buyer?","#7fd0ff",b.x,b.z);n.t={k:"b",pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});}
