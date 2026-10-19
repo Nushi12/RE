@@ -18,9 +18,9 @@ app.use('/assets', express.static(ASSET_DIR, {
 }));
 app.get('/version', (req, res) => {
   res.set('Cache-Control', 'no-store');
-  res.type('text/plain').send('REW-MALE-COLOR-NPC-FIX-2026-10-19');
+  res.type('text/plain').send('REW-MALE2-ROOTMOTION-HAIR-COLOR-2026-10-19');
 });
-app.get('/healthz', (req, res) => res.status(200).json({ status: 'ok', build: 'REW-MALE-COLOR-NPC-FIX-2026-10-19' }));
+app.get('/healthz', (req, res) => res.status(200).json({ status: 'ok', build: 'REW-MALE2-ROOTMOTION-HAIR-COLOR-2026-10-19' }));
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, max-age=0');
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -33,8 +33,10 @@ const AVATAR_MODEL_IDS = new Set(['female1', 'female2', 'male1', 'male2']);
 const cleanAvatar = (value) => AVATAR_MODEL_IDS.has(value) ? value : 'female1';
 const SKIN_TONES = new Set(['original', 'porcelain', 'warm', 'caramel', 'deep']);
 const OUTFIT_COLORS = new Set(['original', 'navy', 'burgundy', 'teal', 'camel', 'charcoal']);
+const HAIR_COLORS = new Set(['original', 'black', 'espresso', 'chestnut', 'auburn', 'blonde', 'silver', 'platinum']);
 const cleanSkinTone = (value) => SKIN_TONES.has(value) ? value : 'original';
 const cleanOutfitColor = (value) => OUTFIT_COLORS.has(value) ? value : 'original';
+const cleanHairColor = (value) => HAIR_COLORS.has(value) ? value : 'original';
 const players = {};
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function cleanLook(l = {}) {
@@ -47,7 +49,7 @@ io.on('connection', (socket) => {
   socket.on('join', (d = {}) => {
     const name = String(d.name || 'Agent').trim().slice(0, 16) || 'Agent';
     const firm = FIRMS.includes(d.firm) ? d.firm : FIRMS[0];
-    players[socket.id] = { id: socket.id, name, firm, avatar: cleanAvatar(d.avatar), skinTone: cleanSkinTone(d.skinTone), outfitColor: cleanOutfitColor(d.outfitColor), look: cleanLook(d.look), x: (Math.random() - 0.5) * 6, z: 3 + Math.random() * 2, ry: 0, n: 0 };
+    players[socket.id] = { id: socket.id, name, firm, avatar: cleanAvatar(d.avatar), skinTone: cleanSkinTone(d.skinTone), outfitColor: cleanOutfitColor(d.outfitColor), hairColor: cleanHairColor(d.hairColor), look: cleanLook(d.look), x: (Math.random() - 0.5) * 6, z: 3 + Math.random() * 2, ry: 0, n: 0 };
     socket.emit('init', { id: socket.id, players });
     socket.broadcast.emit('joined', players[socket.id]);
   });
@@ -82,4 +84,4 @@ setInterval(() => {
 }, 66);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log('RealEstate World REW-MALE-COLOR-NPC-FIX-2026-10-19 running on port ' + PORT));
+server.listen(PORT, () => console.log('RealEstate World REW-MALE2-ROOTMOTION-HAIR-COLOR-2026-10-19 running on port ' + PORT));
