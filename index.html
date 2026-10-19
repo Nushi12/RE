@@ -55,7 +55,7 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
 <div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
-<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><div id="colorTest" class="color-test"><div class="color-row"><span class="color-title">Skin tone</span><div id="skinSwatches" class="row"></div></div><div class="color-row"><span class="color-title">Outfit color</span><div id="outfitSwatches" class="row"></div></div><div class="color-row"><span class="color-title">Hair color</span><div id="hairSwatches" class="row"></div></div><p class="color-note">Color controls are experimental because each character uses one baked texture. Hair tint may also affect dark details such as eyebrows or facial hair.</p></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
+<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><div id="colorTest" class="color-test"><div class="color-row"><span class="color-title">Skin tone</span><div id="skinSwatches" class="row"></div></div><div class="color-row"><span class="color-title">Outfit color</span><div id="outfitSwatches" class="row"></div></div><div class="color-row"><span class="color-title">Hair color</span><div id="hairSwatches" class="row"></div></div><p class="color-note">Color controls are mapped to each model’s baked texture. Original resets a category; very small shaded details may still tint with nearby regions.</p></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
@@ -74,7 +74,7 @@ try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for
 // Only Female and Male are supported. Map any previously saved third option to Male.
 look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
-const CREATOR_BUILD='REW-MALE2-ROOTMOTION-HAIR-COLOR-2026-10-19';
+const CREATOR_BUILD='REW-AVATAR-STABLE-COLOR-FRAMING-2026-10-19';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
 const BODY_OPTIONS=['Female','Male'];
@@ -205,10 +205,10 @@ function human(L,fc){
 const AVATAR_MODELS={
   // Try the clean filenames first, then the original uploaded filenames as fallbacks.
   // This handles capitalization, underscores, and hyphens in GitHub filenames.
-  female1:{label:'Female Agent 1',gender:'Female',file:'female-agent-1.glb',aliases:['Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character'},
-  female2:{label:'Female Agent 2',gender:'Female',file:'female-agent-2.glb',aliases:['Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Different complete character'},
-  male1:{label:'Male Agent 1',gender:'Male',file:'male-agent-1.glb',aliases:['Male_rigged_agent1.glb','Male_rigged_agent.glb','male_rigged_agent1.glb'],description:'Complete textured character'},
-  male2:{label:'Male Agent 2',gender:'Male',file:'male-agent-2.glb',aliases:['Male_rigged_agent(1).glb','Male_rigged_agent.glb','male_rigged_agent(1).glb'],description:'Different complete character'}
+  female1:{label:'Female Agent 1',gender:'Female',file:'female-agent-1.glb',aliases:['Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
+  female2:{label:'Female Agent 2',gender:'Female',file:'female-agent-2.glb',aliases:['Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Different complete character',cardZoom:1.0,previewCameraZ:10.2},
+  male1:{label:'Male Agent 1',gender:'Male',file:'male-agent-1.glb',aliases:['Male_rigged_agent1.glb','Male_rigged_agent.glb','male_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
+  male2:{label:'Male Agent 2',gender:'Male',file:'male-agent-2.glb',aliases:['Male_rigged_agent(1).glb','Male_rigged_agent.glb','male_rigged_agent(1).glb'],description:'Different complete character',cardZoom:2.15,previewCameraZ:12.5}
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
@@ -260,19 +260,22 @@ function applyAvatarColorTest(model,id,skinKey,outfitKey,hairKey){
   const outfitHex=colorHexFromPalette(OUTFIT_COLORS,outfitKey||'original');
   const hairHex=colorHexFromPalette(HAIR_COLORS,hairKey||'original');
   const safeId=validAvatarId(id);
+  // These masks classify source-texture RGB, not lighting. Three.js converts the GLB's sRGB
+  // base-colour texture to linear light before map_fragment, so convert back to sRGB before
+  // comparing channels. This prevents dark hair/shadows being misidentified as the entire outfit.
   const outfitMasks={
-    female1:'bool rewOutfitPx = (rewSrc.b > rewSrc.r * 1.07 && rewSrc.b > rewSrc.g * 1.02 && rewLuma < 0.19) || (rewLuma > 0.004 && rewLuma < 0.075 && (rewMax-rewMin)<0.022);',
-    female2:'bool rewOutfitPx = (rewSrc.r > rewSrc.g * 1.22 && rewSrc.r > rewSrc.b * 1.12 && rewLuma < 0.16 && (rewSrc.r-rewSrc.g)>0.012);',
-    male1:'bool rewOutfitPx = (rewLuma > 0.004 && rewLuma < 0.105 && (rewMax-rewMin)<0.038);',
-    male2:'bool rewOutfitPx = (rewLuma > 0.018 && rewLuma < 0.235 && (rewMax-rewMin)<0.065);'
+    female1:'bool rewOutfitPx = ((rewClass.b > rewClass.r * 1.04 && rewClass.b > rewClass.g * 1.005 && rewLuma < 0.48) || (rewLuma > 0.045 && rewLuma < 0.35 && rewSaturation < 0.20));',
+    female2:'bool rewOutfitPx = (rewClass.r > rewClass.g * 1.18 && rewClass.r > rewClass.b * 1.05 && rewLuma < 0.46 && (rewClass.r - rewClass.g) > 0.035 && rewSaturation > 0.10);',
+    male1:'bool rewOutfitPx = (rewLuma > 0.035 && rewLuma < 0.38 && rewSaturation < 0.28) || (rewClass.b > rewClass.r * 1.04 && rewLuma < 0.42);',
+    male2:'bool rewOutfitPx = ((rewLuma > 0.07 && rewLuma < 0.48 && rewSaturation < 0.27) || (rewLuma > 0.22 && rewLuma < 0.86 && rewClass.r > rewClass.g * 1.02 && rewClass.r < rewClass.g * 1.30 && rewClass.g > rewClass.b * 1.02 && (rewClass.g - rewClass.b) > 0.025 && rewSaturation < 0.43);'
   };
-  // The GLBs each have a single baked texture, so these hair masks are deliberately conservative and model-specific.
-  // Dark beards/eyebrows may tint with the hair, but skin is excluded before applying the hair color.
+  // Model-specific hair masks: female 2 and male 2 have dark hair; male 1 has gray hair.
+  // These masks are evaluated in sRGB and take priority over outfit recolouring.
   const hairMasks={
-    female1:'bool rewHairPx = rewSrc.r > rewSrc.g * 1.10 && rewSrc.g > rewSrc.b * 1.08 && rewLuma > 0.025 && rewLuma < 0.31;',
-    female2:'bool rewHairPx = rewLuma < 0.075 && (rewMax-rewMin) < 0.05;',
-    male1:'bool rewHairPx = rewLuma > 0.12 && rewLuma < 0.68 && (rewMax-rewMin) < 0.115;',
-    male2:'bool rewHairPx = rewLuma < 0.085 && (rewMax-rewMin) < 0.055;'
+    female1:'bool rewHairPx = (rewClass.r > rewClass.g * 1.08 && rewClass.g > rewClass.b * 1.02 && rewLuma > 0.045 && rewLuma < 0.30 && rewSaturation > 0.12);',
+    female2:'bool rewHairPx = (rewLuma > 0.015 && rewLuma < 0.19 && rewSaturation < 0.22);',
+    male1:'bool rewHairPx = (rewLuma > 0.25 && rewLuma < 0.80 && rewSaturation < 0.20);',
+    male2:'bool rewHairPx = (rewLuma > 0.01 && rewLuma < 0.17 && rewSaturation < 0.22);'
   };
   model.traverse(mesh=>{
     if(!mesh.isMesh||!mesh.material)return;
@@ -298,36 +301,45 @@ function applyAvatarColorTest(model,id,skinKey,outfitKey,hairKey){
           shader.uniforms.rewSkinEnabled=state.skinEnabledUniform;
           shader.uniforms.rewOutfitEnabled=state.outfitEnabledUniform;
           shader.uniforms.rewHairEnabled=state.hairEnabledUniform;
-          const colorUniforms=`uniform vec3 rewSkinTint;
+          const colorUniforms=`
+uniform vec3 rewSkinTint;
 uniform vec3 rewOutfitTint;
 uniform vec3 rewHairTint;
 uniform float rewSkinEnabled;
 uniform float rewOutfitEnabled;
 uniform float rewHairEnabled;
+vec3 rewLinearToSrgb(vec3 c) {
+  vec3 lowPart = c * 12.92;
+  vec3 highPart = 1.055 * pow(max(c, vec3(0.0)), vec3(1.0 / 2.4)) - 0.055;
+  return mix(lowPart, highPart, step(vec3(0.0031308), c));
+}
 `;
           const colorLogic=`{
   vec3 rewSrc = diffuseColor.rgb;
-  float rewLuma = dot(rewSrc, vec3(0.2126, 0.7152, 0.0722));
-  float rewMax = max(rewSrc.r, max(rewSrc.g, rewSrc.b));
-  float rewMin = min(rewSrc.r, min(rewSrc.g, rewSrc.b));
+  vec3 rewClass = rewLinearToSrgb(max(rewSrc, vec3(0.0)));
+  float rewLuma = dot(rewClass, vec3(0.2126, 0.7152, 0.0722));
+  float rewMax = max(rewClass.r, max(rewClass.g, rewClass.b));
+  float rewMin = min(rewClass.r, min(rewClass.g, rewClass.b));
+  float rewSaturation = (rewMax - rewMin) / max(rewMax, 0.001);
   ${hairMasks[safeId]||hairMasks.female1}
-  bool rewSkinPx = rewSrc.r > rewSrc.g * 1.20 && rewSrc.g > rewSrc.b * 1.10 && (rewSrc.r - rewSrc.b) > 0.028 && rewLuma > 0.035 && rewLuma < 0.78 && ((rewMax-rewMin)/max(rewMax,0.001)) < 0.82 && !rewHairPx;
+  bool rewSkinPx = (rewClass.r > rewClass.g * 1.14 && rewClass.g > rewClass.b * 1.01 && (rewClass.r - rewClass.b) > 0.08 && rewLuma > 0.13 && rewLuma < 0.92 && rewSaturation > 0.12 && rewSaturation < 0.84) && !rewHairPx;
   ${outfitMasks[safeId]||outfitMasks.female1}
+  rewOutfitPx = rewOutfitPx && !rewSkinPx && !rewHairPx;
   if (rewSkinEnabled > 0.5 && rewSkinPx) {
-    float rewSkinShade = clamp(0.38 + rewLuma * 1.15, 0.35, 1.18);
-    diffuseColor.rgb = mix(rewSrc, rewSkinTint * rewSkinShade, 0.88);
-  } else if (rewOutfitEnabled > 0.5 && rewOutfitPx && !rewSkinPx && !rewHairPx) {
-    float rewOutfitShade = clamp(0.28 + rewLuma * 2.2, 0.28, 1.12);
-    diffuseColor.rgb = mix(rewSrc, rewOutfitTint * rewOutfitShade, 0.88);
+    float rewSkinShade = clamp(0.42 + rewLuma * 0.80, 0.42, 1.12);
+    diffuseColor.rgb = mix(rewSrc, rewSkinTint * rewSkinShade, 0.90);
   } else if (rewHairEnabled > 0.5 && rewHairPx) {
-    float rewHairShade = clamp(0.48 + rewLuma * 1.45, 0.38, 1.12);
-    diffuseColor.rgb = mix(rewSrc, rewHairTint * rewHairShade, 0.86);
+    float rewHairShade = clamp(0.38 + rewLuma * 1.05, 0.40, 1.12);
+    diffuseColor.rgb = mix(rewSrc, rewHairTint * rewHairShade, 0.88);
+  } else if (rewOutfitEnabled > 0.5 && rewOutfitPx) {
+    float rewOutfitShade = clamp(0.30 + rewLuma * 1.45, 0.35, 1.12);
+    diffuseColor.rgb = mix(rewSrc, rewOutfitTint * rewOutfitShade, 0.90);
   }
 }`;
           shader.fragmentShader=shader.fragmentShader.replace('void main() {',colorUniforms+'\nvoid main() {');
           shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n'+colorLogic);
         };
-        material.customProgramCacheKey=()=>`rew-avatar-color-test-v3-${safeId}`;
+        material.customProgramCacheKey=()=>`rew-avatar-color-mask-srgb-v4-${safeId}`;
         material.needsUpdate=true;
       }
       const state=material.userData.rewTintState;
@@ -528,8 +540,8 @@ function createAvatarCardPreview(id,canvas){
     const fov=cardCamera.fov*Math.PI/180,aspect=Math.max(0.5,canvas.clientWidth/Math.max(1,canvas.clientHeight));
     const distH=(size.y*0.62)/Math.tan(fov/2),distW=(size.x*0.62)/(Math.tan(fov/2)*aspect);
     const baseDist=Math.max(2.4,distH,distW,size.z*2.2);
-    // Male 2 has a broad A/T-pose; leave additional room around it in the card preview.
-    const dist=baseDist*(id==='male2'?1.14:1.0);
+    // Keep framing settings in AVATAR_MODELS; male 2 gets much more room because its card preview clips at the default distance.
+    const dist=baseDist*(AVATAR_MODELS[id].cardZoom||1.0);
     cardCamera.position.set(0,size.y*0.54,dist);cardCamera.lookAt(0,size.y*0.51,0);
     const clips=gltf.animations||[];
     const idle=chooseClip(clips,[/^idle(?:$|[_\s])/i,/idle/i])||clips[0]||null;
@@ -801,7 +813,7 @@ function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),0
     const a=avatars[myId];if(a){const dist=Math.hypot(me.x-a.g.position.x,me.z-a.g.position.z);a.g.position.set(me.x,0,me.z);a.g.rotation.y=angLerp(a.g.rotation.y,me.ry,0.25);walkAnim(a.h,dist,dt);}
     updateNear(dt);sendT+=dt;if(sendT>0.066){sendT=0;socket.emit('move',{x:me.x,z:me.z,ry:me.ry,n:G.nb});}
     if(G.focus){convCam();}else{const dd=11;camera.position.set(me.x+Math.sin(camYaw)*Math.cos(camPitch)*dd,1.8+Math.sin(camPitch)*dd,me.z+Math.cos(camYaw)*Math.cos(camPitch)*dd);camera.lookAt(me.x,1.5,me.z);}
-  }else{camera.position.set(0,1.5,10.2);camera.lookAt(-1.2,1.1,6);if(preview&&!dragging)preview.rotation.y+=dt*0.5;}
+  }else{const cameraZ=(AVATAR_MODELS[selectedAvatarId]&&AVATAR_MODELS[selectedAvatarId].previewCameraZ)||10.2;camera.position.set(0,1.5,cameraZ);camera.lookAt(-1.2,1.1,6);if(preview&&!dragging)preview.rotation.y+=dt*0.5;}
   for(const id in avatars){if(id===myId)continue;const a=avatars[id],ox=a.g.position.x,oz=a.g.position.z;
     a.g.position.x+=(a.tx-ox)*Math.min(1,12*dt);a.g.position.z+=(a.tz-oz)*Math.min(1,12*dt);a.g.rotation.y=angLerp(a.g.rotation.y,a.try,0.2);
     walkAnim(a.h,Math.hypot(a.g.position.x-ox,a.g.position.z-oz),dt);}

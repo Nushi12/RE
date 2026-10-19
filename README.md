@@ -1,23 +1,20 @@
-# RealEstate World — Male Idle Stability Test
+# RealEstate World — Stable Avatar Baseline
 
-This is a code-only update for the existing RealEstate World repository. Keep the `.glb` model files already committed in `public/assets/`; they are not included in this ZIP.
+This update consolidates the existing avatar features into a stable baseline without changing the career, licensing, Socket.IO multiplayer, or city gameplay systems.
 
-## What changed
+## Changes
+- Corrects the color-mask color-space bug: material texture samples are converted from linear RGB back to sRGB before skin, hair, and outfit classification. This prevents dark hair/shadows from masking the outfit and reduces beige trousers being classified as skin.
+- Makes the skin, hair, and outfit masks mutually exclusive in the shader. Each selectable model has its own mask rules.
+- Keeps male characters on idle animation while isolating root-motion problems.
+- Moves preview framing values into `AVATAR_MODELS`; male 2 gets a wider card camera and a more distant main preview camera to prevent the persistent close crop.
+- Keeps the current cartoon pedestrians, clients, and landlords. The four selected player models are not used as NPCs.
+- Preserves skin-tone, outfit-color, and hair-color controls and their multiplayer properties.
 
-- Both male rigged characters stay on their embedded **idle** animation in the selection preview and during gameplay. This temporarily avoids using the male walking clips, including the second male's `walking_2` clip that contains forward/root movement.
-- Female character animation behavior is unchanged.
-- Existing skin, outfit, and hair color test controls remain in place.
-- Existing cartoon-style NPCs and clients remain as they are.
-- Server version marker is updated to `REW-MALE-IDLE-HAIR-COLOR-2026-10-19`.
+## Deploy
+1. Replace the repository-root `index.html` and `server.js` with the files from this package.
+2. Keep the existing `public/assets` folder and its model files. Do not upload the models again for this code-only update. The code tries the current lowercase/hyphen names first and existing underscore/original names as fallbacks.
+3. Commit to `main` and wait for Render to redeploy.
+4. Open `/version`; it should show `REW-AVATAR-STABLE-COLOR-FRAMING-2026-10-19`.
 
-## How to install
-
-1. Replace the root-level `index.html` and `server.js` in the GitHub repository with the files from this package.
-2. Keep `package.json` and the existing `public/assets/` model files unchanged.
-3. Commit the two replacement files to `main` and wait for Render to redeploy.
-4. Open `/version` on the deployed site. It should show `REW-MALE-IDLE-HAIR-COLOR-2026-10-19`.
-5. Test both male characters in the preview and in the city.
-
-## Expected trade-off
-
-While either male avatar moves through the city, its model remains in an idle pose and may visually glide instead of cycling its legs. This is an intentional temporary diagnostic to isolate root-motion problems. It does not change road geometry. Once the male model positions and scale are confirmed, the next step is to add/choose an in-place walk animation.
+## Honest limitation
+These GLBs each use a baked texture atlas rather than separate skin/clothing/hair materials. The updated shader uses per-character texture-color masks, so recoloring is substantially more selective, but it is not equivalent to separate artist-authored materials. Small shaded details can still be affected. For perfect independent controls, the models would need material-separated meshes or authored mask maps.
