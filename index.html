@@ -6,7 +6,7 @@
 html,body{margin:0;height:100%;overflow:hidden;background:#9fc3e6;font-family:system-ui,Segoe UI,Arial,sans-serif;color:#fff}
 canvas{display:block}
 #join{position:fixed;inset:0;display:flex;align-items:center;padding:0 3vw;z-index:10;pointer-events:none;background:linear-gradient(90deg,#0b1522ee 0,#0b152200 62%)}
-#card{pointer-events:auto;background:#16212fee;border:1px solid #2c3f56;border-radius:14px;padding:20px;width:min(400px,94vw);max-height:92vh;overflow:auto;box-shadow:0 10px 40px #0008}
+#card{pointer-events:auto;background:#16212fee;border:1px solid #2c3f56;border-radius:14px;padding:20px;width:min(480px,94vw);max-height:92vh;overflow:auto;box-shadow:0 10px 40px #0008}
 h1{margin:0 0 2px;font-size:21px}.sub{margin:0 0 12px;color:#9fb3c8;font-size:13px}
 label{font-size:12px;color:#9fb3c8;display:block;margin:8px 0 4px}
 input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824;color:#fff;font-size:15px}
@@ -25,18 +25,29 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 .bubble{background:#0f1824;border:1px solid #3b82f6;border-radius:12px;padding:12px;margin:10px 0;line-height:1.5;font-size:14px}#card .go small{font-weight:400;opacity:.85}
 .hdr{display:flex;gap:10px;align-items:center;margin-bottom:8px}.lv{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}.tile{background:#16212f;border:1px solid #2c3f56;border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;color:#9fb3c8}.tile b{display:block;font-size:14px;color:#fff}.locs{display:grid;gap:6px}.loc{border:1px solid #2c3f56;border-radius:8px;padding:7px 9px;background:#16212f;cursor:pointer}.loc small{color:#9fb3c8}.loc.on{border-color:#3b82f6;background:#1a2c47}.loc.lock{opacity:.5;cursor:default}.step{padding:2px 0;font-size:12px}.step.on{color:#fff;font-weight:700}.step.dn{color:#6fcf97}.step.up{color:#7c8da1}.toast{background:#1d3a2a;border:1px solid #2e7d4f;border-radius:8px;padding:7px;margin:6px 0;font-size:12px}.chatbox{position:fixed;left:12px;bottom:12px;width:300px;z-index:6;display:none}#chatlog{font-size:12px;background:#0009;border-radius:8px;padding:6px;max-height:130px;overflow:auto;margin-bottom:4px}#chat{width:100%;box-sizing:border-box;padding:7px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824dd;color:#fff;font-size:13px}
 
-.avatar-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 10px}
-.avatar-choice{display:block;width:100%;min-height:76px;text-align:left;border:2px solid #2c3f56;border-radius:10px;background:#0f1824;color:#f8fafc;padding:10px;cursor:pointer;transition:border-color .15s,background .15s;}
+#s1{text-align:center;padding:12px 0 8px}
+.gender-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+.gender-choice{min-height:118px;border:2px solid #2c3f56;border-radius:12px;background:#0f1824;color:#fff!important;font-weight:800;font-size:18px;letter-spacing:.07em;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
+#chooseFemale,#chooseMale{color:#fff!important;-webkit-text-fill-color:#fff!important}
+.gender-choice:hover{border-color:#7197c8;background:#172538;transform:translateY(-2px)}
+.selection-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.selection-head h1{flex:1}
+.back-gender{border:1px solid #2c3f56;border-radius:8px;background:#0f1824;color:#f8fafc;padding:7px 11px;font-size:14px;cursor:pointer}
+.avatar-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 12px}
+.avatar-choice{display:block;position:relative;width:100%;overflow:hidden;border:2px solid #2c3f56;border-radius:12px;background:#0f1824;padding:5px;cursor:pointer;transition:border-color .15s,background .15s;min-width:0}
 .avatar-choice:hover{border-color:#7197c8;background:#172538}
 .avatar-choice.sel{border-color:#60a5fa;background:#20344d;box-shadow:0 0 0 1px #60a5fa inset}
-.avatar-choice b{display:block;color:#fff;font-size:13px;margin-bottom:4px}
-.avatar-choice span{display:block;color:#c4d0de;font-size:11px;line-height:1.35}
-.avatar-choice .avatar-gender{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#93c5fd;margin-bottom:4px}
+.avatar-preview-wrap{height:205px;width:100%;overflow:hidden;border-radius:7px;background:radial-gradient(ellipse at 50% 40%,#35455a 0,#1b293a 55%,#101824 100%)}
+.avatar-preview-canvas{display:block;width:100%;height:100%;outline:none}
+.avatar-picked{position:absolute;top:10px;right:10px;width:25px;height:25px;border-radius:50%;display:none;align-items:center;justify-content:center;background:#3b82f6;color:#fff;font-size:17px;font-weight:800;box-shadow:0 2px 8px #0008}
+.avatar-choice.sel .avatar-picked{display:flex}
 #b1:disabled{opacity:.48;cursor:wait}
+@media(max-width:440px){#card{padding:14px}.avatar-preview-wrap{height:170px}.gender-choice{min-height:94px}}
 </style></head><body>
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
-<div id="s1"><h1>Create your agent</h1><p class="sub">Choose one of four complete rigged characters. We are testing character selection first; color customization comes after this works.</p><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading selected character…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
+<div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
+<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
@@ -184,28 +195,45 @@ function human(L,fc){
 // ---------- four complete rigged avatar models ----------
 // Each option loads its own full GLB. No vertex reshaping, material recoloring, or procedural clothing is applied.
 const AVATAR_MODELS={
-  female1:{label:'Female Agent 1',gender:'Female',file:'female-agent-1.glb',description:'Complete textured character · rigged and animated'},
-  female2:{label:'Female Agent 2',gender:'Female',file:'female-agent-2.glb',description:'Different complete character · rigged and animated'},
-  male1:{label:'Male Agent 1',gender:'Male',file:'male-agent-1.glb',description:'Complete textured character · rigged and animated'},
-  male2:{label:'Male Agent 2',gender:'Male',file:'male-agent-2.glb',description:'Different complete character · rigged and animated'}
+  // Try the clean filenames first, then the original uploaded filenames as fallbacks.
+  // This handles capitalization, underscores, and hyphens in GitHub filenames.
+  female1:{label:'Female Agent 1',gender:'Female',file:'female-agent-1.glb',aliases:['Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character'},
+  female2:{label:'Female Agent 2',gender:'Female',file:'female-agent-2.glb',aliases:['Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Different complete character'},
+  male1:{label:'Male Agent 1',gender:'Male',file:'male-agent-1.glb',aliases:['Male_rigged_agent1.glb','male_rigged_agent1.glb'],description:'Complete textured character'},
+  male2:{label:'Male Agent 2',gender:'Male',file:'male-agent-2.glb',aliases:['Male_rigged_agent(1).glb','male_rigged_agent(1).glb'],description:'Different complete character'}
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
 let selectedAvatarId='female1';
 try{const stored=localStorage.getItem('rew-selected-rigged-avatar-v1');if(stored&&AVATAR_MODELS[stored])selectedAvatarId=stored;}catch(e){}
+let selectedGender=AVATAR_MODELS[selectedAvatarId].gender;
 const avatarGltfCache={};
 const avatarLoadPromises={};
 const avatarActors=new Set();
+const avatarCardPreviews=new Map();
 let cityEntered=false;
 function statusAvatar(text){const el=document.getElementById('avatarAssetStatus');if(el)el.textContent=text;}
 function loadAvatarGltf(id){
   id=validAvatarId(id);
   if(avatarGltfCache[id])return Promise.resolve(avatarGltfCache[id]);
   if(avatarLoadPromises[id])return avatarLoadPromises[id];
-  const url='/assets/'+AVATAR_MODELS[id].file;
+  const modelInfo=AVATAR_MODELS[id];
+  const filenames=[modelInfo.file].concat(modelInfo.aliases||[]);
   avatarLoadPromises[id]=new Promise((resolve,reject)=>{
-    const loader=new THREE.GLTFLoader();
-    loader.load(url,gltf=>{avatarGltfCache[id]=gltf;resolve(gltf);},undefined,error=>{delete avatarLoadPromises[id];reject(new Error('Could not load '+url+': '+(error&&error.message?error.message:'request failed')));});
+    const tryFilename=(index,lastError)=>{
+      if(index>=filenames.length){
+        delete avatarLoadPromises[id];
+        reject(new Error('Could not load character model. Tried: '+filenames.join(', ')+(lastError&&lastError.message?'. Last error: '+lastError.message:'')));
+        return;
+      }
+      const url='/assets/'+filenames[index];
+      const loader=new THREE.GLTFLoader();
+      loader.load(url,gltf=>{avatarGltfCache[id]=gltf;resolve(gltf);},undefined,error=>{
+        console.warn('Model file not found or could not load at '+url+'; trying the next filename.');
+        tryFilename(index+1,error);
+      });
+    };
+    tryFilename(0,null);
   });
   return avatarLoadPromises[id];
 }
@@ -265,7 +293,7 @@ function loadSelectedModelInto(target,requestedId){
     avatarActors.add(target);
     setAvatarAnimation(target,target.userData.wantWalk?'walk':'idle');
     if(target===preview){
-      statusAvatar(AVATAR_MODELS[id].label+' loaded. Choose another card to compare characters.');
+      statusAvatar('Character loaded. Choose it to continue.');
       const nextButton=document.getElementById('b1');if(nextButton)nextButton.disabled=false;
     }
     return model;
@@ -303,27 +331,99 @@ function makeAvatar(p){
   return{name:p.name,g:root,h:body,avatarId,tx:p.x,tz:p.z,try:p.ry||0,px:p.x,pz:p.z};
 }
 function setPreview(){
-  if(preview){scene.remove(preview);preview=null;}
+  if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
   const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;preview=target;scene.add(target);
   const b=document.getElementById('b1');if(b)b.disabled=true;
-  statusAvatar('Loading '+AVATAR_MODELS[selectedAvatarId].label+'…');
+  statusAvatar('Loading character…');
   loadSelectedModelInto(target,selectedAvatarId).catch(()=>{});
+}
+function disposeAvatarCardPreviews(){
+  for(const entry of avatarCardPreviews.values()){
+    try{entry.renderer.dispose();}catch(e){}
+    try{entry.renderer.forceContextLoss();}catch(e){}
+  }
+  avatarCardPreviews.clear();
+}
+function createAvatarCardPreview(id,canvas){
+  let renderer;
+  try{
+    renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
+    renderer.setSize(Math.max(1,canvas.clientWidth),Math.max(1,canvas.clientHeight),false);
+    renderer.setClearColor(0x000000,0);
+    if('outputEncoding' in renderer)renderer.outputEncoding=THREE.sRGBEncoding;
+  }catch(error){
+    console.error('Could not create character preview renderer:',error);
+    statusAvatar('This browser could not start the character preview. Try a current Chrome or Edge browser.');
+    return;
+  }
+  const cardScene=new THREE.Scene();
+  cardScene.add(new THREE.HemisphereLight(0xffffff,0x657080,1.25));
+  const key=new THREE.DirectionalLight(0xffffff,2.0);key.position.set(2,4,5);cardScene.add(key);
+  const fill=new THREE.DirectionalLight(0xb5d5ff,0.7);fill.position.set(-3,2,-2);cardScene.add(fill);
+  const cardCamera=new THREE.PerspectiveCamera(29,Math.max(1,canvas.clientWidth)/Math.max(1,canvas.clientHeight),0.1,100);
+  cardCamera.position.set(0,1.03,4.25);cardCamera.lookAt(0,0.95,0);
+  const entry={id,canvas,renderer,scene:cardScene,camera:cardCamera,mixer:null,model:null,ready:false,failed:false};
+  avatarCardPreviews.set(canvas,entry);
+  loadAvatarGltf(id).then(gltf=>{
+    if(!canvas.isConnected||avatarCardPreviews.get(canvas)!==entry)return;
+    const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
+    model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
+    model.updateMatrixWorld(true);
+    const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+    if(!Number.isFinite(size.y)||size.y<=0)throw new Error('Invalid model height');
+    model.scale.multiplyScalar(1.72/size.y);model.updateMatrixWorld(true);
+    const fittedBounds=new THREE.Box3().setFromObject(model);model.position.y-=fittedBounds.min.y;model.updateMatrixWorld(true);
+    cardScene.add(model);entry.model=model;
+    const clips=gltf.animations||[];
+    const idle=chooseClip(clips,[/^idle(?:$|[_\s])/i,/idle/i])||clips[0]||null;
+    if(idle){entry.mixer=new THREE.AnimationMixer(model);entry.mixer.clipAction(idle).setLoop(THREE.LoopRepeat,Infinity).play();}
+    entry.ready=true;
+    if(selectedAvatarId===id)statusAvatar('Choose the animated character you like.');
+  }).catch(error=>{
+    entry.failed=true;
+    console.error('Character card preview failed for '+AVATAR_MODELS[id].file+':',error);
+    statusAvatar('A character model could not load. Check the matching file in public/assets and the Render deployment.');
+  });
+}
+function updateAvatarCardPreviews(dt){
+  for(const [canvas,entry] of avatarCardPreviews){
+    if(!canvas.isConnected)continue;
+    const width=Math.max(1,canvas.clientWidth),height=Math.max(1,canvas.clientHeight);
+    if(canvas.width!==Math.round(width*entry.renderer.getPixelRatio())||canvas.height!==Math.round(height*entry.renderer.getPixelRatio())){
+      entry.renderer.setSize(width,height,false);entry.camera.aspect=width/height;entry.camera.updateProjectionMatrix();
+    }
+    if(entry.mixer)entry.mixer.update(dt);
+    entry.renderer.render(entry.scene,entry.camera);
+  }
+}
+function beginGenderSelection(gender){
+  selectedGender=gender;
+  const available=AVATAR_IDS.filter(id=>AVATAR_MODELS[id].gender===gender);
+  if(!available.includes(selectedAvatarId))selectedAvatarId=available[0];
+  try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
+  renderAvatarChoices();
+  setPreview();
+  show('s1b');
 }
 function renderAvatarChoices(){
   const el=document.getElementById('looks');if(!el)return;
-  el.innerHTML='<label>Choose your agent</label><div class="avatar-choices" id="avatarChoices"></div><p class="sub" style="margin-top:4px">Each card loads a different complete rigged character. We will test color customization after model selection is confirmed.</p>';
+  disposeAvatarCardPreviews();
+  el.innerHTML='<div class="avatar-choices" id="avatarChoices"></div>';
   const grid=document.getElementById('avatarChoices');
-  AVATAR_IDS.forEach(id=>{
-    const item=AVATAR_MODELS[id],button=document.createElement('button');
-    button.type='button';button.className='avatar-choice'+(id===selectedAvatarId?' sel':'');button.setAttribute('aria-pressed',String(id===selectedAvatarId));button.dataset.avatarId=id;
-    button.innerHTML='<span class="avatar-gender">'+item.gender+'</span><b>'+item.label+'</b><span>'+item.description+'</span>';
+  AVATAR_IDS.filter(id=>AVATAR_MODELS[id].gender===selectedGender).forEach((id,index)=>{
+    const button=document.createElement('button');
+    button.type='button';button.className='avatar-choice'+(id===selectedAvatarId?' sel':'');button.setAttribute('aria-label','Choose '+selectedGender.toLowerCase()+' character '+(index+1));button.setAttribute('aria-pressed',String(id===selectedAvatarId));button.dataset.avatarId=id;
+    button.innerHTML='<div class="avatar-preview-wrap"><canvas class="avatar-preview-canvas" aria-hidden="true"></canvas></div><span class="avatar-picked" aria-hidden="true">✓</span>';
     button.onclick=()=>{
-      if(selectedAvatarId===id){if(preview&&!preview.userData.avatarModelLoaded&&!preview.userData.avatarModelLoading)setPreview();return;}
       selectedAvatarId=id;
       try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
-      renderAvatarChoices();setPreview();
+      grid.querySelectorAll('.avatar-choice').forEach(card=>{const isSelected=card.dataset.avatarId===id;card.classList.toggle('sel',isSelected);card.setAttribute('aria-pressed',String(isSelected));});
+      setPreview();
+      statusAvatar('Loading character…');
     };
     grid.appendChild(button);
+    createAvatarCardPreview(id,button.querySelector('canvas'));
   });
 }
 
@@ -336,7 +436,7 @@ function updatePeds(t,dt){PEDS.forEach(({h,d})=>{const[ax,fx,lo,hi,sp,off]=d,L=h
 
 // ---------- UI ----------
 const E=id=>document.getElementById(id);
-function show(id){['s0','s1','s2','s4'].forEach(s=>E(s).style.display=s===id?'block':'none');}
+function show(id){['s0','s1','s1b','s2','s4'].forEach(s=>E(s).style.display=s===id?'block':'none');}
 function renderFirms(){const el=E('firms');el.innerHTML='';[['Modern / Competitive',0],['Luxury',1]].forEach(([t,g])=>{const h=document.createElement('label');h.textContent=t;el.appendChild(h);const w=document.createElement('div');w.className='firms';
   FIRMS.forEach((f,i)=>{if(f.g!==g)return;const d=document.createElement('div');d.className='firm'+(i===selFirm?' sel':'');d.style.setProperty('--c',hex(f.c));d.innerHTML='<b style="color:'+hex(f.c)+'">'+f.n+'</b><span>'+f.t+'</span>';d.onclick=()=>{selFirm=i;renderFirms();setPreview();};w.appendChild(d);});el.appendChild(w);});}
 const socket=io();
@@ -378,10 +478,14 @@ function pick(i){const q=QZ[SEQ[si].i],fb=E('fb');if(fb.dataset.d)return;fb.data
 function adv(){si++;lesson();}
 function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Your first client quest is unlocked: meet Maya near the Corner Café. Now choose your firm.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok)G.badge=1;}
 function toFirm(){mentor(false);show('s4');}
-E('b0').onclick=()=>show('s1');E('b1').onclick=()=>{show('s2');modes();};
-E('name').addEventListener('keydown',e=>{if(e.key==='Enter')E('b1').click();});
+E('b0').onclick=()=>show('s1');
+E('chooseFemale').onclick=()=>beginGenderSelection('Female');
+E('chooseMale').onclick=()=>beginGenderSelection('Male');
+E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
+E('b1').onclick=()=>{disposeAvatarCardPreviews();show('s2');modes();};
+E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
 E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look,avatar:selectedAvatarId});E('join').style.display='none';};
-renderFirms();renderAvatarChoices();setPreview();show('s0');
+renderFirms();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
 socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
   me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PEDS.forEach(({h,avatarId})=>{if(!h.userData.avatarModelLoading&&!h.userData.avatarModelLoaded)loadSelectedModelInto(h,avatarId).catch(()=>{});});PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
@@ -524,6 +628,6 @@ function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),0
   for(const id in avatars){if(id===myId)continue;const a=avatars[id],ox=a.g.position.x,oz=a.g.position.z;
     a.g.position.x+=(a.tx-ox)*Math.min(1,12*dt);a.g.position.z+=(a.tz-oz)*Math.min(1,12*dt);a.g.rotation.y=angLerp(a.g.rotation.y,a.try,0.2);
     walkAnim(a.h,Math.hypot(a.g.position.x-ox,a.g.position.z-oz),dt);}
-  updateRealisticCharacters(dt,clock.elapsedTime);renderer.render(scene,camera);}
+  updateRealisticCharacters(dt,clock.elapsedTime);renderer.render(scene,camera);updateAvatarCardPreviews(dt);}
 loop();
 </script></body></html>
