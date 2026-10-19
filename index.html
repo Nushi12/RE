@@ -24,10 +24,19 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 .go{width:100%;margin-top:14px;padding:12px;border:0;border-radius:10px;background:#3b82f6;color:#fff;font-size:15px;font-weight:600;cursor:pointer}.opt2{border:2px solid #2c3f56;border-radius:9px;padding:9px 11px;margin:6px 0;cursor:pointer;background:#0f1824;color:#f8fafc;font-size:13px}#card .box{background:#0f1824;border:1px solid #2c3f56;border-radius:8px;padding:8px;margin:8px 0;font-size:13px}#card h2{margin:6px 0}#avatarAssetStatus{margin:4px 0 8px;padding:6px 8px;border-left:2px solid #3b82f6;background:#0f1824;font-size:11px;line-height:1.4}
 .bubble{background:#0f1824;border:1px solid #3b82f6;border-radius:12px;padding:12px;margin:10px 0;line-height:1.5;font-size:14px}#card .go small{font-weight:400;opacity:.85}
 .hdr{display:flex;gap:10px;align-items:center;margin-bottom:8px}.lv{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}.tile{background:#16212f;border:1px solid #2c3f56;border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;color:#9fb3c8}.tile b{display:block;font-size:14px;color:#fff}.locs{display:grid;gap:6px}.loc{border:1px solid #2c3f56;border-radius:8px;padding:7px 9px;background:#16212f;cursor:pointer}.loc small{color:#9fb3c8}.loc.on{border-color:#3b82f6;background:#1a2c47}.loc.lock{opacity:.5;cursor:default}.step{padding:2px 0;font-size:12px}.step.on{color:#fff;font-weight:700}.step.dn{color:#6fcf97}.step.up{color:#7c8da1}.toast{background:#1d3a2a;border:1px solid #2e7d4f;border-radius:8px;padding:7px;margin:6px 0;font-size:12px}.chatbox{position:fixed;left:12px;bottom:12px;width:300px;z-index:6;display:none}#chatlog{font-size:12px;background:#0009;border-radius:8px;padding:6px;max-height:130px;overflow:auto;margin-bottom:4px}#chat{width:100%;box-sizing:border-box;padding:7px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824dd;color:#fff;font-size:13px}
+
+.avatar-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 10px}
+.avatar-choice{display:block;width:100%;min-height:76px;text-align:left;border:2px solid #2c3f56;border-radius:10px;background:#0f1824;color:#f8fafc;padding:10px;cursor:pointer;transition:border-color .15s,background .15s;}
+.avatar-choice:hover{border-color:#7197c8;background:#172538}
+.avatar-choice.sel{border-color:#60a5fa;background:#20344d;box-shadow:0 0 0 1px #60a5fa inset}
+.avatar-choice b{display:block;color:#fff;font-size:13px;margin-bottom:4px}
+.avatar-choice span{display:block;color:#c4d0de;font-size:11px;line-height:1.35}
+.avatar-choice .avatar-gender{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#93c5fd;margin-bottom:4px}
+#b1:disabled{opacity:.48;cursor:wait}
 </style></head><body>
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
-<div id="s1"><h1>Create your agent</h1><p id="avatarAssetStatus" class="sub">Choose your look. Your character preview will update as you change options.</p><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><button class="go" id="b1">Continue to licensing</button></div>
+<div id="s1"><h1>Create your agent</h1><p class="sub">Choose one of four complete rigged characters. We are testing character selection first; color customization comes after this works.</p><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading selected character…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
@@ -46,10 +55,9 @@ try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for
 // Only Female and Male are supported. Map any previously saved third option to Male.
 look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
-const CREATOR_BUILD='REW-AVATAR-ATTRIBUTE-ACCESS-FIX-2026-10-19';
+const CREATOR_BUILD='REW-FOUR-RIGGED-AVATAR-SELECTION-TEST-2026-10-19';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
-console.info('Avatar loader compatibility: BufferAttribute values use getX/getY/getZ/getW.');
 const BODY_OPTIONS=['Female','Male'];
 const OPTS=[['body','Character type / body',BODY_OPTIONS],['height','Height',['Petite','Average','Tall']],['b','Build',['Slim','Average','Broad']],['face','Face shape',['Soft','Angular','Round']],['s','Skin tone',SKIN],['h','Hair style',['Short','Long','Bun','Curly','Ponytail','Bald']],['hc','Hair color',HAIRC],['fh','Facial hair',['None','Stubble','Full beard','Mustache']],['eye','Eye color',EYES],['o','Outfit',['Blazer & slacks','Blouse & slacks','Dress','Smart casual']],['j','Top color',JACK],['p','Trousers / shoes',PANT]];
 const NB=[
@@ -173,421 +181,160 @@ function human(L,fc){
   g.scale.set(fallbackBody===1?1.07:(fallbackBody===0?0.98:1),fallbackHeight,1);
   g.userData={legs,arms,phase:0,amp:0};return g;
 }
-// ---------- customizable rigged humanoid pipeline ----------
-// Female avatars use the uploaded Mixamo-rigged Meshy GLB and its real animation clips.
-// Male avatars use the 53-bone neutral base plus the existing procedural appearance system.
-const BASE_HUMANOID_URL='/assets/human-base-rigged.glb';
-const FEMALE_AGENT_URL='/assets/female-rigged-agent.glb'; // server transparently serves the gzipped GLB
-let baseHumanoidGltf=null,baseHumanoidPromise=null;
-let femaleAgentGltf=null,femaleAgentPromise=null;
-const realisticCharacters=new Set();
+// ---------- four complete rigged avatar models ----------
+// Each option loads its own full GLB. No vertex reshaping, material recoloring, or procedural clothing is applied.
+const AVATAR_MODELS={
+  female1:{label:'Female Agent 1',gender:'Female',file:'female-agent-1.glb',description:'Complete textured character · rigged and animated'},
+  female2:{label:'Female Agent 2',gender:'Female',file:'female-agent-2.glb',description:'Different complete character · rigged and animated'},
+  male1:{label:'Male Agent 1',gender:'Male',file:'male-agent-1.glb',description:'Complete textured character · rigged and animated'},
+  male2:{label:'Male Agent 2',gender:'Male',file:'male-agent-2.glb',description:'Different complete character · rigged and animated'}
+};
+const AVATAR_IDS=Object.keys(AVATAR_MODELS);
+function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
+let selectedAvatarId='female1';
+try{const stored=localStorage.getItem('rew-selected-rigged-avatar-v1');if(stored&&AVATAR_MODELS[stored])selectedAvatarId=stored;}catch(e){}
+const avatarGltfCache={};
+const avatarLoadPromises={};
+const avatarActors=new Set();
 let cityEntered=false;
-function loadBaseHumanoid(){
-  if(baseHumanoidGltf)return Promise.resolve(baseHumanoidGltf);
-  if(!baseHumanoidPromise)baseHumanoidPromise=new Promise((resolve,reject)=>{
-    const loader=new THREE.GLTFLoader();
-    loader.load(BASE_HUMANOID_URL,g=>{baseHumanoidGltf=g;resolve(g);},undefined,reject);
-  });
-  return baseHumanoidPromise;
-}
-function loadFemaleAgent(){
-  if(femaleAgentGltf)return Promise.resolve(femaleAgentGltf);
-  if(!femaleAgentPromise)femaleAgentPromise=new Promise((resolve,reject)=>{
-    const loader=new THREE.GLTFLoader();
-    loader.load(FEMALE_AGENT_URL,g=>{femaleAgentGltf=g;resolve(g);},undefined,reject);
-  });
-  return femaleAgentPromise;
-}
 function statusAvatar(text){const el=document.getElementById('avatarAssetStatus');if(el)el.textContent=text;}
-function boneNamed(root,names){let found=null;root.traverse(o=>{if(!found&&names.includes(String(o.name||'').toLowerCase()))found=o;});return found;}
-function refreshLookControlAvailability(){
-  document.querySelectorAll('[data-look-key]').forEach(el=>{
-    el.style.opacity='';el.style.pointerEvents='';el.removeAttribute('aria-disabled');el.title='';
+function loadAvatarGltf(id){
+  id=validAvatarId(id);
+  if(avatarGltfCache[id])return Promise.resolve(avatarGltfCache[id]);
+  if(avatarLoadPromises[id])return avatarLoadPromises[id];
+  const url='/assets/'+AVATAR_MODELS[id].file;
+  avatarLoadPromises[id]=new Promise((resolve,reject)=>{
+    const loader=new THREE.GLTFLoader();
+    loader.load(url,gltf=>{avatarGltfCache[id]=gltf;resolve(gltf);},undefined,error=>{delete avatarLoadPromises[id];reject(new Error('Could not load '+url+': '+(error&&error.message?error.message:'request failed')));});
   });
-  // This Meshy female model has its hair and clothing silhouette baked into one mesh.
-  // Rename the selector to palette choices when Female is selected rather than implying
-  // that it can swap garment geometry. Male continues using the procedural wardrobe system.
-  const outfitLabel=document.querySelector('label[data-look-key="o"]');
-  const outfitRow=document.querySelector('.row[data-look-key="o"]');
-  if(outfitLabel)outfitLabel.textContent=look.body===0?'Female outfit palette':'Outfit';
-  if(outfitRow){
-    const femalePalette=['Navy suit','Light blouse','Burgundy','Smart casual palette'];
-    const maleOutfits=['Blazer & slacks','Blouse & slacks','Dress','Smart casual'];
-    [...outfitRow.children].forEach((b,i)=>{b.textContent=(look.body===0?femalePalette:maleOutfits)[i];});
-  }
-  const facialLabel=document.querySelector('label[data-look-key="fh"]');
-  const facialRow=document.querySelector('.row[data-look-key="fh"]');
-  if(facialLabel&&facialRow){const disabled=look.body!==1;facialLabel.style.opacity=disabled?'.48':'';facialRow.querySelectorAll('.opt').forEach(b=>{b.style.opacity=disabled?'.4':'';b.style.pointerEvents=disabled?'none':'';b.tabIndex=disabled?-1:0;b.setAttribute('aria-disabled',String(disabled));b.title=disabled?'Facial-hair controls apply to the Male base model':'';});}
-  statusAvatar(look.body===0
-    ?'Female: using your Meshy-rigged model with its own idle and walking animations. Hair and garment silhouette are built into this model; palette choices recolor regions.'
-    :'Male: using your rigged humanoid base with procedural body and clothing options.');
+  return avatarLoadPromises[id];
 }
-function shapeHumanoidGeometry(geometry,L){
-  const pos=geometry.getAttribute('position');if(!pos)return;
-  const body=(Number.isInteger(L.body)&&L.body===1)?1:0;
-  const build=Number.isInteger(L.b)?L.b:1;
-  const face=Number.isInteger(L.face)?L.face:0;
-  const buildMul=[0.90,1,1.13][Math.max(0,Math.min(2,build))];
-  const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
-  const band=(y,a,b,fade=0.075)=>smooth((y-a)/fade)*(1-smooth((y-b)/fade));
-  // One rigged base, with smooth regional vertex deformation (not a model swap).
-  // Female and Male are the only body presets; the change is deliberately visible
-  // at the hips, waist, torso and shoulders, while keeping the same 53-bone rig.
-  for(let i=0;i<pos.count;i++){
-    let x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);
-    const absX=Math.abs(x);
-    const hips=band(y,0.54,0.92,0.09);
-    const waist=band(y,0.82,1.12,0.08);
-    const torso=band(y,1.06,1.40,0.09);
-    const shoulders=band(y,1.30,1.50,0.075);
-    const head=band(y,1.455,1.68,0.065);
-    const mainBody=band(y,0.48,1.47,0.08);
-    let width=1+(buildMul-1)*mainBody;
-    if(body===0){
-      // Female preset: fuller hips, a defined waist, slightly narrower shoulders/head.
-      width*=1+0.25*hips-0.20*waist-0.065*torso-0.055*shoulders-0.055*head;
-      // A small, smooth front-chest volume so the torso does not read as a color-only swap.
-      const chest=band(y,1.12,1.34,0.055);
-      const lateral=smooth(absX/0.055)*(1-smooth((absX-0.205)/0.055));
-      if(z>0.015)z+=0.034*chest*lateral;
-    }else{
-      // Male preset: broader torso/shoulders, straighter waist, narrower hips, wider jaw.
-      width*=1-0.105*hips+0.025*waist+0.15*torso+0.19*shoulders+0.065*head;
-    }
-    x*=width;
-    // Face presets affect the jaw/head region separately from the body preset.
-    if(y>1.455&&y<1.68){
-      const faceWidth=face===0?0.98:(face===1?0.90:1.08);
-      const faceDepth=face===0?1:(face===1?0.94:1.07);
-      x*=faceWidth;
-      z*=faceDepth;
-    }
-    pos.setXYZ(i,x,y,z);
-  }
-  pos.needsUpdate=true;
-  geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+function chooseClip(animations,tests){
+  for(const test of tests){const hit=(animations||[]).find(a=>test.test(a.name||''));if(hit)return hit;}
+  return null;
 }
-// Three.js r128 BufferAttribute has getX/getY/getZ/getW, not getComponent.
-// Read one component through its supported API, with a safe raw-array fallback.
-function attrComponent(attribute,index,component){
-  if(!attribute || !attribute.array) return 0;
-  const getters=['getX','getY','getZ','getW'];
-  const getter=getters[component];
-  if(getter && typeof attribute[getter]==='function') return attribute[getter](index);
-  const value=attribute.array[index*attribute.itemSize+component];
-  return Number.isFinite(value) ? value : 0;
+function setAvatarAnimation(target,name){
+  const actions=target.userData.avatarActions||{};
+  if(!actions[name]||target.userData.avatarActionName===name)return;
+  const next=actions[name],prev=actions[target.userData.avatarActionName];
+  next.reset();next.enabled=true;next.setEffectiveWeight(1);next.setEffectiveTimeScale(1);next.setLoop(THREE.LoopRepeat,Infinity);next.fadeIn(0.18).play();
+  if(prev&&prev!==next)prev.fadeOut(0.18);
+  target.userData.avatarActionName=name;
 }
-
-function triangleWeightInfo(geom,bodyMesh,start){
-  const pos=geom.getAttribute('position'),si=geom.getAttribute('skinIndex'),sw=geom.getAttribute('skinWeight');
-  const boneNames=bodyMesh.skeleton.bones.map(b=>String(b.name||'').toLowerCase());
-  let x=0,y=0,z=0,arm=0,upperArm=0,leg=0,foot=0,hand=0,pelvis=0;
-  for(let v=start;v<start+3;v++){
-    x+=pos.getX(v)/3;y+=pos.getY(v)/3;z+=pos.getZ(v)/3;
-    if(!si||!sw)continue;
-    for(let k=0;k<4;k++){
-      const w=attrComponent(sw,v,k),name=boneNames[attrComponent(si,v,k)]||'';
-      if(/clavicle|upperarm|lowerarm/.test(name)){arm+=w/3;if(/upperarm/.test(name))upperArm+=w/3;}
-      if(/thigh|calf/.test(name))leg+=w/3;
-      if(/foot|ball/.test(name))foot+=w/3;
-      if(/hand|thumb|index|middle|pinky|ring/.test(name))hand+=w/3;
-      if(/pelvis/.test(name))pelvis+=w/3;
-    }
-  }
-  return{x,y,z,arm,upperArm,leg,foot,hand,pelvis};
-}
-function subsetGeometry(source,bodyMesh,predicate,offset=0){
-  const geom=source.index?source.toNonIndexed():source.clone();
-  const pos=geom.getAttribute('position'),norm=geom.getAttribute('normal');
-  const keys=Object.keys(geom.attributes),data={};keys.forEach(k=>data[k]=[]);
-  for(let i=0;i+2<pos.count;i+=3){
-    const info=triangleWeightInfo(geom,bodyMesh,i);if(!predicate(info))continue;
-    for(let v=i;v<i+3;v++)for(const key of keys){
-      const a=geom.getAttribute(key);for(let c=0;c<a.itemSize;c++){
-        let val=attrComponent(a,v,c);
-        if(key==='position'&&norm&&offset){const n=norm;val+=attrComponent(n,v,c)*offset;}
-        data[key].push(val);
-      }
-    }
-  }
-  const out=new THREE.BufferGeometry();
-  keys.forEach(k=>{const a=geom.getAttribute(k);const Typed=a.array.constructor,values=new Typed(data[k].length);values.set(data[k]);out.setAttribute(k,new THREE.BufferAttribute(values,a.itemSize,a.normalized));});
-  out.computeBoundingBox();out.computeBoundingSphere();return out;
-}
-function classifyClothing(info,L,kind){
-  const torso=info.y>=0.86&&info.y<1.405&&Math.abs(info.x)<0.43&&info.leg<0.28&&info.foot<0.1;
-  const hands=info.hand>0.28;
-  const longArm=info.arm>0.30&&!hands;
-  const shortSleeve=info.upperArm>0.34&&info.arm>0.24&&!hands;
-  const pants=info.leg>0.30&&info.y<0.985&&info.foot<0.2;
-  const shoes=info.foot>0.25&&info.y<0.24;
-  if(kind==='top'){
-    if(torso)return true;
-    return L.o===3?shortSleeve:longArm;
-  }
-  if(kind==='pants')return L.o!==2&&pants;
-  if(kind==='shoes')return shoes;
-  return false;
-}
-function addSkinnedClothing(model,bodyMesh,L,kind,material,sourceGeometry){
-  const geom=subsetGeometry(sourceGeometry||bodyMesh.geometry,bodyMesh,info=>classifyClothing(info,L,kind),0.0022);
-  if(!geom.getAttribute('position')||geom.getAttribute('position').count<3)return null;
-  const part=new THREE.SkinnedMesh(geom,material);part.name='custom-'+kind;part.bindMode=bodyMesh.bindMode;part.bind(bodyMesh.skeleton,bodyMesh.bindMatrix.clone());part.castShadow=true;part.receiveShadow=true;part.frustumCulled=false;part.renderOrder=bodyMesh.renderOrder+1;model.add(part);return part;
-}
-function shapeMaterial(color,roughness=0.78){return new THREE.MeshStandardMaterial({color,roughness,metalness:0,side:THREE.DoubleSide});}
-function makePolygon(points,color,model,name){
-  const verts=[];for(const p of points)verts.push(p[0],p[1],p[2]);
-  const geom=new THREE.BufferGeometry();geom.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
-  const ix=[];for(let i=1;i<points.length-1;i++)ix.push(0,i,i+1);geom.setIndex(ix);geom.computeVertexNormals();
-  const mesh=new THREE.Mesh(geom,shapeMaterial(color,0.72));mesh.name=name;mesh.castShadow=true;mesh.receiveShadow=true;model.add(mesh);return mesh;
-}
-function addWardrobeDetails(model,L){
-  const top=JACK[L.j]||JACK[0],hair=HAIRC[L.hc]||HAIRC[0];
-  // A visible shirt inset and lapels distinguish an actual suit outfit from a recolored body.
-  if(L.o===0){
-    makePolygon([[-0.047,1.355,0.151],[0.047,1.355,0.151],[0.028,1.145,0.151],[-0.028,1.145,0.151]],0xf2f1ed,model,'shirt-front');
-    makePolygon([[-0.087,1.385,0.15],[-0.044,1.355,0.16],[-0.014,1.15,0.153],[-0.057,1.19,0.155]],0xc6ccd5,model,'left-lapel');
-    makePolygon([[0.087,1.385,0.15],[0.044,1.355,0.16],[0.014,1.15,0.153],[0.057,1.19,0.155]],0xd9dde3,model,'right-lapel');
-    if(L.body===1)makePolygon([[-0.012,1.31,0.166],[0.012,1.31,0.166],[0.021,1.17,0.157],[-0.021,1.17,0.157]],0x8f2332,model,'tie');
-  }else if(L.o===1){
-    makePolygon([[-0.045,1.34,0.151],[0,1.30,0.159],[0.045,1.34,0.151],[0.025,1.25,0.16],[-0.025,1.25,0.16]],0xf0ede5,model,'blouse-collar');
-  }
-  if(L.o===2){
-    // Lightweight fitted skirt shell, parented to the pelvis so it follows the avatar.
-    const skirt=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.255,0.49,32,1,true),shapeMaterial(top,0.84));
-    skirt.name='custom-dress-skirt';skirt.position.set(0,0.72,0);skirt.scale.z=0.76;skirt.castShadow=true;skirt.receiveShadow=true;model.add(skirt);
-    model.updateMatrixWorld(true);const pelvis=boneNamed(model,['pelvis']);if(pelvis)pelvis.attach(skirt);
-  }
-  // Small eye whites and selectable irises make face presets read more clearly.
-  const faceGroup=new THREE.Group();
-  const white=new THREE.MeshStandardMaterial({color:0xf5f2eb,roughness:0.45});
-  const iris=shapeMaterial(EYES[L.eye]||EYES[0],0.4),pupil=shapeMaterial(0x171717,0.3),brow=shapeMaterial(hair,0.9);
-  [-1,1].forEach(side=>{
-    const eye=new THREE.Mesh(new THREE.SphereGeometry(1,14,10),white);eye.scale.set(0.0115,0.0068,0.0052);eye.position.set(side*0.031,1.565,0.153);faceGroup.add(eye);
-    const ir=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),iris);ir.scale.set(0.0048,0.0051,0.0028);ir.position.set(side*0.031,1.565,0.158);faceGroup.add(ir);
-    const pu=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),pupil);pu.scale.set(0.0022,0.0032,0.0017);pu.position.set(side*0.031,1.565,0.160);faceGroup.add(pu);
-    const browMesh=new THREE.Mesh(new THREE.BoxGeometry(0.026,0.0045,0.004),brow);browMesh.position.set(side*0.031,1.581,0.151);browMesh.rotation.z=side*0.07;faceGroup.add(browMesh);
-  });
-  // Attach face details to the head bone so they move with subtle head turns.
-  const head=boneNamed(model,['head']);if(head){model.add(faceGroup);model.updateMatrixWorld(true);head.attach(faceGroup);}else model.add(faceGroup);
-  addHair(model,L);
-  if(L.body===1&&L.fh>0)addFacialHair(model,L);
-}
-function addHair(model,L){
-  if(L.h===5)return;
-  const mat=shapeMaterial(HAIRC[L.hc]||HAIRC[0],0.9),hair=new THREE.Group();
-  const sphere=(x,y,z,sx,sy,sz)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1,18,12),mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;hair.add(m);};
-  sphere(0,1.602,0.035,0.091,0.095,0.096);
-  if(L.h===0){sphere(-0.075,1.56,0.035,0.025,0.060,0.046);sphere(0.075,1.56,0.035,0.025,0.060,0.046);}
-  if(L.h===1){sphere(-0.061,1.42,-0.012,0.029,0.19,0.052);sphere(0.061,1.42,-0.012,0.029,0.19,0.052);sphere(0,1.43,-0.05,0.075,0.20,0.045);}
-  if(L.h===2){sphere(0,1.68,-0.035,0.046,0.048,0.046);}
-  if(L.h===3){for(let i=0;i<18;i++){const a=i*2.399,r=i%2?0.064:0.045,y=1.60+(i%3)*0.022;sphere(Math.cos(a)*r,y,0.035+Math.sin(a)*0.07,0.026,0.028,0.026);}}
-  if(L.h===4){sphere(0,1.47,-0.045,0.043,0.15,0.045);sphere(0,1.36,-0.04,0.034,0.07,0.036);}
-  const head=boneNamed(model,['head']);if(head){model.add(hair);model.updateMatrixWorld(true);head.attach(hair);}else model.add(hair);
-}
-function addFacialHair(model,L){
-  const group=new THREE.Group(),c=L.fh===1?0x4d4136:0x302820,mat=shapeMaterial(c,1);
-  if(L.fh===1||L.fh===2){const beard=new THREE.Mesh(new THREE.SphereGeometry(1,20,12,0,Math.PI*2,Math.PI*0.50,Math.PI*0.50),mat);beard.position.set(0,1.516,0.128);beard.scale.set(L.fh===1?0.052:0.064,L.fh===1?0.048:0.067,0.035);group.add(beard);}
-  if(L.fh===3||L.fh===2){[-1,1].forEach(side=>{const st=new THREE.Mesh(new THREE.SphereGeometry(1,14,8),mat);st.position.set(side*0.021,1.526,0.151);st.scale.set(0.026,0.008,0.009);group.add(st);});}
-  const head=boneNamed(model,['head']);if(head){model.add(group);model.updateMatrixWorld(true);head.attach(group);}else model.add(group);
-}
-function setArmRestPose(model){
-  const left=boneNamed(model,['clavicle_l']),right=boneNamed(model,['clavicle_r']);
-  // Save a relaxed A-pose offset relative to the supplied T-pose.
-  if(left)left.rotation.z+=0.48;
-  if(right)right.rotation.z-=0.48;
-  const head=boneNamed(model,['head']);if(head)head.rotation.x-=0.03;
-}
-function tintFemaleMesh(model,L){
-  const skinHex=SKIN[L.s]||SKIN[2],hairHex=HAIRC[L.hc]||HAIRC[0];
-  const paletteTop=[JACK[L.j]||JACK[0],0xe9e4dc,0x6f1834,0x8ba0ad][L.o]||JACK[L.j]||JACK[0];
-  const pantsHex=PANT[L.p]||PANT[0],shoeHex=[0x24201e,0x6a4a2c,0x443b33,0x161616][L.p]||0x24201e;
-  model.traverse(o=>{
-    if(!o.isSkinnedMesh||!o.geometry)return;
-    const geom=o.geometry,pos=geom.getAttribute('position'),si=geom.getAttribute('skinIndex'),sw=geom.getAttribute('skinWeight');
-    if(!pos||!si||!sw||!o.skeleton)return;
-    const boneNames=o.skeleton.bones.map(b=>String(b.name||'').toLowerCase());
-    const colors=new Float32Array(pos.count*3);
-    for(let i=0;i<pos.count;i++){
-      const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);let skin=0,head=0,hands=0,neck=0,legs=0,feet=0,arms=0;
-      for(let k=0;k<4;k++){
-        const bi=attrComponent(si,i,k),w=attrComponent(sw,i,k),n=boneNames[bi]||'';
-        if(/head/.test(n))head+=w;
-        if(/neck/.test(n))neck+=w;
-        if(/hand|thumb|index|middle|pinky|ring|finger/.test(n))hands+=w;
-        if(/upleg|up_leg|leg|thigh|calf/.test(n))legs+=w;
-        if(/foot|toe|ball/.test(n))feet+=w;
-        if(/arm|shoulder|forearm/.test(n))arms+=w;
-      }
-      let hexColor;
-      const hairRegion=head>0.2&&y>1.555&&z<0.055;
-      const skinRegion=(head>0.25&&!hairRegion)||neck>0.30||hands>0.32||(y>1.47&&z>0.075&&head>0.1);
-      if(hairRegion)hexColor=hairHex;
-      else if(skinRegion)hexColor=skinHex;
-      else if(feet>0.25&&y<0.18)hexColor=shoeHex;
-      else if(legs>0.22&&y<0.98)hexColor=(L.o===2?paletteTop:pantsHex);
-      else if((y>0.86&&y<1.48)||arms>0.28)hexColor=paletteTop;
-      else hexColor=skinHex;
-      const c=new THREE.Color(hexColor);colors[i*3]=c.r;colors[i*3+1]=c.g;colors[i*3+2]=c.b;
-    }
-    geom.setAttribute('color',new THREE.BufferAttribute(colors,3));
-    const materials=Array.isArray(o.material)?o.material:[o.material];
-    materials.forEach(m=>{m.vertexColors=true;m.color.setHex(0xffffff);m.roughness=0.82;m.metalness=0;m.needsUpdate=true;});
-    o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;
-  });
-}
-function findClip(gltf,regex){return (gltf.animations||[]).find(a=>regex.test(a.name));}
-function setFemaleAnimation(target,name){
-  const u=target.userData,actions=u.femaleActions;if(!actions||!actions[name]||u.femaleActionName===name)return;
-  const next=actions[name];next.reset();next.enabled=true;next.setEffectiveWeight(1);next.setEffectiveTimeScale(1);next.fadeIn(0.18).play();
-  if(u.femaleActiveAction)u.femaleActiveAction.fadeOut(0.18);
-  u.femaleActiveAction=next;u.femaleActionName=name;
-}
-function upgradeToRealistic(target,L){
-  if(!target||target.userData.realistic||target.userData.installPending)return;
-  target.userData.installPending=true;const stamp=(target.userData.avatarStamp||0)+1;target.userData.avatarStamp=stamp;
-  const isFemale=Number(L.body)!==1;
-  if(target===preview)statusAvatar(isFemale?'Loading your animated female model…':'Loading the male base model…');
-  (isFemale?loadFemaleAgent():loadBaseHumanoid()).then(gltf=>{
-    if(target.userData.avatarStamp!==stamp||!target.parent)return;
+function loadSelectedModelInto(target,requestedId){
+  if(!target)return Promise.reject(new Error('Avatar target was not created'));
+  const id=validAvatarId(requestedId);
+  const token=(target.userData.avatarLoadToken||0)+1;
+  target.userData.avatarLoadToken=token;
+  target.userData.avatarId=id;
+  target.userData.avatarModelLoading=true;
+  target.userData.avatarModelLoaded=false;
+  return loadAvatarGltf(id).then(gltf=>{
+    if(target.userData.avatarLoadToken!==token||!target.parent)return null;
     const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
-    model.traverse(o=>{if(o.isMesh&&o.geometry)o.geometry=o.geometry.clone();if(o.isMesh&&o.material)o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();});
-    const bodyMesh=(()=>{let found=null;model.traverse(o=>{if(!found&&o.isSkinnedMesh)found=o;});return found;})();
-    if(!bodyMesh)throw new Error('Selected rigged GLB contains no skinned mesh');
-    const heightFactor=[0.93,1,1.07][L.height]||1;
-    let baseBounds,baseHeight;
-    if(isFemale){
-      // The uploaded Meshy model has a Mixamo skeleton and nine animation clips.
-      // Keep its real mesh/rig; apply subtle proportions and vertex-color regions only.
-      shapeHumanoidGeometry(bodyMesh.geometry,L);
-      bodyMesh.geometry.computeBoundingBox();baseBounds=bodyMesh.geometry.boundingBox.clone();baseHeight=baseBounds.getSize(new THREE.Vector3()).y||1.7;
-      tintFemaleMesh(model,L);
-      const norm=1.92/baseHeight;model.scale.setScalar(norm);model.updateMatrixWorld(true);
-      const scaledBounds=new THREE.Box3().setFromObject(model);model.position.y-=scaledBounds.min.y;model.updateMatrixWorld(true);
-    }else{
-      shapeHumanoidGeometry(bodyMesh.geometry,L);
-      bodyMesh.geometry.computeBoundingBox();baseBounds=bodyMesh.geometry.boundingBox.clone();baseHeight=baseBounds.getSize(new THREE.Vector3()).y||1.68;
-      const skinMaterial=shapeMaterial(SKIN[L.s]||SKIN[2],0.72);bodyMesh.material=skinMaterial;bodyMesh.castShadow=true;bodyMesh.receiveShadow=true;bodyMesh.frustumCulled=false;
-      const topColor=JACK[L.j]||JACK[0],pantsColor=PANT[L.p]||PANT[0],shoesColor=[0x24201e,0x6a4a2c,0x443b33,0x161616][L.p]||0x24201e;
-      const topMat=shapeMaterial(topColor,0.84),pantsMat=shapeMaterial(L.o===2?topColor:pantsColor,0.88),shoesMat=shapeMaterial(shoesColor,0.68);
-      const sourceGeometry=bodyMesh.geometry;
-      const skinGeometry=subsetGeometry(sourceGeometry,bodyMesh,info=>!classifyClothing(info,L,'top')&&!classifyClothing(info,L,'pants')&&!classifyClothing(info,L,'shoes'),0);
-      if(skinGeometry.getAttribute('position')&&skinGeometry.getAttribute('position').count>=3)bodyMesh.geometry=skinGeometry;
-      addSkinnedClothing(model,bodyMesh,L,'top',topMat,sourceGeometry);
-      addSkinnedClothing(model,bodyMesh,L,'pants',pantsMat,sourceGeometry);
-      addSkinnedClothing(model,bodyMesh,L,'shoes',shoesMat,sourceGeometry);
-      addWardrobeDetails(model,L);
-      const norm=1.92/baseHeight*heightFactor;model.scale.multiplyScalar(norm);model.updateMatrixWorld(true);
-      model.position.y-=baseBounds.min.y*norm;model.updateMatrixWorld(true);
-    }
+    model.name='selected-avatar-'+id;
+    model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
+    // Uniform scale only. Preserve original body proportions, mesh, materials, textures, and rig.
+    model.updateMatrixWorld(true);
+    let bounds=new THREE.Box3().setFromObject(model);
+    const size=bounds.getSize(new THREE.Vector3());
+    if(!Number.isFinite(size.y)||size.y<=0)throw new Error('Model has invalid height: '+AVATAR_MODELS[id].file);
+    model.scale.multiplyScalar(1.86/size.y);
+    model.updateMatrixWorld(true);
+    bounds=new THREE.Box3().setFromObject(model);
+    model.position.y-=bounds.min.y;
+    model.updateMatrixWorld(true);
+    // The target is a clean character group; remove any stale child before adding the chosen GLB.
     while(target.children.length)target.remove(target.children[0]);
-    target.add(model);target.userData.realistic=true;target.userData.installPending=false;target.userData.__avatarModel=model;target.userData.modelBaseY=model.position.y;target.userData.look={...L};
-    target.userData.baseHeight=1.92*heightFactor;target.userData.phase=0;target.userData.amp=0;target.userData.walking=false;target.userData.talking=!!target.userData.talking;
-    if(isFemale){
-      const mixer=new THREE.AnimationMixer(model);target.userData.mixer=mixer;target.userData.femaleRigged=true;
-      const idleClip=findClip(gltf,/^Idle_4$|^Idle_6$/i)||findClip(gltf,/idle/i);
-      const walkClip=findClip(gltf,/^Walking_Woman$/i)||findClip(gltf,/^Walking$/i)||findClip(gltf,/walk/i);
-      const sitClip=findClip(gltf,/Sit_Cross_Legged/i);
-      target.userData.femaleActions={};
-      if(idleClip)target.userData.femaleActions.idle=mixer.clipAction(idleClip);
-      if(walkClip)target.userData.femaleActions.walk=mixer.clipAction(walkClip);
-      if(sitClip)target.userData.femaleActions.sit=mixer.clipAction(sitClip);
-      setFemaleAnimation(target,'idle');
-      const findSuffix=suffix=>{let found=null;model.traverse(o=>{if(!found&&String(o.name||'').toLowerCase().endsWith(suffix.toLowerCase()))found=o;});return found;};
-      target.userData.bones={head:findSuffix(':head'),neck:findSuffix(':neck')};
-    }else{
-      const bones={};['root','pelvis','spine_01','spine_02','spine_03','clavicle_l','clavicle_r','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','head','neck_01'].forEach(n=>bones[n]=boneNamed(model,[n]));
-      target.userData.bones=bones;setArmRestPose(model);
-      const rest={};Object.keys(bones).forEach(k=>{const b=bones[k];if(b)rest[k]={rotation:b.rotation.clone(),quaternion:b.quaternion.clone()};});target.userData.restPose=rest;
+    target.add(model);
+    const mixer=new THREE.AnimationMixer(model);
+    const animations=gltf.animations||[];
+    const idleClip=chooseClip(animations,[/^idle(?:$|[_\s])/i,/idle/i])||animations[0]||null;
+    const walkClip=chooseClip(animations,[/^walking$/i,/walking_woman/i,/walking.*inplace/i,/walking_2/i,/^walk(?:ing)?/i]);
+    const sitClip=chooseClip(animations,[/sit/i]);
+    const actions={};
+    if(idleClip)actions.idle=mixer.clipAction(idleClip);
+    if(walkClip)actions.walk=mixer.clipAction(walkClip);
+    if(sitClip)actions.sit=mixer.clipAction(sitClip);
+    target.userData.avatarMixer=mixer;
+    target.userData.avatarActions=actions;
+    target.userData.avatarModel=model;
+    target.userData.avatarModelLoading=false;
+    target.userData.avatarModelLoaded=true;
+    target.userData.modelBaseY=model.position.y;
+    avatarActors.add(target);
+    setAvatarAnimation(target,target.userData.wantWalk?'walk':'idle');
+    if(target===preview){
+      statusAvatar(AVATAR_MODELS[id].label+' loaded. Choose another card to compare characters.');
+      const nextButton=document.getElementById('b1');if(nextButton)nextButton.disabled=false;
     }
-    realisticCharacters.add(target);
-    if(target===preview){refreshLookControlAvailability();statusAvatar(isFemale
-      ?'Female model loaded: your rigged Meshy character is active. Idle and walking use the clips you exported. The original outfit silhouette is fixed; palette options recolor regions.'
-      :'Male base loaded. Build, palette, and procedural outfit options are active.');}
-  }).catch(err=>{
-    target.userData.installPending=false;
-    console.warn('Could not load selected avatar model; keeping the built-in fallback.',err);
-    if(target===preview)statusAvatar((isFemale?'Female model failed to load. Check /assets/female-rigged-agent.glb. ':'Male base failed to load. Check /assets/human-base-rigged.glb. ')+ 'Built-in fallback remains visible.');
+    return model;
+  }).catch(error=>{
+    if(target.userData.avatarLoadToken===token){target.userData.avatarModelLoading=false;target.userData.avatarModelLoaded=false;}
+    if(target===preview){statusAvatar('Could not load '+AVATAR_MODELS[id].file+'. Check that the exact file is committed in public/assets and Render has redeployed.');const nextButton=document.getElementById('b1');if(nextButton)nextButton.disabled=true;}
+    console.error('Avatar selection load failed:',error);
+    throw error;
   });
 }
 function updateRealisticCharacters(dt,t){
-  for(const g of realisticCharacters){
-    if(!g.parent){realisticCharacters.delete(g);continue;}
-    const u=g.userData;
-    if(u.femaleRigged){
-      if(u.mixer)u.mixer.update(dt);
-      if(u.talking&&u.bones){const pulse=Math.sin(t*10.5)*0.012;if(u.bones.head)u.bones.head.rotation.x+=pulse;if(u.bones.neck)u.bones.neck.rotation.x+=pulse*0.25;}
-      continue;
-    }
-    const b=u.bones||{},r=u.restPose||{},model=u.__avatarModel;
-    // Restore every controlled joint from the rig's own rest pose before applying this frame.
-    ['clavicle_l','clavicle_r','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
-     'pelvis','spine_01','spine_02','spine_03','thigh_l','thigh_r','calf_l','calf_r',
-     'foot_l','foot_r','head','neck_01'].forEach(k=>{
-       if(b[k]&&r[k]) b[k].quaternion.copy(r[k].quaternion);
-     });
-    const phase=u.phase||0,amp=u.amp||0,wave=Math.sin(phase);
-    // A slower walking cadence avoids the rapid leg-flapping seen in the prior build.
-    const leftThigh=wave*0.29*amp,rightThigh=-wave*0.29*amp;
-    const leftKnee=Math.max(0,-wave)*0.34*amp,rightKnee=Math.max(0,wave)*0.34*amp;
-    if(b.thigh_l)b.thigh_l.rotation.x+=leftThigh;
-    if(b.thigh_r)b.thigh_r.rotation.x+=rightThigh;
-    if(b.calf_l)b.calf_l.rotation.x+=leftKnee;
-    if(b.calf_r)b.calf_r.rotation.x+=rightKnee;
-    // Counter-rotate ankles so feet stay closer to level as knees bend.
-    if(b.foot_l)b.foot_l.rotation.x-=leftThigh+leftKnee*0.85;
-    if(b.foot_r)b.foot_r.rotation.x-=rightThigh+rightKnee*0.85;
-    if(b.upperarm_l)b.upperarm_l.rotation.x-=leftThigh*0.62;
-    if(b.upperarm_r)b.upperarm_r.rotation.x-=rightThigh*0.62;
-    const sway=Math.cos(phase)*0.018*amp;
-    if(b.pelvis)b.pelvis.rotation.z+=sway;
-    if(b.spine_03)b.spine_03.rotation.z-=sway*0.6;
-    if(b.spine_03)b.spine_03.rotation.x+=Math.sin(t*1.7)*0.006*(1-amp);
-    // Very small body bob helps the gait read as walking without bouncing excessively.
-    if(model)model.position.y=(Number.isFinite(u.modelBaseY)?u.modelBaseY:0)+(0.5-0.5*Math.cos(phase*2))*0.012*amp;
-    if(u.talking){const pulse=Math.sin(t*10.5)*0.025;if(b.head)b.head.rotation.x+=pulse;if(b.neck_01)b.neck_01.rotation.x+=pulse*0.25;}
+  for(const target of avatarActors){
+    if(!target.parent||(target.parent!==scene&&!target.parent.parent)){avatarActors.delete(target);continue;}
+    if(target.userData.avatarMixer)target.userData.avatarMixer.update(dt);
   }
 }
 function walkAnim(g,dist,dt){
-  const u=g.userData||{},safeDt=Math.max(dt||0,1/240);
-  const speed=dist>0?dist/safeDt:0;
+  if(!g)return;
+  const u=g.userData||(g.userData={}),safeDt=Math.max(dt||0,1/240);
   const moving=dist>Math.max(0.0005,safeDt*0.08);
-  if(moving){
-    // Phase advances with elapsed time and walking speed, not 5.2 radians per world-unit.
-    // The old constant made a fast-moving player cycle the legs several times each second.
-    const cadence=4.9+Math.min(2.7,speed*0.70);
-    u.phase=(u.phase||0)+cadence*safeDt;
-    u.amp+=(1-u.amp)*Math.min(1,safeDt*7);
-  }else{
-    u.amp+=(0-u.amp)*Math.min(1,safeDt*5.5);
-  }
-  u.walking=moving;
-  if(u.femaleRigged){setFemaleAnimation(g,moving?'walk':'idle');return;}
-  if(!u.realistic&&u.legs&&u.arms){
-    const stride=Math.sin(u.phase||0)*0.40*(u.amp||0);
-    u.legs[0].rotation.x=stride;u.legs[1].rotation.x=-stride;
-    u.arms[0].rotation.x=-stride*0.52;u.arms[1].rotation.x=stride*0.52;
-  }
+  u.wantWalk=moving;
+  if(u.avatarActions){setAvatarAnimation(g,moving?'walk':'idle');}
 }
 
 const avatars={};let me=null,myId=null,preview=null;
-function makeAvatar(p){const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];const root=new THREE.Group();const L={...look,...(p.look||{})};L.body=L.body===1?1:0;const h=human(L,f.c);root.add(h);upgradeToRealistic(h,L);
-  const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.42;root.add(nt);const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.12;root.add(ft);
-  root.position.set(p.x,0,p.z);scene.add(root);return{name:p.name,g:root,h,tx:p.x,tz:p.z,try:p.ry||0,px:p.x,pz:p.z};}
-function setPreview(){if(preview)scene.remove(preview);preview=human(look,FIRMS[selFirm].c);preview.position.set(0,0,6);scene.add(preview);upgradeToRealistic(preview,look);}
+function makeAvatar(p){
+  const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];
+  const root=new THREE.Group();
+  const avatarId=validAvatarId(p.avatar||selectedAvatarId);
+  const body=new THREE.Group();body.userData.avatarId=avatarId;root.add(body);
+  loadSelectedModelInto(body,avatarId).catch(()=>{});
+  const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.36;root.add(nt);
+  const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.06;root.add(ft);
+  root.position.set(p.x,0,p.z);scene.add(root);
+  return{name:p.name,g:root,h:body,avatarId,tx:p.x,tz:p.z,try:p.ry||0,px:p.x,pz:p.z};
+}
+function setPreview(){
+  if(preview){scene.remove(preview);preview=null;}
+  const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;preview=target;scene.add(target);
+  const b=document.getElementById('b1');if(b)b.disabled=true;
+  statusAvatar('Loading '+AVATAR_MODELS[selectedAvatarId].label+'…');
+  loadSelectedModelInto(target,selectedAvatarId).catch(()=>{});
+}
+function renderAvatarChoices(){
+  const el=document.getElementById('looks');if(!el)return;
+  el.innerHTML='<label>Choose your agent</label><div class="avatar-choices" id="avatarChoices"></div><p class="sub" style="margin-top:4px">Each card loads a different complete rigged character. We will test color customization after model selection is confirmed.</p>';
+  const grid=document.getElementById('avatarChoices');
+  AVATAR_IDS.forEach(id=>{
+    const item=AVATAR_MODELS[id],button=document.createElement('button');
+    button.type='button';button.className='avatar-choice'+(id===selectedAvatarId?' sel':'');button.setAttribute('aria-pressed',String(id===selectedAvatarId));button.dataset.avatarId=id;
+    button.innerHTML='<span class="avatar-gender">'+item.gender+'</span><b>'+item.label+'</b><span>'+item.description+'</span>';
+    button.onclick=()=>{
+      if(selectedAvatarId===id){if(preview&&!preview.userData.avatarModelLoaded&&!preview.userData.avatarModelLoading)setPreview();return;}
+      selectedAvatarId=id;
+      try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
+      renderAvatarChoices();setPreview();
+    };
+    grid.appendChild(button);
+  });
+}
 
-// ambient pedestrians (deterministic from clock, so every player sees them in the same place)
+// Ambient pedestrians use the same four distinct rigged character choices.
 const PEDS=[];[['z',7,-46,46,1.5,0],['z',-7.2,-46,46,1.3,40],['z',7.4,-46,46,1.7,95],['x',7,-46,46,1.4,20],['x',-7.2,-46,46,1.6,70],['x',7.3,-46,46,1.2,130],['z',-6.8,-46,46,1.5,150],['x',-7,-46,46,1.3,10]]
- .forEach((d,i)=>{const L={body:i%2,height:i%3,b:i%3,s:(i*3)%6,face:i%3,h:i%6,hc:(i*2)%6,fh:i%4,eye:i%4,j:(i*2+1)%6,p:i%4,o:i%4};const h=human(L,null);h.userData.look={...L};scene.add(h);if(cityEntered)upgradeToRealistic(h,L);PEDS.push({h,d});});
+ .forEach((d,i)=>{const h=new THREE.Group(),avatarId=AVATAR_IDS[(i+1)%AVATAR_IDS.length];h.userData.avatarId=avatarId;scene.add(h);PEDS.push({h,d,avatarId});});
 function updatePeds(t,dt){PEDS.forEach(({h,d})=>{const[ax,fx,lo,hi,sp,off]=d,L=hi-lo,u=(t*sp+off)%(2*L),dir=u<L?1:-1,pos=u<L?lo+u:hi-(u-L);
   const nx=ax==='z'?fx:pos,nz=ax==='z'?pos:fx;const dist=Math.hypot(nx-h.position.x,nz-h.position.z);walkAnim(h,dist,dt);
   h.position.set(nx,0,nz);h.rotation.y=ax==='z'?(dir>0?0:Math.PI):(dir>0?Math.PI/2:-Math.PI/2);});}
 
 // ---------- UI ----------
-const looksEl=document.getElementById('looks');
-OPTS.forEach(([k,title,items])=>{const l=document.createElement('label');l.textContent=title;l.dataset.lookKey=k;looksEl.appendChild(l);const r=document.createElement('div');r.className='row';r.dataset.lookKey=k;
-  items.forEach((it,i)=>{const b=document.createElement('div');const col=typeof it==='number';b.className='opt'+(col?' sw':'')+(look[k]===i?' sel':'');if(col)b.style.background=hex(it);else b.textContent=it;
-    b.setAttribute('role','button');b.tabIndex=0;b.onclick=()=>{look[k]=i;try{localStorage.setItem('rew-avatar-look-v3',JSON.stringify(look));}catch(e){}[...r.children].forEach((e,j)=>e.classList.toggle('sel',j===i));setPreview();refreshLookControlAvailability();};b.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();b.click();}};r.appendChild(b);});looksEl.appendChild(r);});
 const E=id=>document.getElementById(id);
 function show(id){['s0','s1','s2','s4'].forEach(s=>E(s).style.display=s===id?'block':'none');}
 function renderFirms(){const el=E('firms');el.innerHTML='';[['Modern / Competitive',0],['Luxury',1]].forEach(([t,g])=>{const h=document.createElement('label');h.textContent=t;el.appendChild(h);const w=document.createElement('div');w.className='firms';
@@ -620,8 +367,7 @@ function speakNaomi(text){
 }
 function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button>';}
 function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
-function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}if(!on){stopNaomiSpeech();return;}mentorG=new THREE.Group();const L={body:0,height:1,b:2,s:3,face:0,h:4,hc:5,fh:0,eye:0,j:1,p:2,o:0};const h=human(L,0x2ecc71);mentorBody=h;mentorG.add(h);upgradeToRealistic(h,L);const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.7;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}
-function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
+function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}if(!on){stopNaomiSpeech();return;}mentorG=new THREE.Group();mentorBody=new THREE.Group();mentorBody.userData.avatarId='female2';mentorG.add(mentorBody);loadSelectedModelInto(mentorBody,'female2').catch(()=>{});const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.48;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
 function start(m){SEQ=[];score=0;si=0;if(m==='g'){QZ.forEach((x,i)=>{SEQ.push({t:'s',i});SEQ.push({t:'q',i});});}else{[[0,5],[5,10]].forEach(([a,b])=>{for(let i=a;i<b;i++)SEQ.push({t:'s',i});for(let i=a;i<b;i++)SEQ.push({t:'q',i});});}lesson();}
 function lesson(){const st=SEQ[si],el=E('lesson');if(!st){finish();return;}const x=QZ[st.i],pr='<div class=k>Step '+(si+1)+' of '+SEQ.length+' · Score '+score+'</div>';
   if(st.t==='s'){el.innerHTML=voiceButton()+pr+'<div class=bubble><b>Naomi</b><br>'+x.f+'</div><button class="go" onclick="adv()">Got it</button>';speakNaomi(x.f);}
@@ -634,11 +380,11 @@ function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of
 function toFirm(){mentor(false);show('s4');}
 E('b0').onclick=()=>show('s1');E('b1').onclick=()=>{show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter')E('b1').click();});
-E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look});E('join').style.display='none';};
-renderFirms();setPreview();refreshLookControlAvailability();show('s0');
+E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look,avatar:selectedAvatarId});E('join').style.display='none';};
+renderFirms();renderAvatarChoices();setPreview();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
 socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
-  me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PEDS.forEach(({h})=>{if(!h.userData.realistic)upgradeToRealistic(h,h.userData.look||look);});PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
+  me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PEDS.forEach(({h,avatarId})=>{if(!h.userData.avatarModelLoading&&!h.userData.avatarModelLoaded)loadSelectedModelInto(h,avatarId).catch(()=>{});});PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
 socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud();});
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
 socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;avatars[id].tx=st[id].x;avatars[id].tz=st[id].z;avatars[id].try=st[id].ry;avatars[id].n=st[id].n||0;avatars[id].g.visible=avatars[id].n===G.nb;}});
@@ -651,8 +397,8 @@ const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,nea
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
 const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
 const NYC="Co-ops need board approval; condos are easier to buy. Buyers pay a 1% mansion tax on purchases of $1M or more. Rental security deposits are capped at one month's rent, and landlords commonly want annual income of 40× the monthly rent. (Approximate figures for gameplay.)";
-function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group();const variantByName={Maya:0,Robert:1,Priya:0,Daniel:1,Elena:0,Marcus:1,Leo:1,Nora:0,Theo:1};const npcLook={...look,body:Number.isInteger(look.body)?look.body:(variantByName[name]??(name.length%2)),height:Number.isInteger(look.height)?look.height:(name.length%3),h:Number.isInteger(look.h)?look.h:(name.length%6),hc:Number.isInteger(look.hc)?look.hc:(name.length%6),o:Number.isInteger(look.o)?look.o:(name.length%4)};const h=human(npcLook,null);g.add(h);upgradeToRealistic(h,npcLook);const t=label(name+" · "+tag,col,2.8);t.position.y=2.55;g.add(t);const m=label("!",col,1.1);m.position.y=3.15;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z};}
-function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
+function avatarForNpc(name){const map={Naomi:'female2',Maya:'female1',Robert:'male1',Priya:'female2',Daniel:'male2',Elena:'female1',Marcus:'male1',Leo:'male2',Nora:'female2',Theo:'male2'};if(map[name])return map[name];let score=0;for(const ch of String(name||''))score=(score+ch.charCodeAt(0))%AVATAR_IDS.length;return AVATAR_IDS[score];}
+function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group(),avatarId=avatarForNpc(name),body=new THREE.Group();body.userData.avatarId=avatarId;g.add(body);loadSelectedModelInto(body,avatarId).catch(()=>{});const t=label(name+" · "+tag,col,2.8);t.position.y=2.48;g.add(t);const m=label("!",col,1.1);m.position.y=3.10;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z,avatarId};}function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
   NB[G.nb].pros.forEach((p,i)=>{const P=G.P[G.nb+"-"+i];if(P&&(P.lost||P.done))return;const n=mkNpc(p.look,p.n,p.rent?"Landlord":"Client","#ffd54a",p.x,p.z);n.t={k:"s",pi:i};n.name=p.n;NPCS.push(n);});
   Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const n=mkNpc(b.look,b.n,P.p.rent?"Tenant?":"Buyer?","#7fd0ff",b.x,b.z);n.t={k:"b",pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});}
 function mk(p,ni,pi){let s=(ni+1)*97+(pi+1)*31;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};

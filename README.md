@@ -1,43 +1,35 @@
-# RealEstate World — Clean Rebuild (Rigged Humanoid)
+# RealEstate World — Four Character Selection Test
 
-This folder is a complete deployable project for the current game code and its required avatar asset. It avoids the large, unrigged scanned character files that caused upload issues.
+This build focuses only on the first avatar checkpoint: choose among four separate complete rigged GLB characters. It preserves the existing RealEstate World career systems, Socket.IO multiplayer, licensing quiz, property listings, and movement code. The creator no longer substitutes the old cartoon while the selected model loads, and it does not deform or recolor the supplied model.
 
-## Included
+## Included models
 
-- `index.html` — the existing game with a shared rigged humanoid avatar pipeline, creator controls, NPCs, career UI, and multiplayer client.
-- `server.js` — Express + Socket.IO server and asset routing.
-- `package.json` — runtime dependencies and start command.
-- `public/assets/human-base-rigged.glb` — the only GLB required by this build (about 4.8 MB).
+- `public/assets/female-agent-1.glb` — source: `Female_rigged_agent.glb` (23.58 MiB)
+- `public/assets/female-agent-2.glb` — source: `Female_rigged_agent1.glb` (22.87 MiB)
+- `public/assets/male-agent-1.glb` — source: `Male_rigged_agent1.glb` (18.72 MiB)
+- `public/assets/male-agent-2.glb` — source: `Male_rigged_agent(1).glb` (24.74 MiB; reduced-clip version)
 
-This build intentionally does not require `woman.glb`, `man.glb`, `businessman.glb`, or `idle-standing-maya-3d-person-animated.glb`; the code loads the rigged human base only. The other uploaded GLBs are not required for the current procedural world and avatar implementation.
+The duplicated `Female_rigged_agent1(1).glb` and older over-limit `Male_rigged_agent.glb` are omitted. Each included GLB has its own mesh, embedded materials/textures, humanoid skeleton, and animation clips. The test currently uses each model's idle and walking clip. Hair, skin, and clothing recoloring is intentionally not exposed until model selection is confirmed.
 
-## Upload to GitHub
+## Safest way to apply this update
 
-1. Extract this ZIP on your computer. **Do not upload the ZIP as a repository file.**
-2. In `https://github.com/Nushi12/RE`, add these extracted files/folders to the repository root, replacing existing `index.html` and `server.js`:
-   - `index.html`
-   - `server.js`
-   - `package.json`
-   - `.gitignore`
-   - `README.md`
-   - `public/assets/human-base-rigged.glb`
-3. Keep the `public/assets` path exactly as written. The GLB is under GitHub's browser upload size limit; the whole ZIP is also small.
-4. Commit the upload. Wait for the correct Render service to deploy.
+Do not delete the existing repository or any old model files yet. In `https://github.com/Nushi12/RE`:
 
-Do not upload the model to the repository root only; this project expects it at `public/assets/human-base-rigged.glb`.
+1. Replace only the root `index.html` and `server.js` with the versions in this package.
+2. Add the four `.glb` files from `public/assets/` to the same `public/assets/` folder in GitHub, using the exact filenames above. Upload them individually if GitHub's browser is unreliable. Do not upload the ZIP itself.
+3. Keep the existing `package.json`, `package-lock.json` / `yarn.lock`, and other game files as they are; this patch still uses Express and Socket.IO.
+4. Commit the two source files and four assets to `main`. Wait for Render's deployment to complete.
 
-## Render settings
+## First test only: avatar selection
 
-The existing Render build command `yarn` can install these dependencies from `package.json`, as your logs showed. If you want a matching npm setup instead, use build command `npm install` and start command `npm start`. Start command `node server.js` also works.
+1. Open `/version` on the exact Render service shown in its dashboard. It should display `REW-FOUR-RIGGED-AVATAR-SELECTION-TEST-2026-10-19`.
+2. Open the game, click **Begin**, and select each of the four avatar cards.
+3. Confirm the 3D preview changes to the corresponding character model before clicking Continue.
+4. Enter the city and confirm that the same selected character is the player avatar.
 
-After deployment, verify the service URL shown in that Render service's dashboard:
+Do not test colors or adjust animations until those four selection checks pass. If a model fails to load, record the first red Console error and the failing `/assets/<filename>` URL.
 
-- `/version` should display `REW-HUMANOID-BASE-2026-10-18`
-- `/healthz` should return JSON with `"status":"ok"`
-- `/assets/human-base-rigged.glb` should load or download the 3D model
+## Notes
 
-The screenshots shared earlier showed more than one Render URL, so use the URL shown on the same service you deploy.
-
-## Important limitations
-
-This is a first procedural character creator, not a finished asset-based wardrobe. The supplied human base is rigged but contains no animation clips or built-in body/face morph targets. The page creates body-presentation/build variations and clothing surfaces in code and drives a basic walking gait. Realistic standalone clothing meshes, high-quality male/female anatomy variants, and a polished walk animation still require compatible 3D assets or more Blender work. Test the result in the browser before treating the avatar work as complete.
+- All four individual model files are below 25 MiB for GitHub's browser upload. `male-agent-2.glb` is near the limit, at 24.74 MiB; if GitHub rejects it, ask for a small texture-size optimization rather than removing more animations.
+- This source and package have been syntax/structure checked, but not visually tested on the live Render service. The live model-selection test is the next checkpoint.
