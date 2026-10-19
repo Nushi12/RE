@@ -46,9 +46,10 @@ try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for
 // Only Female and Male are supported. Map any previously saved third option to Male.
 look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
-const CREATOR_BUILD='REW-RIGGED-BASE-AVATAR-FIX';
+const CREATOR_BUILD='REW-AVATAR-ATTRIBUTE-ACCESS-FIX-2026-10-19';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
+console.info('Avatar loader compatibility: BufferAttribute values use getX/getY/getZ/getW.');
 const BODY_OPTIONS=['Female','Male'];
 const OPTS=[['body','Character type / body',BODY_OPTIONS],['height','Height',['Petite','Average','Tall']],['b','Build',['Slim','Average','Broad']],['face','Face shape',['Soft','Angular','Round']],['s','Skin tone',SKIN],['h','Hair style',['Short','Long','Bun','Curly','Ponytail','Bald']],['hc','Hair color',HAIRC],['fh','Facial hair',['None','Stubble','Full beard','Mustache']],['eye','Eye color',EYES],['o','Outfit',['Blazer & slacks','Blouse & slacks','Dress','Smart casual']],['j','Top color',JACK],['p','Trousers / shoes',PANT]];
 const NB=[
@@ -266,6 +267,17 @@ function shapeHumanoidGeometry(geometry,L){
   pos.needsUpdate=true;
   geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
 }
+// Three.js r128 BufferAttribute has getX/getY/getZ/getW, not getComponent.
+// Read one component through its supported API, with a safe raw-array fallback.
+function attrComponent(attribute,index,component){
+  if(!attribute || !attribute.array) return 0;
+  const getters=['getX','getY','getZ','getW'];
+  const getter=getters[component];
+  if(getter && typeof attribute[getter]==='function') return attribute[getter](index);
+  const value=attribute.array[index*attribute.itemSize+component];
+  return Number.isFinite(value) ? value : 0;
+}
+
 function triangleWeightInfo(geom,bodyMesh,start){
   const pos=geom.getAttribute('position'),si=geom.getAttribute('skinIndex'),sw=geom.getAttribute('skinWeight');
   const boneNames=bodyMesh.skeleton.bones.map(b=>String(b.name||'').toLowerCase());
@@ -274,7 +286,7 @@ function triangleWeightInfo(geom,bodyMesh,start){
     x+=pos.getX(v)/3;y+=pos.getY(v)/3;z+=pos.getZ(v)/3;
     if(!si||!sw)continue;
     for(let k=0;k<4;k++){
-      const w=sw.getComponent(v,k),name=boneNames[si.getComponent(v,k)]||'';
+      const w=attrComponent(sw,v,k),name=boneNames[attrComponent(si,v,k)]||'';
       if(/clavicle|upperarm|lowerarm/.test(name)){arm+=w/3;if(/upperarm/.test(name))upperArm+=w/3;}
       if(/thigh|calf/.test(name))leg+=w/3;
       if(/foot|ball/.test(name))foot+=w/3;
@@ -292,8 +304,8 @@ function subsetGeometry(source,bodyMesh,predicate,offset=0){
     const info=triangleWeightInfo(geom,bodyMesh,i);if(!predicate(info))continue;
     for(let v=i;v<i+3;v++)for(const key of keys){
       const a=geom.getAttribute(key);for(let c=0;c<a.itemSize;c++){
-        let val=a.getComponent(v,c);
-        if(key==='position'&&norm&&offset){const n=norm;val+=n.getComponent(v,c)*offset;}
+        let val=attrComponent(a,v,c);
+        if(key==='position'&&norm&&offset){const n=norm;val+=attrComponent(n,v,c)*offset;}
         data[key].push(val);
       }
     }
@@ -399,7 +411,7 @@ function tintFemaleMesh(model,L){
     for(let i=0;i<pos.count;i++){
       const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);let skin=0,head=0,hands=0,neck=0,legs=0,feet=0,arms=0;
       for(let k=0;k<4;k++){
-        const bi=si.getComponent(i,k),w=sw.getComponent(i,k),n=boneNames[bi]||'';
+        const bi=attrComponent(si,i,k),w=attrComponent(sw,i,k),n=boneNames[bi]||'';
         if(/head/.test(n))head+=w;
         if(/neck/.test(n))neck+=w;
         if(/hand|thumb|index|middle|pinky|ring|finger/.test(n))hands+=w;
