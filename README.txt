@@ -1,22 +1,43 @@
-RealEstate World — realistic avatar integration (first pass)
+# RealEstate World — Clean Rebuild (Rigged Humanoid)
 
-Files included
-- index.html: current game with GLTFLoader, realistic rigged avatar replacement, appearance tinting, animation updates, and Naomi browser voice narration.
-- server.js: current Socket.IO server with /assets static-file hosting.
-- public/assets/idle-standing-maya-3d-person-animated.glb: supplied clothed, textured, rigged human with Idle_Standing animation; used as the first visible human template.
-- public/assets/human-base-rigged.glb: supplied 53-bone anatomical base rig, included for the upcoming modular body/clothing system. It has no clothes or animation clip, so it is not displayed as a naked character in this pass.
+This folder is a complete deployable project for the current game code and its required avatar asset. It avoids the large, unrigged scanned character files that caused upload issues.
 
-What this pass does
-- Replaces procedural bodies with the realistic Maya character after the GLB loads, retaining a procedural fallback if loading fails.
-- Uses skeleton-safe cloning for players, NPCs, pedestrians, preview, and senior agent.
-- Runs the supplied idle animation. Adds a light bone-based stride overlay while characters move; a dedicated walk clip would improve foot contact.
-- Applies per-character skin, hair, top, and trouser color tints so players/NPCs are not all tinted the same. Current GLB provides one clothing silhouette and one hairstyle mesh, so full garment/hairstyle swaps require additional compatible assets.
-- Naomi reads the same training fact/question/feedback text shown in the career/training panel using browser speech, with small head/neck gestures during narration. Browser speech and voices vary by device; mouth lip-sync is not included because this GLB has no jaw/lip rig.
+## Included
 
-Deploy
-1. Replace your existing index.html and server.js with these files.
-2. Copy the included public/assets folder beside server.js.
-3. Keep your existing package.json and dependencies (express and socket.io).
-4. Commit and push to GitHub; Render should redeploy the service.
+- `index.html` — the existing game with a shared rigged humanoid avatar pipeline, creator controls, NPCs, career UI, and multiplayer client.
+- `server.js` — Express + Socket.IO server and asset routing.
+- `package.json` — runtime dependencies and start command.
+- `public/assets/human-base-rigged.glb` — the only GLB required by this build (about 4.8 MB).
 
-The change does not modify your existing movement, Socket.IO messages, career state, licensing quiz, firm selection, or dashboard workflow. Test locally before deploying.
+This build intentionally does not require `woman.glb`, `man.glb`, `businessman.glb`, or `idle-standing-maya-3d-person-animated.glb`; the code loads the rigged human base only. The other uploaded GLBs are not required for the current procedural world and avatar implementation.
+
+## Upload to GitHub
+
+1. Extract this ZIP on your computer. **Do not upload the ZIP as a repository file.**
+2. In `https://github.com/Nushi12/RE`, add these extracted files/folders to the repository root, replacing existing `index.html` and `server.js`:
+   - `index.html`
+   - `server.js`
+   - `package.json`
+   - `.gitignore`
+   - `README.md`
+   - `public/assets/human-base-rigged.glb`
+3. Keep the `public/assets` path exactly as written. The GLB is under GitHub's browser upload size limit; the whole ZIP is also small.
+4. Commit the upload. Wait for the correct Render service to deploy.
+
+Do not upload the model to the repository root only; this project expects it at `public/assets/human-base-rigged.glb`.
+
+## Render settings
+
+The existing Render build command `yarn` can install these dependencies from `package.json`, as your logs showed. If you want a matching npm setup instead, use build command `npm install` and start command `npm start`. Start command `node server.js` also works.
+
+After deployment, verify the service URL shown in that Render service's dashboard:
+
+- `/version` should display `REW-HUMANOID-BASE-2026-10-18`
+- `/healthz` should return JSON with `"status":"ok"`
+- `/assets/human-base-rigged.glb` should load or download the 3D model
+
+The screenshots shared earlier showed more than one Render URL, so use the URL shown on the same service you deploy.
+
+## Important limitations
+
+This is a first procedural character creator, not a finished asset-based wardrobe. The supplied human base is rigged but contains no animation clips or built-in body/face morph targets. The page creates body-presentation/build variations and clothing surfaces in code and drives a basic walking gait. Realistic standalone clothing meshes, high-quality male/female anatomy variants, and a polished walk animation still require compatible 3D assets or more Blender work. Test the result in the browser before treating the avatar work as complete.

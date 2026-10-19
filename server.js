@@ -8,27 +8,32 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// GLB files can live in public/assets (recommended) or beside server.js (current GitHub layout).
 const ASSET_DIR = path.join(__dirname, 'public', 'assets');
-const ALLOWED_ASSETS = new Set([
-  'human-base-rigged.glb', 'idle-standing-maya-3d-person-animated.glb',
-  'woman.glb', 'man.glb', 'businessman.glb', 'classic-car-light.glb',
-  'trash-bag-pile.glb', 'bike-rack.glb', 'bus-stop-shelter.glb', 'park-bench.glb'
-]);
+const ALLOWED_GLB = new Set(['human-base-rigged.glb']);
 app.use('/assets', express.static(ASSET_DIR, { maxAge: '1d' }));
 app.get('/assets/:filename', (req, res) => {
   const filename = path.basename(req.params.filename || '');
-  if (!ALLOWED_ASSETS.has(filename)) return res.sendStatus(404);
+  if (!ALLOWED_GLB.has(filename)) return res.sendStatus(404);
   const publicFile = path.join(ASSET_DIR, filename);
   const rootFile = path.join(__dirname, filename);
   const file = fs.existsSync(publicFile) ? publicFile : rootFile;
-  if (!fs.existsSync(file)) return res.status(404).send('Model not found: ' + filename);
-  return res.sendFile(file);
+  if (!fs.existsSync(file)) return res.status(404).send('Avatar model not found: ' + filename);
+  res.sendFile(file);
 });
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/version', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.type('text/plain').send('REW-HUMANOID-BASE-2026-10-18');
+});
+app.get('/healthz', (req, res) => res.status(200).json({ status: 'ok', build: 'REW-HUMANOID-BASE-2026-10-18' }));
+app.get('/', (req, res) => {
+  res.set('Cache-Control', 'no-store, max-age=0');
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 const FIRMS = ['Elevate Realty','Nexus Real Estate','Vantage Realty','Vertex Properties','Northstar Realty','Haven Real Estate','UrbanEdge Realty','Momentum Realty','Blackstone Estates','Sterling Estates','Aurelia Realty','Park & Crown','Summit Estates','Bellmont Properties'];
 const LIMIT = 48;
-const RANGES = { b: 3, s: 6, h: 6, hc: 6, j: 6, p: 4, o: 3, sex: 2, fit: 2, height: 3 };
+const RANGES = { body: 3, height: 3, b: 3, face: 3, s: 6, h: 6, hc: 6, fh: 4, eye: 4, j: 6, p: 4, o: 4 }; // accepted customizable avatar choices
 const players = {};
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function cleanLook(l = {}) {
@@ -76,4 +81,4 @@ setInterval(() => {
 }, 66);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log('RealEstate World running on port ' + PORT));
+server.listen(PORT, () => console.log('RealEstate World REW-HUMANOID-BASE-2026-10-18 running on port ' + PORT));
