@@ -42,12 +42,20 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 .avatar-picked{position:absolute;top:10px;right:10px;width:25px;height:25px;border-radius:50%;display:none;align-items:center;justify-content:center;background:#3b82f6;color:#fff;font-size:17px;font-weight:800;box-shadow:0 2px 8px #0008}
 .avatar-choice.sel .avatar-picked{display:flex}
 #b1:disabled{opacity:.48;cursor:wait}
+.color-test{border:1px solid #2c3f56;background:#101a28;border-radius:10px;padding:9px 10px;margin:8px 0 10px}
+.color-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:7px 0}
+.color-title{width:94px;font-size:11px;letter-spacing:.04em;font-weight:800;color:#d8e4f2;text-transform:uppercase;flex-shrink:0}
+.color-swatch{height:30px;min-width:31px;border-radius:8px;padding:0 8px;border:2px solid #3a4d64;background:var(--swatch);cursor:pointer;color:#fff;font-size:10px;font-weight:700;text-shadow:0 1px 3px #000;box-shadow:inset 0 0 0 1px #0003}
+.color-swatch[data-value="original"]{background:linear-gradient(135deg,#253449 0 45%,#e9edf1 45% 55%,#253449 55%);min-width:57px}
+.color-swatch.sel{border-color:#fff;outline:2px solid #60a5fa;outline-offset:1px}
+.color-note{font-size:10px;line-height:1.35;color:#9fb3c8;margin:2px 0 0}
+
 @media(max-width:440px){#card{padding:14px}.avatar-preview-wrap{height:170px}.gender-choice{min-height:94px}}
 </style></head><body>
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
 <div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
-<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
+<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><div id="colorTest" class="color-test"><div class="color-row"><span class="color-title">Skin tone</span><div id="skinSwatches" class="row"></div></div><div class="color-row"><span class="color-title">Outfit color</span><div id="outfitSwatches" class="row"></div></div><p class="color-note">Experimental color preview. Some texture areas may tint together when a model combines skin and clothing in one texture.</p></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
@@ -66,7 +74,7 @@ try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for
 // Only Female and Male are supported. Map any previously saved third option to Male.
 look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
-const CREATOR_BUILD='REW-FOUR-RIGGED-AVATAR-SELECTION-TEST-2026-10-19';
+const CREATOR_BUILD='REW-MALE-COLOR-NPC-FIX-2026-10-19';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
 const BODY_OPTIONS=['Female','Male'];
@@ -86,11 +94,11 @@ NB.forEach((n,i)=>n.i=i);
 // ---------- scene ----------
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9fc3e6);scene.fog=new THREE.Fog(0x9fc3e6,70,170);
 const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.3,300);
-const renderer=new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
+const renderer=new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;
 document.body.appendChild(renderer.domElement);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);fit();});
 scene.add(new THREE.HemisphereLight(0xffffff,0x8a8070,0.65));
-const sun=new THREE.DirectionalLight(0xfff1dc,0.7);sun.position.set(45,70,25);sun.castShadow=true;
+const sun=new THREE.DirectionalLight(0xfff1dc,0.7);sun.position.set(45,70,25);sun.castShadow=false;
 Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,far:200});sun.shadow.mapSize.set(2048,2048);scene.add(sun);
 
 const UB=new THREE.BoxGeometry(1,1,1),mc={};
@@ -164,8 +172,8 @@ function collide(p){for(const b of B){const hx=b.w/2+0.5,hz=b.d/2+0.5,dx=p.x-b.x
 // ---------- humanoid avatars ----------
 function human(L,fc){
   const g=new THREE.Group(),sk=mat(SKIN[L.s]),hr=mat(HAIRC[L.hc]),o=L.o||0,jk=mat(JACK[L.j]),pt=mat(PANT[L.p]),sh=mat(o===1?0xcfdceb:0xf4f6f8),ch=[0.27,0.31,0.36][L.b],wa=ch*(L.b===0?0.68:0.8);
-  const S=(r,x,y,z,m,sx,sy,sz,par)=>{const e=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),m);e.position.set(x,y,z);e.scale.set(sx||1,sy||1,sz||1);e.castShadow=true;(par||g).add(e);return e;};
-  const C=(rt,rb,h,x,y,z,m,par)=>{const e=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,16),m);e.position.set(x,y,z);e.castShadow=true;(par||g).add(e);return e;};
+  const S=(r,x,y,z,m,sx,sy,sz,par)=>{const e=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),m);e.position.set(x,y,z);e.scale.set(sx||1,sy||1,sz||1);e.castShadow=false;(par||g).add(e);return e;};
+  const C=(rt,rb,h,x,y,z,m,par)=>{const e=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,16),m);e.position.set(x,y,z);e.castShadow=false;(par||g).add(e);return e;};
   const legs=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*0.11,0.92,0);g.add(p);const lm=o===2?sk:pt;C(0.1,0.075,0.5,0,-0.27,0,lm,p);C(0.075,0.058,0.46,0,-0.7,0,lm,p);S(0.088,0,-0.93,0.06,mat(0x2b211c),1,0.5,1.9,p);return p;});
   const prof=[[0.001,0.9],[wa,0.92],[wa,1.08],[ch*0.95,1.34],[ch,1.5],[ch*0.68,1.63],[0.095,1.7],[0.001,1.72]].map(a=>new THREE.Vector2(a[0],a[1]));
   const tor=new THREE.Mesh(new THREE.LatheGeometry(prof,22),o===1?sh:jk);tor.scale.z=0.62;tor.castShadow=true;g.add(tor);
@@ -193,20 +201,121 @@ function human(L,fc){
   g.userData={legs,arms,phase:0,amp:0};return g;
 }
 // ---------- four complete rigged avatar models ----------
-// Each option loads its own full GLB. No vertex reshaping, material recoloring, or procedural clothing is applied.
+// Each selectable agent is a full GLB. Color testing uses shader masks on the baked texture; it never reshapes or changes rigging.
 const AVATAR_MODELS={
   // Try the clean filenames first, then the original uploaded filenames as fallbacks.
   // This handles capitalization, underscores, and hyphens in GitHub filenames.
   female1:{label:'Female Agent 1',gender:'Female',file:'female-agent-1.glb',aliases:['Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character'},
   female2:{label:'Female Agent 2',gender:'Female',file:'female-agent-2.glb',aliases:['Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Different complete character'},
-  male1:{label:'Male Agent 1',gender:'Male',file:'male-agent-1.glb',aliases:['Male_rigged_agent1.glb','male_rigged_agent1.glb'],description:'Complete textured character'},
-  male2:{label:'Male Agent 2',gender:'Male',file:'male-agent-2.glb',aliases:['Male_rigged_agent(1).glb','male_rigged_agent(1).glb'],description:'Different complete character'}
+  male1:{label:'Male Agent 1',gender:'Male',file:'male-agent-1.glb',aliases:['Male_rigged_agent1.glb','Male_rigged_agent.glb','male_rigged_agent1.glb'],description:'Complete textured character'},
+  male2:{label:'Male Agent 2',gender:'Male',file:'male-agent-2.glb',aliases:['Male_rigged_agent(1).glb','Male_rigged_agent.glb','male_rigged_agent(1).glb'],description:'Different complete character'}
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
 let selectedAvatarId='female1';
 try{const stored=localStorage.getItem('rew-selected-rigged-avatar-v1');if(stored&&AVATAR_MODELS[stored])selectedAvatarId=stored;}catch(e){}
 let selectedGender=AVATAR_MODELS[selectedAvatarId].gender;
+const SKIN_TONE_COLORS={original:null,porcelain:'#f2d1bc',warm:'#d9a17c',caramel:'#b77952',deep:'#70462f'};
+const OUTFIT_COLORS={original:null,navy:'#263b61',burgundy:'#7a2637',teal:'#286c65',camel:'#a98255',charcoal:'#343a40'};
+let selectedSkinTone='original',selectedOutfitColor='original';
+try{
+  const savedSkin=localStorage.getItem('rew-avatar-skin-tone-v1');
+  const savedOutfit=localStorage.getItem('rew-avatar-outfit-color-v1');
+  if(savedSkin && Object.prototype.hasOwnProperty.call(SKIN_TONE_COLORS,savedSkin))selectedSkinTone=savedSkin;
+  if(savedOutfit && Object.prototype.hasOwnProperty.call(OUTFIT_COLORS,savedOutfit))selectedOutfitColor=savedOutfit;
+}catch(e){}
+function colorHexFromPalette(palette,key){return Object.prototype.hasOwnProperty.call(palette,key)?palette[key]:null;}
+function renderColorSwatches(containerId,palette,selectedKey,title,handler){
+  const root=document.getElementById(containerId);if(!root)return;root.innerHTML='';
+  const names={original:'Original',porcelain:'Light',warm:'Warm',caramel:'Caramel',deep:'Deep',navy:'Navy',burgundy:'Burgundy',teal:'Teal',camel:'Camel',charcoal:'Charcoal'};
+  Object.entries(palette).forEach(([key,value])=>{
+    const b=document.createElement('button');b.type='button';b.className='color-swatch'+(key===selectedKey?' sel':'');
+    b.dataset.value=key;b.title=title+': '+(names[key]||key);b.setAttribute('aria-label',b.title);b.setAttribute('aria-pressed',String(key===selectedKey));
+    if(value)b.style.setProperty('--swatch',value);else b.textContent='Original';
+    b.onclick=()=>handler(key);root.appendChild(b);
+  });
+}
+function renderColorControls(){
+  renderColorSwatches('skinSwatches',SKIN_TONE_COLORS,selectedSkinTone,'Skin tone',key=>{
+    selectedSkinTone=key;try{localStorage.setItem('rew-avatar-skin-tone-v1',key);}catch(e){}
+    renderColorControls();setPreview();refreshAvatarTintPreviews();
+  });
+  renderColorSwatches('outfitSwatches',OUTFIT_COLORS,selectedOutfitColor,'Outfit color',key=>{
+    selectedOutfitColor=key;try{localStorage.setItem('rew-avatar-outfit-color-v1',key);}catch(e){}
+    renderColorControls();setPreview();refreshAvatarTintPreviews();
+  });
+}
+function applyAvatarColorTest(model,id,skinKey,outfitKey){
+  const skinHex=colorHexFromPalette(SKIN_TONE_COLORS,skinKey||'original');
+  const outfitHex=colorHexFromPalette(OUTFIT_COLORS,outfitKey||'original');
+  const safeId=validAvatarId(id);
+  const masks={
+    female1:'bool rewOutfitPx = (rewSrc.b > rewSrc.r * 1.07 && rewSrc.b > rewSrc.g * 1.02 && rewLuma < 0.19) || (rewLuma > 0.004 && rewLuma < 0.075 && (rewMax-rewMin)<0.022);',
+    female2:'bool rewOutfitPx = (rewSrc.r > rewSrc.g * 1.22 && rewSrc.r > rewSrc.b * 1.12 && rewLuma < 0.16 && (rewSrc.r-rewSrc.g)>0.012);',
+    male1:'bool rewOutfitPx = (rewLuma > 0.004 && rewLuma < 0.105 && (rewMax-rewMin)<0.038);',
+    male2:'bool rewOutfitPx = (rewLuma > 0.018 && rewLuma < 0.235 && (rewMax-rewMin)<0.065);'
+  };
+  model.traverse(mesh=>{
+    if(!mesh.isMesh||!mesh.material)return;
+    const wasArray=Array.isArray(mesh.material),sourceMaterials=wasArray?mesh.material:[mesh.material];
+    const tinted=sourceMaterials.map(source=>{
+      let material=source;
+      if(!(material.userData&&material.userData.rewAvatarTintClone&&material.userData.rewTintState)){
+        material=source.clone();
+        material.userData=Object.assign({},source.userData||{},{rewAvatarTintClone:true});
+        const state={
+          skinUniform:{value:new THREE.Color('#ffffff')},
+          outfitUniform:{value:new THREE.Color('#ffffff')},
+          skinEnabledUniform:{value:0.0},
+          outfitEnabledUniform:{value:0.0}
+        };
+        material.userData.rewTintState=state;
+        material.onBeforeCompile=shader=>{
+          shader.uniforms.rewSkinTint=state.skinUniform;
+          shader.uniforms.rewOutfitTint=state.outfitUniform;
+          shader.uniforms.rewSkinEnabled=state.skinEnabledUniform;
+          shader.uniforms.rewOutfitEnabled=state.outfitEnabledUniform;
+          const colorUniforms=`uniform vec3 rewSkinTint;
+uniform vec3 rewOutfitTint;
+uniform float rewSkinEnabled;
+uniform float rewOutfitEnabled;
+`;
+          const colorLogic=`{
+  vec3 rewSrc = diffuseColor.rgb;
+  float rewLuma = dot(rewSrc, vec3(0.2126, 0.7152, 0.0722));
+  float rewMax = max(rewSrc.r, max(rewSrc.g, rewSrc.b));
+  float rewMin = min(rewSrc.r, min(rewSrc.g, rewSrc.b));
+  bool rewSkinPx = rewSrc.r > rewSrc.g * 1.20 && rewSrc.g > rewSrc.b * 1.10 && (rewSrc.r - rewSrc.b) > 0.028 && rewLuma > 0.035 && rewLuma < 0.78 && ((rewMax-rewMin)/max(rewMax,0.001)) < 0.82;
+  ${masks[safeId]||masks.female1}
+  if (rewSkinEnabled > 0.5 && rewSkinPx) {
+    float rewSkinShade = clamp(0.38 + rewLuma * 1.15, 0.35, 1.18);
+    diffuseColor.rgb = mix(rewSrc, rewSkinTint * rewSkinShade, 0.88);
+  } else if (rewOutfitEnabled > 0.5 && rewOutfitPx && !rewSkinPx) {
+    float rewOutfitShade = clamp(0.28 + rewLuma * 2.2, 0.28, 1.12);
+    diffuseColor.rgb = mix(rewSrc, rewOutfitTint * rewOutfitShade, 0.88);
+  }
+}`;
+          shader.fragmentShader=shader.fragmentShader.replace('void main() {',colorUniforms+'\nvoid main() {');
+          shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n'+colorLogic);
+        };
+        material.customProgramCacheKey=()=>`rew-avatar-color-test-v2-${safeId}`;
+        material.needsUpdate=true;
+      }
+      const state=material.userData.rewTintState;
+      state.skinUniform.value.set(skinHex||'#ffffff');
+      state.outfitUniform.value.set(outfitHex||'#ffffff');
+      state.skinEnabledUniform.value=skinHex?1.0:0.0;
+      state.outfitEnabledUniform.value=outfitHex?1.0:0.0;
+      return material;
+    });
+    mesh.material=wasArray?tinted:tinted[0];
+  });
+}
+function refreshAvatarTintPreviews(){
+  for(const entry of avatarCardPreviews.values()){
+    if(entry.model)applyAvatarColorTest(entry.model,entry.id,selectedSkinTone,selectedOutfitColor);
+  }
+}
 const avatarGltfCache={};
 const avatarLoadPromises={};
 const avatarActors=new Set();
@@ -261,8 +370,8 @@ function loadSelectedModelInto(target,requestedId){
     if(target.userData.avatarLoadToken!==token||!target.parent)return null;
     const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
     model.name='selected-avatar-'+id;
-    model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
-    // Uniform scale only. Preserve original body proportions, mesh, materials, textures, and rig.
+    model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;o.frustumCulled=false;}});
+    // Uniform scale only. Recenter X/Z and place feet at y=0 so model pivots and root offsets cannot send a male preview off-screen.
     model.updateMatrixWorld(true);
     let bounds=new THREE.Box3().setFromObject(model);
     const size=bounds.getSize(new THREE.Vector3());
@@ -270,15 +379,17 @@ function loadSelectedModelInto(target,requestedId){
     model.scale.multiplyScalar(1.86/size.y);
     model.updateMatrixWorld(true);
     bounds=new THREE.Box3().setFromObject(model);
-    model.position.y-=bounds.min.y;
+    const center=bounds.getCenter(new THREE.Vector3());
+    model.position.x-=center.x;model.position.y-=bounds.min.y;model.position.z-=center.z;
     model.updateMatrixWorld(true);
-    // The target is a clean character group; remove any stale child before adding the chosen GLB.
-    while(target.children.length)target.remove(target.children[0]);
+    applyAvatarColorTest(model,id,target.userData.skinTone||selectedSkinTone,target.userData.outfitColor||selectedOutfitColor);
+    // Remove stale child models, disposing only the per-instance tint materials (GLB source assets remain cached).
+    while(target.children.length){const child=target.children[0];child.traverse(o=>{if(o.isMesh){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{if(m&&m.userData&&m.userData.rewAvatarTintClone)m.dispose();});}});target.remove(child);}
     target.add(model);
     const mixer=new THREE.AnimationMixer(model);
     const animations=gltf.animations||[];
     const idleClip=chooseClip(animations,[/^idle(?:$|[_\s])/i,/idle/i])||animations[0]||null;
-    const walkClip=chooseClip(animations,[/^walking$/i,/walking_woman/i,/walking.*inplace/i,/walking_2/i,/^walk(?:ing)?/i]);
+    const walkClip=chooseClip(animations,[/^walking_2_inplace$/i,/walking_woman/i,/walking.*inplace/i,/walking_2/i,/^walking$/i,/^walk(?:ing)?/i]);
     const sitClip=chooseClip(animations,[/sit/i]);
     const actions={};
     if(idleClip)actions.idle=mixer.clipAction(idleClip);
@@ -313,9 +424,13 @@ function updateRealisticCharacters(dt,t){
 function walkAnim(g,dist,dt){
   if(!g)return;
   const u=g.userData||(g.userData={}),safeDt=Math.max(dt||0,1/240);
-  const moving=dist>Math.max(0.0005,safeDt*0.08);
-  u.wantWalk=moving;
-  if(u.avatarActions){setAvatarAnimation(g,moving?'walk':'idle');}
+  const moving=dist>Math.max(0.0005,safeDt*0.08);u.wantWalk=moving;
+  if(u.avatarActions){setAvatarAnimation(g,moving?'walk':'idle');return;}
+  // Procedural pedestrians have distinct clothes/skin/hair and a lightweight walk cycle.
+  if(u.legs&&u.arms){const desired=moving?1:0;u.amp+=(desired-u.amp)*Math.min(1,safeDt*8);u.phase=(u.phase||0)+safeDt*(moving?7.4:1.8);const swing=Math.sin(u.phase)*0.42*u.amp;
+    if(u.legs[0])u.legs[0].rotation.x=swing;if(u.legs[1])u.legs[1].rotation.x=-swing;
+    if(u.arms[0])u.arms[0].rotation.x=-swing*0.72;if(u.arms[1])u.arms[1].rotation.x=swing*0.72;
+  }
 }
 
 const avatars={};let me=null,myId=null,preview=null;
@@ -323,7 +438,7 @@ function makeAvatar(p){
   const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];
   const root=new THREE.Group();
   const avatarId=validAvatarId(p.avatar||selectedAvatarId);
-  const body=new THREE.Group();body.userData.avatarId=avatarId;root.add(body);
+  const body=new THREE.Group();body.userData.avatarId=avatarId;body.userData.skinTone=p.skinTone||'original';body.userData.outfitColor=p.outfitColor||'original';root.add(body);
   loadSelectedModelInto(body,avatarId).catch(()=>{});
   const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.36;root.add(nt);
   const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.06;root.add(ft);
@@ -332,7 +447,7 @@ function makeAvatar(p){
 }
 function setPreview(){
   if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
-  const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;preview=target;scene.add(target);
+  const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;target.userData.skinTone=selectedSkinTone;target.userData.outfitColor=selectedOutfitColor;preview=target;scene.add(target);
   const b=document.getElementById('b1');if(b)b.disabled=true;
   statusAvatar('Loading character…');
   loadSelectedModelInto(target,selectedAvatarId).catch(()=>{});
@@ -368,16 +483,26 @@ function createAvatarCardPreview(id,canvas){
   loadAvatarGltf(id).then(gltf=>{
     if(!canvas.isConnected||avatarCardPreviews.get(canvas)!==entry)return;
     const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
-    model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
+    model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;o.frustumCulled=false;}});
     model.updateMatrixWorld(true);
-    const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+    let bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
     if(!Number.isFinite(size.y)||size.y<=0)throw new Error('Invalid model height');
     model.scale.multiplyScalar(1.72/size.y);model.updateMatrixWorld(true);
-    const fittedBounds=new THREE.Box3().setFromObject(model);model.position.y-=fittedBounds.min.y;model.updateMatrixWorld(true);
+    bounds=new THREE.Box3().setFromObject(model);const center=bounds.getCenter(new THREE.Vector3());
+    model.position.x-=center.x;model.position.y-=bounds.min.y;model.position.z-=center.z;model.updateMatrixWorld(true);
+    applyAvatarColorTest(model,id,selectedSkinTone,selectedOutfitColor);
+    bounds=new THREE.Box3().setFromObject(model);size=bounds.getSize(new THREE.Vector3());
     cardScene.add(model);entry.model=model;
+    // Frame each option from its actual width and height; wider male A-pose/T-pose meshes stay in view.
+    const fov=cardCamera.fov*Math.PI/180,aspect=Math.max(0.5,canvas.clientWidth/Math.max(1,canvas.clientHeight));
+    const distH=(size.y*0.62)/Math.tan(fov/2),distW=(size.x*0.62)/(Math.tan(fov/2)*aspect);
+    const dist=Math.max(2.4,distH,distW, size.z*2.2);
+    cardCamera.position.set(0,size.y*0.54,dist);cardCamera.lookAt(0,size.y*0.51,0);
     const clips=gltf.animations||[];
     const idle=chooseClip(clips,[/^idle(?:$|[_\s])/i,/idle/i])||clips[0]||null;
-    if(idle){entry.mixer=new THREE.AnimationMixer(model);entry.mixer.clipAction(idle).setLoop(THREE.LoopRepeat,Infinity).play();}
+    const previewWalk=chooseClip(clips,[/^walking_2_inplace$/i,/walking_woman/i,/^walking_2$/i,/^walking$/i,/walk.*inplace/i,/walking/i,/running/i]);
+    const showClip=previewWalk||idle;
+    if(showClip){entry.mixer=new THREE.AnimationMixer(model);entry.mixer.clipAction(showClip).setLoop(THREE.LoopRepeat,Infinity).play();}
     entry.ready=true;
     if(selectedAvatarId===id)statusAvatar('Choose the animated character you like.');
   }).catch(error=>{
@@ -403,6 +528,7 @@ function beginGenderSelection(gender){
   if(!available.includes(selectedAvatarId))selectedAvatarId=available[0];
   try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
   renderAvatarChoices();
+  renderColorControls();
   setPreview();
   show('s1b');
 }
@@ -427,11 +553,22 @@ function renderAvatarChoices(){
   });
 }
 
-// Ambient pedestrians use the same four distinct rigged character choices.
-const PEDS=[];[['z',7,-46,46,1.5,0],['z',-7.2,-46,46,1.3,40],['z',7.4,-46,46,1.7,95],['x',7,-46,46,1.4,20],['x',-7.2,-46,46,1.6,70],['x',7.3,-46,46,1.2,130],['z',-6.8,-46,46,1.5,150],['x',-7,-46,46,1.3,10]]
- .forEach((d,i)=>{const h=new THREE.Group(),avatarId=AVATAR_IDS[(i+1)%AVATAR_IDS.length];h.userData.avatarId=avatarId;scene.add(h);PEDS.push({h,d,avatarId});});
-function updatePeds(t,dt){PEDS.forEach(({h,d})=>{const[ax,fx,lo,hi,sp,off]=d,L=hi-lo,u=(t*sp+off)%(2*L),dir=u<L?1:-1,pos=u<L?lo+u:hi-(u-L);
-  const nx=ax==='z'?fx:pos,nz=ax==='z'?pos:fx;const dist=Math.hypot(nx-h.position.x,nz-h.position.z);walkAnim(h,dist,dt);
+// Ambient pedestrians use distinct procedural variations and never reuse the four selectable player GLBs.
+const PEDS=[];
+const PED_LOOKS=[
+ {body:0,height:1,b:0,s:1,h:1,hc:0,j:5,p:0,o:0},
+ {body:1,height:2,b:2,s:4,h:0,hc:5,j:1,p:2,o:1},
+ {body:0,height:0,b:1,s:3,h:3,hc:2,j:3,p:1,o:0},
+ {body:1,height:1,b:0,s:5,h:4,hc:0,j:2,p:3,o:2},
+ {body:0,height:2,b:2,s:2,h:2,hc:4,j:4,p:0,o:1},
+ {body:1,height:0,b:1,s:0,h:0,hc:3,j:5,p:2,o:0},
+ {body:0,height:1,b:1,s:4,h:3,hc:1,j:2,p:3,o:2},
+ {body:1,height:2,b:2,s:2,h:4,hc:5,j:0,p:1,o:1}
+];
+[['z',7,-46,46,1.5,0],['z',-7.2,-46,46,1.3,40],['z',7.4,-46,46,1.7,95],['x',7,-46,46,1.4,20],['x',-7.2,-46,46,1.6,70],['x',7.3,-46,46,1.2,130],['z',-6.8,-46,46,1.5,150],['x',-7,-46,46,1.3,10]]
+ .forEach((d,i)=>{const h=new THREE.Group(),person=human(PED_LOOKS[i],FIRMS[i%FIRMS.length].c);person.scale.multiplyScalar(0.88);h.add(person);scene.add(h);PEDS.push({h,person,d});});
+function updatePeds(t,dt){PEDS.forEach(({h,person,d})=>{const[ax,fx,lo,hi,sp,off]=d,L=hi-lo,u=(t*sp+off)%(2*L),dir=u<L?1:-1,pos=u<L?lo+u:hi-(u-L);
+  const nx=ax==='z'?fx:pos,nz=ax==='z'?pos:fx;const dist=Math.hypot(nx-h.position.x,nz-h.position.z);walkAnim(person,dist,dt);
   h.position.set(nx,0,nz);h.rotation.y=ax==='z'?(dir>0?0:Math.PI):(dir>0?Math.PI/2:-Math.PI/2);});}
 
 // ---------- UI ----------
@@ -467,7 +604,7 @@ function speakNaomi(text){
 }
 function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button>';}
 function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
-function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}if(!on){stopNaomiSpeech();return;}mentorG=new THREE.Group();mentorBody=new THREE.Group();mentorBody.userData.avatarId='female2';mentorG.add(mentorBody);loadSelectedModelInto(mentorBody,'female2').catch(()=>{});const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.48;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
+function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}if(!on){stopNaomiSpeech();return;}mentorG=new THREE.Group();mentorBody=human({body:0,height:1,b:1,s:2,h:1,hc:1,j:5,p:0,o:0},0x9b59b6);mentorBody.scale.multiplyScalar(0.94);mentorG.add(mentorBody);const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.48;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
 function start(m){SEQ=[];score=0;si=0;if(m==='g'){QZ.forEach((x,i)=>{SEQ.push({t:'s',i});SEQ.push({t:'q',i});});}else{[[0,5],[5,10]].forEach(([a,b])=>{for(let i=a;i<b;i++)SEQ.push({t:'s',i});for(let i=a;i<b;i++)SEQ.push({t:'q',i});});}lesson();}
 function lesson(){const st=SEQ[si],el=E('lesson');if(!st){finish();return;}const x=QZ[st.i],pr='<div class=k>Step '+(si+1)+' of '+SEQ.length+' · Score '+score+'</div>';
   if(st.t==='s'){el.innerHTML=voiceButton()+pr+'<div class=bubble><b>Naomi</b><br>'+x.f+'</div><button class="go" onclick="adv()">Got it</button>';speakNaomi(x.f);}
@@ -484,11 +621,11 @@ E('chooseMale').onclick=()=>beginGenderSelection('Male');
 E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
 E('b1').onclick=()=>{disposeAvatarCardPreviews();show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
-E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look,avatar:selectedAvatarId});E('join').style.display='none';};
+E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor});E('join').style.display='none';};
 renderFirms();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
-socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
-  me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PEDS.forEach(({h,avatarId})=>{if(!h.userData.avatarModelLoading&&!h.userData.avatarModelLoaded)loadSelectedModelInto(h,avatarId).catch(()=>{});});PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
+socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
+  me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
 socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud();});
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
 socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;avatars[id].tx=st[id].x;avatars[id].tz=st[id].z;avatars[id].try=st[id].ry;avatars[id].n=st[id].n||0;avatars[id].g.visible=avatars[id].n===G.nb;}});
@@ -501,8 +638,12 @@ const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,nea
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
 const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
 const NYC="Co-ops need board approval; condos are easier to buy. Buyers pay a 1% mansion tax on purchases of $1M or more. Rental security deposits are capped at one month's rent, and landlords commonly want annual income of 40× the monthly rent. (Approximate figures for gameplay.)";
-function avatarForNpc(name){const map={Naomi:'female2',Maya:'female1',Robert:'male1',Priya:'female2',Daniel:'male2',Elena:'female1',Marcus:'male1',Leo:'male2',Nora:'female2',Theo:'male2'};if(map[name])return map[name];let score=0;for(const ch of String(name||''))score=(score+ch.charCodeAt(0))%AVATAR_IDS.length;return AVATAR_IDS[score];}
-function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group(),avatarId=avatarForNpc(name),body=new THREE.Group();body.userData.avatarId=avatarId;g.add(body);loadSelectedModelInto(body,avatarId).catch(()=>{});const t=label(name+" · "+tag,col,2.8);t.position.y=2.48;g.add(t);const m=label("!",col,1.1);m.position.y=3.10;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z,avatarId};}function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
+function namedNpcLook(look,name){let h=0;for(const ch of String(name||''))h=(h*31+ch.charCodeAt(0))>>>0;const L=Object.assign({body:h%2,height:(h>>>3)%3,b:(h>>>5)%3,s:(h>>>7)%6,h:(h>>>9)%6,hc:(h>>>12)%6,j:(h>>>15)%6,p:(h>>>18)%4,o:(h>>>21)%3},look||{});if(!Number.isInteger(L.b))L.b=(h>>>5)%3;if(!Number.isInteger(L.s))L.s=(h>>>7)%6;if(!Number.isInteger(L.h))L.h=(h>>>9)%6;if(!Number.isInteger(L.hc))L.hc=(h>>>12)%6;if(!Number.isInteger(L.j))L.j=(h>>>15)%6;if(!Number.isInteger(L.p))L.p=(h>>>18)%4;if(!Number.isInteger(L.o))L.o=(h>>>21)%3;return L;}
+function mkNpc(look,name,tag,col,x,z){
+  const g=new THREE.Group(),person=human(namedNpcLook(look,name),0x8a6b52);person.scale.multiplyScalar(0.94);g.add(person);
+  const t=label(name+" · "+tag,col,2.8);t.position.y=2.48;g.add(t);const m=label("!",col,1.1);m.position.y=3.10;g.add(m);
+  g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z,person};
+}function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
   NB[G.nb].pros.forEach((p,i)=>{const P=G.P[G.nb+"-"+i];if(P&&(P.lost||P.done))return;const n=mkNpc(p.look,p.n,p.rent?"Landlord":"Client","#ffd54a",p.x,p.z);n.t={k:"s",pi:i};n.name=p.n;NPCS.push(n);});
   Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const n=mkNpc(b.look,b.n,P.p.rent?"Tenant?":"Buyer?","#7fd0ff",b.x,b.z);n.t={k:"b",pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});}
 function mk(p,ni,pi){let s=(ni+1)*97+(pi+1)*31;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};

@@ -1,35 +1,31 @@
-# RealEstate World — Four Character Selection Test
+# RealEstate World — male model, color test, NPC and city artifact update
 
-This build focuses only on the first avatar checkpoint: choose among four separate complete rigged GLB characters. It preserves the existing RealEstate World career systems, Socket.IO multiplayer, licensing quiz, property listings, and movement code. The creator no longer substitutes the old cartoon while the selected model loads, and it does not deform or recolor the supplied model.
+This update is designed to preserve the existing RealEstate World career flow while correcting the avatar problems being tested.
 
-## Included models
+## What's included
 
-- `public/assets/female-agent-1.glb` — source: `Female_rigged_agent.glb` (23.58 MiB)
-- `public/assets/female-agent-2.glb` — source: `Female_rigged_agent1.glb` (22.87 MiB)
-- `public/assets/male-agent-1.glb` — source: `Male_rigged_agent1.glb` (18.72 MiB)
-- `public/assets/male-agent-2.glb` — source: `Male_rigged_agent(1).glb` (24.74 MiB; reduced-clip version)
+1. **Male character files:** Includes the two missing male GLBs at the exact names and paths the game requests: `public/assets/male-agent-1.glb` and `public/assets/male-agent-2.glb`.
+2. **Better male framing:** Normalizes the character origin in X/Y/Z and automatically frames each card preview based on its actual width and height, including wide arm poses.
+3. **Animated previews:** Character cards play an embedded walking animation when the GLB has an appropriate in-place/short walk clip; otherwise, an available fallback animation is used.
+4. **Skin and outfit color test:** Adds swatches for skin tone and outfit color. Updates live on the selection cards and selected character preview, and preferences are stored for the session and sent to the multiplayer server. This is a first test using color masks over each model's baked texture atlas. As skin and clothing share one texture/material, some nearby pixels can tint together; check each model separately. Choose **Original** to reset either color.
+5. **NPC separation:** Clients, landlords, Naomi, and ambient pedestrians do not reuse any of the four selectable player GLBs. They use varied procedural human characters instead, with different hair, skin, clothing, height/build choices, and simple walking movement.
+6. **Black city artifact mitigation:** Disables the global shadow map and imported-agent shadow reception/casting to help remove oversized black shadow patches. This needs a visual check in the deployed game; if a black shape remains, it is likely a separate city mesh/material issue requiring a closer look.
 
-The duplicated `Female_rigged_agent1(1).glb` and older over-limit `Male_rigged_agent.glb` are omitted. Each included GLB has its own mesh, embedded materials/textures, humanoid skeleton, and animation clips. The test currently uses each model's idle and walking clip. Hair, skin, and clothing recoloring is intentionally not exposed until model selection is confirmed.
+## Install to GitHub / Render
 
-## Safest way to apply this update
+1. Replace the repository root `index.html` and `server.js` with those from this package.
+2. Extract the two male GLBs from `public/assets/` and upload them to the GitHub folder `public/assets/` with these exact lowercase, hyphenated names:
+   - `male-agent-1.glb`
+   - `male-agent-2.glb`
+3. Do **not** upload the ZIP itself into `public/assets`; the two `.glb` files must be uploaded separately.
+4. Commit all changes to `main` and wait for Render to redeploy.
 
-Do not delete the existing repository or any old model files yet. In `https://github.com/Nushi12/RE`:
+The expected build marker is `REW-MALE-COLOR-NPC-FIX-2026-10-19`. After deployment, the `/version` page should show that exact string.
 
-1. Replace only the root `index.html` and `server.js` with the versions in this package.
-2. Add the four `.glb` files from `public/assets/` to the same `public/assets/` folder in GitHub, using the exact filenames above. Upload them individually if GitHub's browser is unreliable. Do not upload the ZIP itself.
-3. Keep the existing `package.json`, `package-lock.json` / `yarn.lock`, and other game files as they are; this patch still uses Express and Socket.IO.
-4. Commit the two source files and four assets to `main`. Wait for Render's deployment to complete.
+## Verify after deployment
 
-## First test only: avatar selection
-
-1. Open `/version` on the exact Render service shown in its dashboard. It should display `REW-FOUR-RIGGED-AVATAR-SELECTION-TEST-2026-10-19`.
-2. Open the game, click **Begin**, and select each of the four avatar cards.
-3. Confirm the 3D preview changes to the corresponding character model before clicking Continue.
-4. Enter the city and confirm that the same selected character is the player avatar.
-
-Do not test colors or adjust animations until those four selection checks pass. If a model fails to load, record the first red Console error and the failing `/assets/<filename>` URL.
-
-## Notes
-
-- All four individual model files are below 25 MiB for GitHub's browser upload. `male-agent-2.glb` is near the limit, at 24.74 MiB; if GitHub rejects it, ask for a small texture-size optimization rather than removing more animations.
-- This source and package have been syntax/structure checked, but not visually tested on the live Render service. The live model-selection test is the next checkpoint.
+- `https://YOUR-RENDER-DOMAIN/assets/male-agent-1.glb` should return the first male file rather than 404.
+- `https://YOUR-RENDER-DOMAIN/assets/male-agent-2.glb` should return the second male file rather than 404.
+- Open the male selection page and check that both animated characters stay in-frame.
+- Try each skin and outfit swatch on all four choices, then continue through licensing and into the city to check whether the appearance persists and is visible to another player.
+- Check the city for black patches. If any remain after redeployment, capture a screenshot and inspect the responsible city geometry/material next.
