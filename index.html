@@ -43,11 +43,13 @@ const SKIN=[0xf8dcc3,0xf1c9a5,0xd9a47a,0xb67c55,0x8a5a3c,0x5c3a26],HAIRC=[0x1a14
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 const look={body:0,height:1,b:1,s:2,face:0,h:0,hc:1,fh:0,eye:0,j:0,p:0,o:0};
 try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for(const k of Object.keys(look))if(Number.isInteger(saved[k]))look[k]=saved[k];}catch(e){}
+// Only Female and Male are supported. Map any previously saved third option to Male.
+look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
 const CREATOR_BUILD='REW-RIGGED-BASE-AVATAR-FIX';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
-const BODY_OPTIONS=['Female','Male','Androgynous'];
+const BODY_OPTIONS=['Female','Male'];
 const OPTS=[['body','Character type / body',BODY_OPTIONS],['height','Height',['Petite','Average','Tall']],['b','Build',['Slim','Average','Broad']],['face','Face shape',['Soft','Angular','Round']],['s','Skin tone',SKIN],['h','Hair style',['Short','Long','Bun','Curly','Ponytail','Bald']],['hc','Hair color',HAIRC],['fh','Facial hair',['None','Stubble','Full beard','Mustache']],['eye','Eye color',EYES],['o','Outfit',['Blazer & slacks','Blouse & slacks','Dress','Smart casual']],['j','Top color',JACK],['p','Trousers / shoes',PANT]];
 const NB=[
 {name:'Upper East Side',lvl:1,ppsf:1350,rppsf:5.0,style:'brownstone',road:0x373b42,trees:1,seed:11,sky:0x9fc3e6,sw:0x8f8b82,brick:[0x8a4b3a,0x9c5b45,0x7a4a3c,0xa8683f,0x6e4036,0xb08968,0xa9a39a],h:[12.8,12.8,16,16,19.2],tw:28,cafe:'Corner Café',office:'Vantage Realty Office',park:'Neighborhood Park',
@@ -166,16 +168,17 @@ function human(L,fc){
   if(h===3)for(let i=0;i<12;i++){const a=1+i*0.39;S(0.072,Math.sin(a)*0.2,1.98+(i%3)*0.045,Math.cos(a)*0.2-0.04,hr);}
   if(h===3)[[0,2.1,-0.03],[0.09,2.08,0.0],[-0.09,2.08,0.0]].forEach(a=>S(0.075,a[0],a[1],a[2],hr));
   if(h===4){const q=C(0.05,0.02,0.42,0,1.82,-0.24,hr);q.rotation.x=-0.3;}
-  const fallbackBody=Number.isInteger(L.body)?L.body:0,fallbackHeight=[0.90,1,1.10][Number.isInteger(L.height)&&L.height>=0&&L.height<=2?L.height:1];
+  const fallbackBody=(Number.isInteger(L.body)&&L.body===1)?1:0,fallbackHeight=[0.90,1,1.10][Number.isInteger(L.height)&&L.height>=0&&L.height<=2?L.height:1];
   g.scale.set(fallbackBody===1?1.07:(fallbackBody===0?0.98:1),fallbackHeight,1);
   g.userData={legs,arms,phase:0,amp:0};return g;
 }
 // ---------- customizable rigged humanoid pipeline ----------
-// The rigged humanoid is the shared player/NPC base. Body proportions and
-// fitted wardrobe surfaces are generated per character, then weighted to the
-// same 53-bone skeleton so appearance changes survive movement and multiplayer.
+// Female avatars use the uploaded Mixamo-rigged Meshy GLB and its real animation clips.
+// Male avatars use the 53-bone neutral base plus the existing procedural appearance system.
 const BASE_HUMANOID_URL='/assets/human-base-rigged.glb';
+const FEMALE_AGENT_URL='/assets/female-rigged-agent.glb'; // server transparently serves the gzipped GLB
 let baseHumanoidGltf=null,baseHumanoidPromise=null;
+let femaleAgentGltf=null,femaleAgentPromise=null;
 const realisticCharacters=new Set();
 let cityEntered=false;
 function loadBaseHumanoid(){
@@ -186,50 +189,82 @@ function loadBaseHumanoid(){
   });
   return baseHumanoidPromise;
 }
+function loadFemaleAgent(){
+  if(femaleAgentGltf)return Promise.resolve(femaleAgentGltf);
+  if(!femaleAgentPromise)femaleAgentPromise=new Promise((resolve,reject)=>{
+    const loader=new THREE.GLTFLoader();
+    loader.load(FEMALE_AGENT_URL,g=>{femaleAgentGltf=g;resolve(g);},undefined,reject);
+  });
+  return femaleAgentPromise;
+}
 function statusAvatar(text){const el=document.getElementById('avatarAssetStatus');if(el)el.textContent=text;}
 function boneNamed(root,names){let found=null;root.traverse(o=>{if(!found&&names.includes(String(o.name||'').toLowerCase()))found=o;});return found;}
 function refreshLookControlAvailability(){
   document.querySelectorAll('[data-look-key]').forEach(el=>{
     el.style.opacity='';el.style.pointerEvents='';el.removeAttribute('aria-disabled');el.title='';
   });
-  const bodies=['female','male','androgynous'],outfits=['blazer & slacks','blouse & slacks','dress','smart casual'];
-  statusAvatar('Customizable human base · '+(bodies[look.body]||bodies[0])+' body · '+(outfits[look.o]||outfits[0])+'. Changes apply to the 3D preview.');
+  // This Meshy female model has its hair and clothing silhouette baked into one mesh.
+  // Rename the selector to palette choices when Female is selected rather than implying
+  // that it can swap garment geometry. Male continues using the procedural wardrobe system.
+  const outfitLabel=document.querySelector('label[data-look-key="o"]');
+  const outfitRow=document.querySelector('.row[data-look-key="o"]');
+  if(outfitLabel)outfitLabel.textContent=look.body===0?'Female outfit palette':'Outfit';
+  if(outfitRow){
+    const femalePalette=['Navy suit','Light blouse','Burgundy','Smart casual palette'];
+    const maleOutfits=['Blazer & slacks','Blouse & slacks','Dress','Smart casual'];
+    [...outfitRow.children].forEach((b,i)=>{b.textContent=(look.body===0?femalePalette:maleOutfits)[i];});
+  }
+  const facialLabel=document.querySelector('label[data-look-key="fh"]');
+  const facialRow=document.querySelector('.row[data-look-key="fh"]');
+  if(facialLabel&&facialRow){const disabled=look.body!==1;facialLabel.style.opacity=disabled?'.48':'';facialRow.querySelectorAll('.opt').forEach(b=>{b.style.opacity=disabled?'.4':'';b.style.pointerEvents=disabled?'none':'';b.tabIndex=disabled?-1:0;b.setAttribute('aria-disabled',String(disabled));b.title=disabled?'Facial-hair controls apply to the Male base model':'';});}
+  statusAvatar(look.body===0
+    ?'Female: using your Meshy-rigged model with its own idle and walking animations. Hair and garment silhouette are built into this model; palette choices recolor regions.'
+    :'Male: using your rigged humanoid base with procedural body and clothing options.');
 }
 function shapeHumanoidGeometry(geometry,L){
   const pos=geometry.getAttribute('position');if(!pos)return;
-  const body=Number.isInteger(L.body)?L.body:0,build=Number.isInteger(L.b)?L.b:1,face=Number.isInteger(L.face)?L.face:0;
-  const buildMul=[0.84,1,1.17][Number.isInteger(build)&&build>=0&&build<=2?build:1];
-  // These models are generated from one rigged base without blendshapes. We
-  // create visible procedural shape differences in its central body and head.
+  const body=(Number.isInteger(L.body)&&L.body===1)?1:0;
+  const build=Number.isInteger(L.b)?L.b:1;
+  const face=Number.isInteger(L.face)?L.face:0;
+  const buildMul=[0.90,1,1.13][Math.max(0,Math.min(2,build))];
+  const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
+  const band=(y,a,b,fade=0.075)=>smooth((y-a)/fade)*(1-smooth((y-b)/fade));
+  // One rigged base, with smooth regional vertex deformation (not a model swap).
+  // Female and Male are the only body presets; the change is deliberately visible
+  // at the hips, waist, torso and shoulders, while keeping the same 53-bone rig.
   for(let i=0;i<pos.count;i++){
-    let x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i),ax=Math.abs(x);
-    if(ax<0.32){
-      let fx=1;
-      // Hips / pelvis: widen the feminine silhouette and narrow masculine hips.
-      if(y>=0.56&&y<0.91){fx=body===0?1.22:(body===1?0.90:1.02);fx*=buildMul;}
-      // Waist: visibly defined for feminine, more rectangular for masculine.
-      else if(y>=0.91&&y<1.10){fx=body===0?0.82:(body===1?1.04:1.0);fx*=buildMul;}
-      // Ribcage and chest: broader for masculine, slightly narrower for feminine.
-      else if(y>=1.10&&y<1.40){fx=body===0?0.94:(body===1?1.20:1.02);fx*=buildMul;}
-      // Neck and head shape presets.
-      if(y>=1.455&&y<1.68){
-        const faceMul=face===0?1.02:(face===1?0.88:1.17);
-        fx*=faceMul*(body===0?0.98:(body===1?1.12:1.0));
-        if(face===1)z*=0.90;else if(face===2)z*=1.07;
-      }
-      x*=fx;
-      // Give the feminine chest a little more forward volume; the clothes
-      // generated below follow this modified body surface.
-      if(body===0&&y>1.12&&y<1.36&&z>0.02){
-        const chestBand=Math.max(0,1-Math.abs(y-1.245)/0.115);
-        const lateral=Math.min(1,ax/0.085);
-        z+=0.034*chestBand*lateral;
-      }
-      if(body===1&&y>1.12&&y<1.34&&z>0.02)z+=0.004;
+    let x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);
+    const absX=Math.abs(x);
+    const hips=band(y,0.54,0.92,0.09);
+    const waist=band(y,0.82,1.12,0.08);
+    const torso=band(y,1.06,1.40,0.09);
+    const shoulders=band(y,1.30,1.50,0.075);
+    const head=band(y,1.455,1.68,0.065);
+    const mainBody=band(y,0.48,1.47,0.08);
+    let width=1+(buildMul-1)*mainBody;
+    if(body===0){
+      // Female preset: fuller hips, a defined waist, slightly narrower shoulders/head.
+      width*=1+0.25*hips-0.20*waist-0.065*torso-0.055*shoulders-0.055*head;
+      // A small, smooth front-chest volume so the torso does not read as a color-only swap.
+      const chest=band(y,1.12,1.34,0.055);
+      const lateral=smooth(absX/0.055)*(1-smooth((absX-0.205)/0.055));
+      if(z>0.015)z+=0.034*chest*lateral;
+    }else{
+      // Male preset: broader torso/shoulders, straighter waist, narrower hips, wider jaw.
+      width*=1-0.105*hips+0.025*waist+0.15*torso+0.19*shoulders+0.065*head;
+    }
+    x*=width;
+    // Face presets affect the jaw/head region separately from the body preset.
+    if(y>1.455&&y<1.68){
+      const faceWidth=face===0?0.98:(face===1?0.90:1.08);
+      const faceDepth=face===0?1:(face===1?0.94:1.07);
+      x*=faceWidth;
+      z*=faceDepth;
     }
     pos.setXYZ(i,x,y,z);
   }
-  pos.needsUpdate=true;geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+  pos.needsUpdate=true;
+  geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
 }
 function triangleWeightInfo(geom,bodyMesh,start){
   const pos=geom.getAttribute('position'),si=geom.getAttribute('skinIndex'),sw=geom.getAttribute('skinWeight');
@@ -268,7 +303,7 @@ function subsetGeometry(source,bodyMesh,predicate,offset=0){
   out.computeBoundingBox();out.computeBoundingSphere();return out;
 }
 function classifyClothing(info,L,kind){
-  const torso=info.y>=0.86&&info.y<1.405&&Math.abs(info.x)<0.35&&info.leg<0.28&&info.foot<0.1;
+  const torso=info.y>=0.86&&info.y<1.405&&Math.abs(info.x)<0.43&&info.leg<0.28&&info.foot<0.1;
   const hands=info.hand>0.28;
   const longArm=info.arm>0.30&&!hands;
   const shortSleeve=info.upperArm>0.34&&info.arm>0.24&&!hands;
@@ -351,53 +386,128 @@ function setArmRestPose(model){
   if(right)right.rotation.z-=0.48;
   const head=boneNamed(model,['head']);if(head)head.rotation.x-=0.03;
 }
+function tintFemaleMesh(model,L){
+  const skinHex=SKIN[L.s]||SKIN[2],hairHex=HAIRC[L.hc]||HAIRC[0];
+  const paletteTop=[JACK[L.j]||JACK[0],0xe9e4dc,0x6f1834,0x8ba0ad][L.o]||JACK[L.j]||JACK[0];
+  const pantsHex=PANT[L.p]||PANT[0],shoeHex=[0x24201e,0x6a4a2c,0x443b33,0x161616][L.p]||0x24201e;
+  model.traverse(o=>{
+    if(!o.isSkinnedMesh||!o.geometry)return;
+    const geom=o.geometry,pos=geom.getAttribute('position'),si=geom.getAttribute('skinIndex'),sw=geom.getAttribute('skinWeight');
+    if(!pos||!si||!sw||!o.skeleton)return;
+    const boneNames=o.skeleton.bones.map(b=>String(b.name||'').toLowerCase());
+    const colors=new Float32Array(pos.count*3);
+    for(let i=0;i<pos.count;i++){
+      const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);let skin=0,head=0,hands=0,neck=0,legs=0,feet=0,arms=0;
+      for(let k=0;k<4;k++){
+        const bi=si.getComponent(i,k),w=sw.getComponent(i,k),n=boneNames[bi]||'';
+        if(/head/.test(n))head+=w;
+        if(/neck/.test(n))neck+=w;
+        if(/hand|thumb|index|middle|pinky|ring|finger/.test(n))hands+=w;
+        if(/upleg|up_leg|leg|thigh|calf/.test(n))legs+=w;
+        if(/foot|toe|ball/.test(n))feet+=w;
+        if(/arm|shoulder|forearm/.test(n))arms+=w;
+      }
+      let hexColor;
+      const hairRegion=head>0.2&&y>1.555&&z<0.055;
+      const skinRegion=(head>0.25&&!hairRegion)||neck>0.30||hands>0.32||(y>1.47&&z>0.075&&head>0.1);
+      if(hairRegion)hexColor=hairHex;
+      else if(skinRegion)hexColor=skinHex;
+      else if(feet>0.25&&y<0.18)hexColor=shoeHex;
+      else if(legs>0.22&&y<0.98)hexColor=(L.o===2?paletteTop:pantsHex);
+      else if((y>0.86&&y<1.48)||arms>0.28)hexColor=paletteTop;
+      else hexColor=skinHex;
+      const c=new THREE.Color(hexColor);colors[i*3]=c.r;colors[i*3+1]=c.g;colors[i*3+2]=c.b;
+    }
+    geom.setAttribute('color',new THREE.BufferAttribute(colors,3));
+    const materials=Array.isArray(o.material)?o.material:[o.material];
+    materials.forEach(m=>{m.vertexColors=true;m.color.setHex(0xffffff);m.roughness=0.82;m.metalness=0;m.needsUpdate=true;});
+    o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;
+  });
+}
+function findClip(gltf,regex){return (gltf.animations||[]).find(a=>regex.test(a.name));}
+function setFemaleAnimation(target,name){
+  const u=target.userData,actions=u.femaleActions;if(!actions||!actions[name]||u.femaleActionName===name)return;
+  const next=actions[name];next.reset();next.enabled=true;next.setEffectiveWeight(1);next.setEffectiveTimeScale(1);next.fadeIn(0.18).play();
+  if(u.femaleActiveAction)u.femaleActiveAction.fadeOut(0.18);
+  u.femaleActiveAction=next;u.femaleActionName=name;
+}
 function upgradeToRealistic(target,L){
   if(!target||target.userData.realistic||target.userData.installPending)return;
   target.userData.installPending=true;const stamp=(target.userData.avatarStamp||0)+1;target.userData.avatarStamp=stamp;
-  if(target===preview)statusAvatar('Loading your customizable human base…');
-  loadBaseHumanoid().then(gltf=>{
+  const isFemale=Number(L.body)!==1;
+  if(target===preview)statusAvatar(isFemale?'Loading your animated female model…':'Loading the male base model…');
+  (isFemale?loadFemaleAgent():loadBaseHumanoid()).then(gltf=>{
     if(target.userData.avatarStamp!==stamp||!target.parent)return;
     const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
     model.traverse(o=>{if(o.isMesh&&o.geometry)o.geometry=o.geometry.clone();if(o.isMesh&&o.material)o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();});
     const bodyMesh=(()=>{let found=null;model.traverse(o=>{if(!found&&o.isSkinnedMesh)found=o;});return found;})();
-    if(!bodyMesh)throw new Error('Rigged human GLB contains no skinned mesh');
-    shapeHumanoidGeometry(bodyMesh.geometry,L);
-    bodyMesh.geometry.computeBoundingBox();const baseBounds=bodyMesh.geometry.boundingBox.clone(),baseHeight=baseBounds.getSize(new THREE.Vector3()).y||1.68;
-    const skinMaterial=shapeMaterial(SKIN[L.s]||SKIN[2],0.72);bodyMesh.material=skinMaterial;bodyMesh.castShadow=true;bodyMesh.receiveShadow=true;bodyMesh.frustumCulled=false;
-    // Turn body surface regions into separately skinned clothing surfaces.
-    const topColor=JACK[L.j]||JACK[0],pantsColor=PANT[L.p]||PANT[0],shoesColor=[0x24201e,0x6a4a2c,0x443b33,0x161616][L.p]||0x24201e;
-    const topMat=shapeMaterial(topColor,0.84),pantsMat=shapeMaterial(L.o===2?topColor:pantsColor,0.88),shoesMat=shapeMaterial(shoesColor,0.68);
-    const sourceGeometry=bodyMesh.geometry;
-    const skinGeometry=subsetGeometry(sourceGeometry,bodyMesh,info=>!classifyClothing(info,L,'top')&&!classifyClothing(info,L,'pants')&&!classifyClothing(info,L,'shoes'),0);
-    if(skinGeometry.getAttribute('position')&&skinGeometry.getAttribute('position').count>=3)bodyMesh.geometry=skinGeometry;
-    addSkinnedClothing(model,bodyMesh,L,'top',topMat,sourceGeometry);
-    addSkinnedClothing(model,bodyMesh,L,'pants',pantsMat,sourceGeometry);
-    addSkinnedClothing(model,bodyMesh,L,'shoes',shoesMat,sourceGeometry);
-    addWardrobeDetails(model,L);
+    if(!bodyMesh)throw new Error('Selected rigged GLB contains no skinned mesh');
     const heightFactor=[0.93,1,1.07][L.height]||1;
-    const norm=1.92/baseHeight*heightFactor;model.scale.multiplyScalar(norm);model.updateMatrixWorld(true);
-    model.position.y-=baseBounds.min.y*norm;
-    model.updateMatrixWorld(true);
-    // Clear the geometric fallback, then install this independently customized rig.
+    let baseBounds,baseHeight;
+    if(isFemale){
+      // The uploaded Meshy model has a Mixamo skeleton and nine animation clips.
+      // Keep its real mesh/rig; apply subtle proportions and vertex-color regions only.
+      shapeHumanoidGeometry(bodyMesh.geometry,L);
+      bodyMesh.geometry.computeBoundingBox();baseBounds=bodyMesh.geometry.boundingBox.clone();baseHeight=baseBounds.getSize(new THREE.Vector3()).y||1.7;
+      tintFemaleMesh(model,L);
+      const norm=1.92/baseHeight;model.scale.setScalar(norm);model.updateMatrixWorld(true);
+      const scaledBounds=new THREE.Box3().setFromObject(model);model.position.y-=scaledBounds.min.y;model.updateMatrixWorld(true);
+    }else{
+      shapeHumanoidGeometry(bodyMesh.geometry,L);
+      bodyMesh.geometry.computeBoundingBox();baseBounds=bodyMesh.geometry.boundingBox.clone();baseHeight=baseBounds.getSize(new THREE.Vector3()).y||1.68;
+      const skinMaterial=shapeMaterial(SKIN[L.s]||SKIN[2],0.72);bodyMesh.material=skinMaterial;bodyMesh.castShadow=true;bodyMesh.receiveShadow=true;bodyMesh.frustumCulled=false;
+      const topColor=JACK[L.j]||JACK[0],pantsColor=PANT[L.p]||PANT[0],shoesColor=[0x24201e,0x6a4a2c,0x443b33,0x161616][L.p]||0x24201e;
+      const topMat=shapeMaterial(topColor,0.84),pantsMat=shapeMaterial(L.o===2?topColor:pantsColor,0.88),shoesMat=shapeMaterial(shoesColor,0.68);
+      const sourceGeometry=bodyMesh.geometry;
+      const skinGeometry=subsetGeometry(sourceGeometry,bodyMesh,info=>!classifyClothing(info,L,'top')&&!classifyClothing(info,L,'pants')&&!classifyClothing(info,L,'shoes'),0);
+      if(skinGeometry.getAttribute('position')&&skinGeometry.getAttribute('position').count>=3)bodyMesh.geometry=skinGeometry;
+      addSkinnedClothing(model,bodyMesh,L,'top',topMat,sourceGeometry);
+      addSkinnedClothing(model,bodyMesh,L,'pants',pantsMat,sourceGeometry);
+      addSkinnedClothing(model,bodyMesh,L,'shoes',shoesMat,sourceGeometry);
+      addWardrobeDetails(model,L);
+      const norm=1.92/baseHeight*heightFactor;model.scale.multiplyScalar(norm);model.updateMatrixWorld(true);
+      model.position.y-=baseBounds.min.y*norm;model.updateMatrixWorld(true);
+    }
     while(target.children.length)target.remove(target.children[0]);
     target.add(model);target.userData.realistic=true;target.userData.installPending=false;target.userData.__avatarModel=model;target.userData.modelBaseY=model.position.y;target.userData.look={...L};
-    const bones={};['root','pelvis','spine_01','spine_02','spine_03','clavicle_l','clavicle_r','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','head','neck_01'].forEach(n=>bones[n]=boneNamed(model,[n]));
-    target.userData.bones=bones;target.userData.baseHeight=1.92*heightFactor;target.userData.phase=0;target.userData.amp=0;target.userData.walking=false;target.userData.talking=!!target.userData.talking;
-    setArmRestPose(model);
-    // Save a rest pose after the arm adjustment; animations are offsets from this pose.
-    const rest={};Object.keys(bones).forEach(k=>{const b=bones[k];if(b)rest[k]={rotation:b.rotation.clone(),quaternion:b.quaternion.clone()};});target.userData.restPose=rest;
+    target.userData.baseHeight=1.92*heightFactor;target.userData.phase=0;target.userData.amp=0;target.userData.walking=false;target.userData.talking=!!target.userData.talking;
+    if(isFemale){
+      const mixer=new THREE.AnimationMixer(model);target.userData.mixer=mixer;target.userData.femaleRigged=true;
+      const idleClip=findClip(gltf,/^Idle_4$|^Idle_6$/i)||findClip(gltf,/idle/i);
+      const walkClip=findClip(gltf,/^Walking_Woman$/i)||findClip(gltf,/^Walking$/i)||findClip(gltf,/walk/i);
+      const sitClip=findClip(gltf,/Sit_Cross_Legged/i);
+      target.userData.femaleActions={};
+      if(idleClip)target.userData.femaleActions.idle=mixer.clipAction(idleClip);
+      if(walkClip)target.userData.femaleActions.walk=mixer.clipAction(walkClip);
+      if(sitClip)target.userData.femaleActions.sit=mixer.clipAction(sitClip);
+      setFemaleAnimation(target,'idle');
+      const findSuffix=suffix=>{let found=null;model.traverse(o=>{if(!found&&String(o.name||'').toLowerCase().endsWith(suffix.toLowerCase()))found=o;});return found;};
+      target.userData.bones={head:findSuffix(':head'),neck:findSuffix(':neck')};
+    }else{
+      const bones={};['root','pelvis','spine_01','spine_02','spine_03','clavicle_l','clavicle_r','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','head','neck_01'].forEach(n=>bones[n]=boneNamed(model,[n]));
+      target.userData.bones=bones;setArmRestPose(model);
+      const rest={};Object.keys(bones).forEach(k=>{const b=bones[k];if(b)rest[k]={rotation:b.rotation.clone(),quaternion:b.quaternion.clone()};});target.userData.restPose=rest;
+    }
     realisticCharacters.add(target);
-    if(target===preview){refreshLookControlAvailability();statusAvatar('Preview ready: '+['Female','Male','Androgynous'][L.body]+' body, '+['Blazer & slacks','Blouse & slacks','Dress','Smart casual'][L.o]+', selected hair and colors.');}
+    if(target===preview){refreshLookControlAvailability();statusAvatar(isFemale
+      ?'Female model loaded: your rigged Meshy character is active. Idle and walking use the clips you exported. The original outfit silhouette is fixed; palette options recolor regions.'
+      :'Male base loaded. Build, palette, and procedural outfit options are active.');}
   }).catch(err=>{
     target.userData.installPending=false;
-    console.warn('Could not load customizable humanoid; keeping the built-in fallback.',err);
-    if(target===preview)statusAvatar('Character model did not load. Check that human-base-rigged.glb is in public/assets, then refresh.');
+    console.warn('Could not load selected avatar model; keeping the built-in fallback.',err);
+    if(target===preview)statusAvatar((isFemale?'Female model failed to load. Check /assets/female-rigged-agent.glb. ':'Male base failed to load. Check /assets/human-base-rigged.glb. ')+ 'Built-in fallback remains visible.');
   });
 }
 function updateRealisticCharacters(dt,t){
   for(const g of realisticCharacters){
     if(!g.parent){realisticCharacters.delete(g);continue;}
-    const u=g.userData,b=u.bones||{},r=u.restPose||{},model=u.__avatarModel;
+    const u=g.userData;
+    if(u.femaleRigged){
+      if(u.mixer)u.mixer.update(dt);
+      if(u.talking&&u.bones){const pulse=Math.sin(t*10.5)*0.012;if(u.bones.head)u.bones.head.rotation.x+=pulse;if(u.bones.neck)u.bones.neck.rotation.x+=pulse*0.25;}
+      continue;
+    }
+    const b=u.bones||{},r=u.restPose||{},model=u.__avatarModel;
     // Restore every controlled joint from the rig's own rest pose before applying this frame.
     ['clavicle_l','clavicle_r','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
      'pelvis','spine_01','spine_02','spine_03','thigh_l','thigh_r','calf_l','calf_r',
@@ -440,6 +550,7 @@ function walkAnim(g,dist,dt){
     u.amp+=(0-u.amp)*Math.min(1,safeDt*5.5);
   }
   u.walking=moving;
+  if(u.femaleRigged){setFemaleAnimation(g,moving?'walk':'idle');return;}
   if(!u.realistic&&u.legs&&u.arms){
     const stride=Math.sin(u.phase||0)*0.40*(u.amp||0);
     u.legs[0].rotation.x=stride;u.legs[1].rotation.x=-stride;
@@ -448,14 +559,14 @@ function walkAnim(g,dist,dt){
 }
 
 const avatars={};let me=null,myId=null,preview=null;
-function makeAvatar(p){const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];const root=new THREE.Group();const L={...look,...(p.look||{})};const h=human(L,f.c);root.add(h);upgradeToRealistic(h,L);
+function makeAvatar(p){const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];const root=new THREE.Group();const L={...look,...(p.look||{})};L.body=L.body===1?1:0;const h=human(L,f.c);root.add(h);upgradeToRealistic(h,L);
   const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.42;root.add(nt);const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.12;root.add(ft);
   root.position.set(p.x,0,p.z);scene.add(root);return{name:p.name,g:root,h,tx:p.x,tz:p.z,try:p.ry||0,px:p.x,pz:p.z};}
 function setPreview(){if(preview)scene.remove(preview);preview=human(look,FIRMS[selFirm].c);preview.position.set(0,0,6);scene.add(preview);upgradeToRealistic(preview,look);}
 
 // ambient pedestrians (deterministic from clock, so every player sees them in the same place)
 const PEDS=[];[['z',7,-46,46,1.5,0],['z',-7.2,-46,46,1.3,40],['z',7.4,-46,46,1.7,95],['x',7,-46,46,1.4,20],['x',-7.2,-46,46,1.6,70],['x',7.3,-46,46,1.2,130],['z',-6.8,-46,46,1.5,150],['x',-7,-46,46,1.3,10]]
- .forEach((d,i)=>{const L={body:i%3,height:i%3,b:i%3,s:(i*3)%6,face:i%3,h:i%6,hc:(i*2)%6,fh:i%4,eye:i%4,j:(i*2+1)%6,p:i%4,o:i%4};const h=human(L,null);h.userData.look={...L};scene.add(h);if(cityEntered)upgradeToRealistic(h,L);PEDS.push({h,d});});
+ .forEach((d,i)=>{const L={body:i%2,height:i%3,b:i%3,s:(i*3)%6,face:i%3,h:i%6,hc:(i*2)%6,fh:i%4,eye:i%4,j:(i*2+1)%6,p:i%4,o:i%4};const h=human(L,null);h.userData.look={...L};scene.add(h);if(cityEntered)upgradeToRealistic(h,L);PEDS.push({h,d});});
 function updatePeds(t,dt){PEDS.forEach(({h,d})=>{const[ax,fx,lo,hi,sp,off]=d,L=hi-lo,u=(t*sp+off)%(2*L),dir=u<L?1:-1,pos=u<L?lo+u:hi-(u-L);
   const nx=ax==='z'?fx:pos,nz=ax==='z'?pos:fx;const dist=Math.hypot(nx-h.position.x,nz-h.position.z);walkAnim(h,dist,dt);
   h.position.set(nx,0,nz);h.rotation.y=ax==='z'?(dir>0?0:Math.PI):(dir>0?Math.PI/2:-Math.PI/2);});}
@@ -528,7 +639,7 @@ const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,nea
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
 const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
 const NYC="Co-ops need board approval; condos are easier to buy. Buyers pay a 1% mansion tax on purchases of $1M or more. Rental security deposits are capped at one month's rent, and landlords commonly want annual income of 40× the monthly rent. (Approximate figures for gameplay.)";
-function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group();const variantByName={Maya:0,Robert:1,Priya:0,Daniel:1,Elena:0,Marcus:1,Leo:1,Nora:0,Theo:2};const npcLook={...look,body:Number.isInteger(look.body)?look.body:(variantByName[name]??(name.length%3)),height:Number.isInteger(look.height)?look.height:(name.length%3),h:Number.isInteger(look.h)?look.h:(name.length%6),hc:Number.isInteger(look.hc)?look.hc:(name.length%6),o:Number.isInteger(look.o)?look.o:(name.length%4)};const h=human(npcLook,null);g.add(h);upgradeToRealistic(h,npcLook);const t=label(name+" · "+tag,col,2.8);t.position.y=2.55;g.add(t);const m=label("!",col,1.1);m.position.y=3.15;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z};}
+function mkNpc(look,name,tag,col,x,z){const g=new THREE.Group();const variantByName={Maya:0,Robert:1,Priya:0,Daniel:1,Elena:0,Marcus:1,Leo:1,Nora:0,Theo:1};const npcLook={...look,body:Number.isInteger(look.body)?look.body:(variantByName[name]??(name.length%2)),height:Number.isInteger(look.height)?look.height:(name.length%3),h:Number.isInteger(look.h)?look.h:(name.length%6),hc:Number.isInteger(look.hc)?look.hc:(name.length%6),o:Number.isInteger(look.o)?look.o:(name.length%4)};const h=human(npcLook,null);g.add(h);upgradeToRealistic(h,npcLook);const t=label(name+" · "+tag,col,2.8);t.position.y=2.55;g.add(t);const m=label("!",col,1.1);m.position.y=3.15;g.add(m);g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z};}
 function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
   NB[G.nb].pros.forEach((p,i)=>{const P=G.P[G.nb+"-"+i];if(P&&(P.lost||P.done))return;const n=mkNpc(p.look,p.n,p.rent?"Landlord":"Client","#ffd54a",p.x,p.z);n.t={k:"s",pi:i};n.name=p.n;NPCS.push(n);});
   Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const n=mkNpc(b.look,b.n,P.p.rent?"Tenant?":"Buyer?","#7fd0ff",b.x,b.z);n.t={k:"b",pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});}
@@ -544,7 +655,7 @@ function genBuyers(P){const p=P.p;let s=(P.ni+3)*131+P.pi*17;const r=()=>{s=(s*1
   const truth=P.tp*p.sq,R=p.rent,fit=R?truth*40*1.06:truth*1.045,low=R?truth*40*0.74:truth*0.78,nm=["Chris","Aisha","Tomas","Mei","Omar","Sofia","Ben","Lena","Raj"];
   const spots=[[7.4,18.5],[-7.4,-18.5],[7.4,31],[-7.4,-31],[7.4,6.5],[-7.4,-6.5]].filter(a=>Math.hypot(a[0]-p.x,a[1]-p.z)>6).sort(()=>r()-0.5);
   const kinds=[{bd:p.bd,m:fit,why:R?"wants to move within 30 days":"is ready to buy this season"},{bd:p.bd>1?p.bd-1:p.bd+1,m:fit,why:R?"is flexible on move-in date":"is relocating next year"},{bd:p.bd,m:low,why:R?"is a student sharing costs":"is a first-time buyer"}].sort(()=>r()-0.5);
-  return kinds.map((k,i)=>({n:nm[Math.floor(r()*9)],look:{body:Math.floor(r()*3),height:Math.floor(r()*3),b:Math.floor(r()*3),s:Math.floor(r()*6),face:Math.floor(r()*3),h:Math.floor(r()*6),hc:Math.floor(r()*6),fh:Math.floor(r()*4),eye:Math.floor(r()*4),j:Math.floor(r()*6),p:Math.floor(r()*4),o:Math.floor(r()*4)},bd:k.bd,m:k.m,why:k.why,x:spots[i][0],z:spots[i][1],ask:[0,0,0],declined:0,res:null}));}
+  return kinds.map((k,i)=>({n:nm[Math.floor(r()*9)],look:{body:Math.floor(r()*2),height:Math.floor(r()*3),b:Math.floor(r()*3),s:Math.floor(r()*6),face:Math.floor(r()*3),h:Math.floor(r()*6),hc:Math.floor(r()*6),fh:Math.floor(r()*4),eye:Math.floor(r()*4),j:Math.floor(r()*6),p:Math.floor(r()*4),o:Math.floor(r()*4)},bd:k.bd,m:k.m,why:k.why,x:spots[i][0],z:spots[i][1],ask:[0,0,0],declined:0,res:null}));}
 function verdict(P,b){const p=P.p;if(b.bd!==p.bd)return "I need "+b.bd+" bedroom"+(b.bd>1?"s":"")+". This one has "+p.bd+".";if(p.rent?b.m<40*P.price:b.m<P.price)return p.rent?"My income does not meet the 40× rent requirement at "+f(P.price)+"/mo.":"That is above my budget of "+f(b.m)+".";return null;}
 const ETH=[["The seller mentions a past leak behind the wall. You…",[["Recommend disclosing it, as the law requires",1],["Suggest painting over it and staying quiet",-2],["Say it is probably fine to skip",-1]]],
 ["A family with young children asks to see the unit. The owner says no kids. You…",[["Explain you cannot discriminate under fair housing law",1],["Quietly avoid showing them",-2],["Tell them the unit is taken",-2]]],

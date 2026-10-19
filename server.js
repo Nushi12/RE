@@ -10,22 +10,33 @@ const io = new Server(server);
 
 // GLB files can live in public/assets (recommended) or beside server.js (current GitHub layout).
 const ASSET_DIR = path.join(__dirname, 'public', 'assets');
-const ALLOWED_GLB = new Set(['human-base-rigged.glb']);
+const ALLOWED_GLB = new Set(['human-base-rigged.glb', 'female-rigged-agent.glb']);
 app.use('/assets', express.static(ASSET_DIR, { maxAge: '1d' }));
 app.get('/assets/:filename', (req, res) => {
   const filename = path.basename(req.params.filename || '');
   if (!ALLOWED_GLB.has(filename)) return res.sendStatus(404);
+  if (filename === 'female-rigged-agent.glb') {
+    const compressedFile = path.join(ASSET_DIR, 'female-rigged-agent.glb.gz');
+    if (!fs.existsSync(compressedFile)) return res.status(404).send('Avatar model not found: ' + filename);
+    // The stored model is gzip-compressed to reduce the GitHub upload size.
+    // Browsers transparently decompress Content-Encoding:gzip before GLTFLoader parses the GLB.
+    res.set('Content-Type', 'model/gltf-binary');
+    res.set('Content-Encoding', 'gzip');
+    res.set('Cache-Control', 'public, max-age=3600, no-transform');
+    return res.sendFile(compressedFile);
+  }
   const publicFile = path.join(ASSET_DIR, filename);
   const rootFile = path.join(__dirname, filename);
   const file = fs.existsSync(publicFile) ? publicFile : rootFile;
   if (!fs.existsSync(file)) return res.status(404).send('Avatar model not found: ' + filename);
+  res.set('Cache-Control', 'public, max-age=3600');
   res.sendFile(file);
 });
 app.get('/version', (req, res) => {
   res.set('Cache-Control', 'no-store');
-  res.type('text/plain').send('REW-HUMANOID-BASE-2026-10-18');
+  res.type('text/plain').send('REW-FEMALE-RIGGED-ANIM-2026-10-19');
 });
-app.get('/healthz', (req, res) => res.status(200).json({ status: 'ok', build: 'REW-HUMANOID-BASE-2026-10-18' }));
+app.get('/healthz', (req, res) => res.status(200).json({ status: 'ok', build: 'REW-FEMALE-RIGGED-ANIM-2026-10-19' }));
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, max-age=0');
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -33,7 +44,7 @@ app.get('/', (req, res) => {
 
 const FIRMS = ['Elevate Realty','Nexus Real Estate','Vantage Realty','Vertex Properties','Northstar Realty','Haven Real Estate','UrbanEdge Realty','Momentum Realty','Blackstone Estates','Sterling Estates','Aurelia Realty','Park & Crown','Summit Estates','Bellmont Properties'];
 const LIMIT = 48;
-const RANGES = { body: 3, height: 3, b: 3, face: 3, s: 6, h: 6, hc: 6, fh: 4, eye: 4, j: 6, p: 4, o: 4 }; // accepted customizable avatar choices
+const RANGES = { body: 2, height: 3, b: 3, face: 3, s: 6, h: 6, hc: 6, fh: 4, eye: 4, j: 6, p: 4, o: 4 }; // accepted customizable avatar choices
 const players = {};
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function cleanLook(l = {}) {
@@ -81,4 +92,4 @@ setInterval(() => {
 }, 66);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log('RealEstate World REW-HUMANOID-BASE-2026-10-18 running on port ' + PORT));
+server.listen(PORT, () => console.log('RealEstate World REW-FEMALE-RIGGED-ANIM-2026-10-19 running on port ' + PORT));
