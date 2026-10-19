@@ -212,6 +212,9 @@ const AVATAR_MODELS={
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
+// Temporary stability test: keep both male GLB models on their embedded idle animation.
+// This prevents root-motion in the male walking clips from shifting the model during preview or play.
+function avatarShouldStayIdle(id){return id==='male1'||id==='male2';}
 let selectedAvatarId='female1';
 try{const stored=localStorage.getItem('rew-selected-rigged-avatar-v1');if(stored&&AVATAR_MODELS[stored])selectedAvatarId=stored;}catch(e){}
 let selectedGender=AVATAR_MODELS[selectedAvatarId].gender;
@@ -430,7 +433,7 @@ function loadSelectedModelInto(target,requestedId){
     target.userData.avatarModelLoaded=true;
     target.userData.modelBaseY=model.position.y;
     avatarActors.add(target);
-    setAvatarAnimation(target,target.userData.wantWalk?'walk':'idle');
+    setAvatarAnimation(target,(avatarShouldStayIdle(id)||!target.userData.wantWalk)?'idle':'walk');
     if(target===preview){
       statusAvatar('Character loaded. Choose it to continue.');
       const nextButton=document.getElementById('b1');if(nextButton)nextButton.disabled=false;
@@ -453,7 +456,7 @@ function walkAnim(g,dist,dt){
   if(!g)return;
   const u=g.userData||(g.userData={}),safeDt=Math.max(dt||0,1/240);
   const moving=dist>Math.max(0.0005,safeDt*0.08);u.wantWalk=moving;
-  if(u.avatarActions){setAvatarAnimation(g,moving?'walk':'idle');return;}
+  if(u.avatarActions){setAvatarAnimation(g,(avatarShouldStayIdle(u.avatarId)||!moving)?'idle':'walk');return;}
   // Procedural pedestrians have distinct clothes/skin/hair and a lightweight walk cycle.
   if(u.legs&&u.arms){const desired=moving?1:0;u.amp+=(desired-u.amp)*Math.min(1,safeDt*8);u.phase=(u.phase||0)+safeDt*(moving?7.4:1.8);const swing=Math.sin(u.phase)*0.42*u.amp;
     if(u.legs[0])u.legs[0].rotation.x=swing;if(u.legs[1])u.legs[1].rotation.x=-swing;
@@ -533,10 +536,11 @@ function createAvatarCardPreview(id,canvas){
     // Prefer genuinely in-place clips before generic walk clips. On male 2, `walking_2`
     // has roughly 1.1 units of forward hip translation; its `Walking` clip is in place.
     const previewWalk=chooseClip(clips,[/^walking_2_inplace$/i,/walking_woman/i,/walking.*inplace/i,/^walking$/i,/^walking_2$/i,/walking/i,/running/i]);
-    const showClip=previewWalk||idle;
+    // Male card previews stay on idle while we isolate the forward root-motion issue.
+    const showClip=avatarShouldStayIdle(id)?idle:(previewWalk||idle);
     if(showClip){entry.mixer=new THREE.AnimationMixer(model);entry.mixer.clipAction(showClip).setLoop(THREE.LoopRepeat,Infinity).play();}
     entry.ready=true;
-    if(selectedAvatarId===id)statusAvatar('Choose the animated character you like.');
+    if(selectedAvatarId===id)statusAvatar('Choose the character you like. The male previews are standing idle during this stability test.');
   }).catch(error=>{
     entry.failed=true;
     console.error('Character card preview failed for '+AVATAR_MODELS[id].file+':',error);

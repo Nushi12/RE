@@ -18,9 +18,9 @@ app.use('/assets', express.static(ASSET_DIR, {
 }));
 app.get('/version', (req, res) => {
   res.set('Cache-Control', 'no-store');
-  res.type('text/plain').send('REW-MALE2-ROOTMOTION-HAIR-COLOR-2026-10-19');
+  res.type('text/plain').send('REW-MALE-IDLE-HAIR-COLOR-2026-10-19');
 });
-app.get('/healthz', (req, res) => res.status(200).json({ status: 'ok', build: 'REW-MALE2-ROOTMOTION-HAIR-COLOR-2026-10-19' }));
+app.get('/healthz', (req, res) => res.status(200).json({ status: 'ok', build: 'REW-MALE-IDLE-HAIR-COLOR-2026-10-19' }));
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, max-age=0');
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -84,4 +84,4 @@ setInterval(() => {
 }, 66);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log('RealEstate World REW-MALE2-ROOTMOTION-HAIR-COLOR-2026-10-19 running on port ' + PORT));
+server.listen(PORT, () => console.log('RealEstate World REW-MALE-IDLE-HAIR-COLOR-2026-10-19 running on port ' + PORT));
