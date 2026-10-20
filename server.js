@@ -6,7 +6,7 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const BUILD_ID = 'REW-OPENING-FLOW-STABLE-2026-10-20';
+const BUILD_ID = 'REW-OPENING-8-AVATARS-NAOMI-TALK-2026-10-20';
 
 // Keep model assets inside public/assets and make the requested /assets/<file> URLs work.
 app.get('/version', (_req, res) => res.type('text/plain').send(BUILD_ID));
@@ -21,7 +21,7 @@ app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const FIRMS = ['Elevate Realty','Nexus Real Estate','Vantage Realty','Vertex Properties','Northstar Realty','Haven Real Estate','UrbanEdge Realty','Momentum Realty','Blackstone Estates','Sterling Estates','Aurelia Realty','Park & Crown','Summit Estates','Bellmont Properties'];
 const LIMIT = 48;
-const AVATAR_IDS = new Set(['female1', 'female2', 'male1', 'male2']);
+const AVATAR_IDS = new Set(['female1', 'female2', 'female3', 'female4', 'male1', 'male2', 'male3', 'male4']);
 function cleanAvatar(id) { return AVATAR_IDS.has(String(id || '')) ? String(id) : 'female1'; }
 const RANGES = { b: 3, s: 6, h: 6, hc: 6, j: 6, p: 4, o: 3 };
 const players = {};
