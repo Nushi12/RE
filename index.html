@@ -55,7 +55,7 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
 <div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
-<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><div id="colorTest" class="color-test"><div class="color-row"><span class="color-title">Skin tone</span><div id="skinSwatches" class="row"></div></div><div class="color-row"><span class="color-title">Outfit color</span><div id="outfitSwatches" class="row"></div></div><div class="color-row"><span class="color-title">Hair color</span><div id="hairSwatches" class="row"></div></div><p class="color-note">Color controls are mapped to each model’s baked texture. Original resets a category; very small shaded details may still tint with nearby regions.</p></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
+<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><div id="colorTest" class="color-test"><p class="color-note">Stability test: each character keeps its original GLB skin, hair, and clothing textures. Experimental recoloring is temporarily paused so it cannot distort models or trigger WebGL shader errors.</p></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
@@ -74,7 +74,7 @@ try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for
 // Only Female and Male are supported. Map any previously saved third option to Male.
 look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
-const CREATOR_BUILD='REW-NAOMI-SENIOR-AGENT-GLB-TALK-2026-10-19';
+const CREATOR_BUILD='REW-OPENING-FLOW-STABLE-2026-10-20';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
 const BODY_OPTIONS=['Female','Male'];
@@ -201,13 +201,12 @@ function human(L,fc){
   g.userData={legs,arms,phase:0,amp:0};return g;
 }
 // ---------- four complete rigged avatar models ----------
-// Each selectable agent is a full GLB. Color testing uses shader masks on the baked texture; it never reshapes or changes rigging.
+// Each selectable agent is a full GLB. This stability build preserves the original baked texture; recoloring is temporarily disabled.
 const AVATAR_MODELS={
-  // Match the hyphenated filenames in public/assets first; keep older names as fallback aliases.
-  female1:{label:'Female Agent 1',gender:'Female',file:'Female-rigged-agent.glb',aliases:['female-rigged-agent.glb','female-agent-1.glb','Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
-  female2:{label:'Female Agent 2',gender:'Female',file:'Female-rigged-agent1.glb',aliases:['female-rigged-agent1.glb','female-agent-2.glb','Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Different complete character',cardZoom:1.0,previewCameraZ:10.2},
-  male1:{label:'Male Agent 1',gender:'Male',file:'Male-rigged-agent1.glb',aliases:['male-rigged-agent1.glb','male-agent-1.glb','Male_rigged_agent1.glb','male_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
-  male2:{label:'Male Agent 2',gender:'Male',file:'Male-rigged-agent.glb',aliases:['male-rigged-agent.glb','male-agent-2.glb','Male_rigged_agent(1).glb','Male_rigged_agent.glb','male_rigged_agent(1).glb'],description:'Different complete character',cardZoom:2.15,previewCameraZ:12.5}
+  female1:{label:'Female Agent 1',gender:'Female',file:'Female_rigged_agent.glb',aliases:['Female_rigged_agent.glb','female_rigged_agent.glb','Female-rigged-agent.glb','female-rigged-agent.glb','female-agent-1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
+  female2:{label:'Female Agent 2',gender:'Female',file:'Female_rigged_agent1.glb',aliases:['Female_rigged_agent1.glb','female_rigged_agent1.glb','Female-rigged-agent1.glb','female-rigged-agent1.glb','female-agent-2.glb'],description:'Different complete character',cardZoom:1.0,previewCameraZ:10.2},
+  male1:{label:'Male Agent 1',gender:'Male',file:'Male-rigged-agent1.glb',aliases:['Male-rigged-agent1.glb','male-rigged-agent1.glb','male-agent-1.glb','Male_rigged_agent1.glb','male_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
+  male2:{label:'Male Agent 2',gender:'Male',file:'Male-rigged-agent.glb',aliases:['Male-rigged-agent.glb','male-rigged-agent.glb','male-agent-2.glb','Male_rigged_agent(1).glb','Male_rigged_agent.glb','male_rigged_agent(1).glb'],description:'Different complete character',cardZoom:1.0,previewCameraZ:10.2}
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
@@ -217,147 +216,15 @@ function avatarShouldStayIdle(id){return id==='male1'||id==='male2';}
 let selectedAvatarId='female1';
 try{const stored=localStorage.getItem('rew-selected-rigged-avatar-v1');if(stored&&AVATAR_MODELS[stored])selectedAvatarId=stored;}catch(e){}
 let selectedGender=AVATAR_MODELS[selectedAvatarId].gender;
-const SKIN_TONE_COLORS={original:null,porcelain:'#f2d1bc',warm:'#d9a17c',caramel:'#b77952',deep:'#70462f'};
-const OUTFIT_COLORS={original:null,navy:'#263b61',burgundy:'#7a2637',teal:'#286c65',camel:'#a98255',charcoal:'#343a40'};
-const HAIR_COLORS={original:null,black:'#191716',espresso:'#3b261d',chestnut:'#70452c',auburn:'#98462d',blonde:'#c5a15c',silver:'#aeb5c0',platinum:'#ded9ce'};
+// Appearance recoloring is deliberately paused in this stability build. The four GLBs use baked texture atlases;
+// original materials are preserved until we can implement proper per-model masks without changing unrelated features.
+const SKIN_TONE_COLORS={original:null};
+const OUTFIT_COLORS={original:null};
+const HAIR_COLORS={original:null};
 let selectedSkinTone='original',selectedOutfitColor='original',selectedHairColor='original';
-try{
-  const savedSkin=localStorage.getItem('rew-avatar-skin-tone-v1');
-  const savedOutfit=localStorage.getItem('rew-avatar-outfit-color-v1');
-  const savedHair=localStorage.getItem('rew-avatar-hair-color-v1');
-  if(savedSkin && Object.prototype.hasOwnProperty.call(SKIN_TONE_COLORS,savedSkin))selectedSkinTone=savedSkin;
-  if(savedOutfit && Object.prototype.hasOwnProperty.call(OUTFIT_COLORS,savedOutfit))selectedOutfitColor=savedOutfit;
-  if(savedHair && Object.prototype.hasOwnProperty.call(HAIR_COLORS,savedHair))selectedHairColor=savedHair;
-}catch(e){}
-function colorHexFromPalette(palette,key){return Object.prototype.hasOwnProperty.call(palette,key)?palette[key]:null;}
-function renderColorSwatches(containerId,palette,selectedKey,title,handler){
-  const root=document.getElementById(containerId);if(!root)return;root.innerHTML='';
-  const names={original:'Original',porcelain:'Light',warm:'Warm',caramel:'Caramel',deep:'Deep',navy:'Navy',burgundy:'Burgundy',teal:'Teal',camel:'Camel',charcoal:'Charcoal',black:'Black',espresso:'Espresso',chestnut:'Chestnut brown',auburn:'Auburn',blonde:'Blonde',silver:'Silver',platinum:'Platinum'};
-  Object.entries(palette).forEach(([key,value])=>{
-    const b=document.createElement('button');b.type='button';b.className='color-swatch'+(key===selectedKey?' sel':'');
-    b.dataset.value=key;b.title=title+': '+(names[key]||key);b.setAttribute('aria-label',b.title);b.setAttribute('aria-pressed',String(key===selectedKey));
-    if(value)b.style.setProperty('--swatch',value);else b.textContent='Original';
-    b.onclick=()=>handler(key);root.appendChild(b);
-  });
-}
-function renderColorControls(){
-  renderColorSwatches('skinSwatches',SKIN_TONE_COLORS,selectedSkinTone,'Skin tone',key=>{
-    selectedSkinTone=key;try{localStorage.setItem('rew-avatar-skin-tone-v1',key);}catch(e){}
-    renderColorControls();setPreview();refreshAvatarTintPreviews();
-  });
-  renderColorSwatches('outfitSwatches',OUTFIT_COLORS,selectedOutfitColor,'Outfit color',key=>{
-    selectedOutfitColor=key;try{localStorage.setItem('rew-avatar-outfit-color-v1',key);}catch(e){}
-    renderColorControls();setPreview();refreshAvatarTintPreviews();
-  });
-  renderColorSwatches('hairSwatches',HAIR_COLORS,selectedHairColor,'Hair color',key=>{
-    selectedHairColor=key;try{localStorage.setItem('rew-avatar-hair-color-v1',key);}catch(e){}
-    renderColorControls();setPreview();refreshAvatarTintPreviews();
-  });
-}
-function applyAvatarColorTest(model,id,skinKey,outfitKey,hairKey){
-  const skinHex=colorHexFromPalette(SKIN_TONE_COLORS,skinKey||'original');
-  const outfitHex=colorHexFromPalette(OUTFIT_COLORS,outfitKey||'original');
-  const hairHex=colorHexFromPalette(HAIR_COLORS,hairKey||'original');
-  const safeId=validAvatarId(id);
-  // These masks classify source-texture RGB, not lighting. Three.js converts the GLB's sRGB
-  // base-colour texture to linear light before map_fragment, so convert back to sRGB before
-  // comparing channels. This prevents dark hair/shadows being misidentified as the entire outfit.
-  const outfitMasks={
-    female1:'bool rewOutfitPx = ((rewClass.b > rewClass.r * 1.04 && rewClass.b > rewClass.g * 1.005 && rewLuma < 0.48) || (rewLuma > 0.045 && rewLuma < 0.35 && rewSaturation < 0.20));',
-    female2:'bool rewOutfitPx = (rewClass.r > rewClass.g * 1.18 && rewClass.r > rewClass.b * 1.05 && rewLuma < 0.46 && (rewClass.r - rewClass.g) > 0.035 && rewSaturation > 0.10);',
-    male1:'bool rewOutfitPx = (rewLuma > 0.035 && rewLuma < 0.38 && rewSaturation < 0.28) || (rewClass.b > rewClass.r * 1.04 && rewLuma < 0.42);',
-    male2:'bool rewOutfitPx = ((rewLuma > 0.07 && rewLuma < 0.48 && rewSaturation < 0.27) || (rewLuma > 0.22 && rewLuma < 0.86 && rewClass.r > rewClass.g * 1.02 && rewClass.r < rewClass.g * 1.30 && rewClass.g > rewClass.b * 1.02 && (rewClass.g - rewClass.b) > 0.025 && rewSaturation < 0.43));'
-  };
-  // Model-specific hair masks: female 2 and male 2 have dark hair; male 1 has gray hair.
-  // These masks are evaluated in sRGB and take priority over outfit recolouring.
-  const hairMasks={
-    female1:'bool rewHairPx = (rewClass.r > rewClass.g * 1.08 && rewClass.g > rewClass.b * 1.02 && rewLuma > 0.045 && rewLuma < 0.30 && rewSaturation > 0.12);',
-    female2:'bool rewHairPx = (rewLuma > 0.015 && rewLuma < 0.19 && rewSaturation < 0.22);',
-    male1:'bool rewHairPx = (rewLuma > 0.25 && rewLuma < 0.80 && rewSaturation < 0.20);',
-    male2:'bool rewHairPx = (rewLuma > 0.01 && rewLuma < 0.17 && rewSaturation < 0.22);'
-  };
-  model.traverse(mesh=>{
-    if(!mesh.isMesh||!mesh.material)return;
-    const wasArray=Array.isArray(mesh.material),sourceMaterials=wasArray?mesh.material:[mesh.material];
-    const tinted=sourceMaterials.map(source=>{
-      let material=source;
-      if(!(material.userData&&material.userData.rewAvatarTintClone&&material.userData.rewTintState)){
-        material=source.clone();
-        material.userData=Object.assign({},source.userData||{},{rewAvatarTintClone:true});
-        const state={
-          skinUniform:{value:new THREE.Color('#ffffff')},
-          outfitUniform:{value:new THREE.Color('#ffffff')},
-          hairUniform:{value:new THREE.Color('#ffffff')},
-          skinEnabledUniform:{value:0.0},
-          outfitEnabledUniform:{value:0.0},
-          hairEnabledUniform:{value:0.0}
-        };
-        material.userData.rewTintState=state;
-        material.onBeforeCompile=shader=>{
-          shader.uniforms.rewSkinTint=state.skinUniform;
-          shader.uniforms.rewOutfitTint=state.outfitUniform;
-          shader.uniforms.rewHairTint=state.hairUniform;
-          shader.uniforms.rewSkinEnabled=state.skinEnabledUniform;
-          shader.uniforms.rewOutfitEnabled=state.outfitEnabledUniform;
-          shader.uniforms.rewHairEnabled=state.hairEnabledUniform;
-          const colorUniforms=`
-uniform vec3 rewSkinTint;
-uniform vec3 rewOutfitTint;
-uniform vec3 rewHairTint;
-uniform float rewSkinEnabled;
-uniform float rewOutfitEnabled;
-uniform float rewHairEnabled;
-vec3 rewLinearToSrgb(vec3 c) {
-  vec3 lowPart = c * 12.92;
-  vec3 highPart = 1.055 * pow(max(c, vec3(0.0)), vec3(1.0 / 2.4)) - 0.055;
-  return mix(lowPart, highPart, step(vec3(0.0031308), c));
-}
-`;
-          const colorLogic=`{
-  vec3 rewSrc = diffuseColor.rgb;
-  vec3 rewClass = rewLinearToSrgb(max(rewSrc, vec3(0.0)));
-  float rewLuma = dot(rewClass, vec3(0.2126, 0.7152, 0.0722));
-  float rewMax = max(rewClass.r, max(rewClass.g, rewClass.b));
-  float rewMin = min(rewClass.r, min(rewClass.g, rewClass.b));
-  float rewSaturation = (rewMax - rewMin) / max(rewMax, 0.001);
-  ${hairMasks[safeId]||hairMasks.female1}
-  bool rewSkinPx = (rewClass.r > rewClass.g * 1.14 && rewClass.g > rewClass.b * 1.01 && (rewClass.r - rewClass.b) > 0.08 && rewLuma > 0.13 && rewLuma < 0.92 && rewSaturation > 0.12 && rewSaturation < 0.84) && !rewHairPx;
-  ${outfitMasks[safeId]||outfitMasks.female1}
-  rewOutfitPx = rewOutfitPx && !rewSkinPx && !rewHairPx;
-  if (rewSkinEnabled > 0.5 && rewSkinPx) {
-    float rewSkinShade = clamp(0.42 + rewLuma * 0.80, 0.42, 1.12);
-    diffuseColor.rgb = mix(rewSrc, rewSkinTint * rewSkinShade, 0.90);
-  } else if (rewHairEnabled > 0.5 && rewHairPx) {
-    float rewHairShade = clamp(0.38 + rewLuma * 1.05, 0.40, 1.12);
-    diffuseColor.rgb = mix(rewSrc, rewHairTint * rewHairShade, 0.88);
-  } else if (rewOutfitEnabled > 0.5 && rewOutfitPx) {
-    float rewOutfitShade = clamp(0.30 + rewLuma * 1.45, 0.35, 1.12);
-    diffuseColor.rgb = mix(rewSrc, rewOutfitTint * rewOutfitShade, 0.90);
-  }
-}`;
-          shader.fragmentShader=shader.fragmentShader.replace('void main() {',colorUniforms+'\nvoid main() {');
-          shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n'+colorLogic);
-        };
-        material.customProgramCacheKey=()=>`rew-avatar-color-mask-srgb-v4-${safeId}`;
-        material.needsUpdate=true;
-      }
-      const state=material.userData.rewTintState;
-      state.skinUniform.value.set(skinHex||'#ffffff');
-      state.outfitUniform.value.set(outfitHex||'#ffffff');
-      state.hairUniform.value.set(hairHex||'#ffffff');
-      state.skinEnabledUniform.value=skinHex?1.0:0.0;
-      state.outfitEnabledUniform.value=outfitHex?1.0:0.0;
-      state.hairEnabledUniform.value=hairHex?1.0:0.0;
-      return material;
-    });
-    mesh.material=wasArray?tinted:tinted[0];
-  });
-}
-function refreshAvatarTintPreviews(){
-  for(const entry of avatarCardPreviews.values()){
-    if(entry.model)applyAvatarColorTest(entry.model,entry.id,selectedSkinTone,selectedOutfitColor,selectedHairColor);
-  }
-}
+function renderColorControls(){}
+function applyAvatarColorTest(){}
+function refreshAvatarTintPreviews(){}
 const avatarGltfCache={};
 const avatarLoadPromises={};
 const avatarActors=new Set();
@@ -369,7 +236,7 @@ function loadAvatarGltf(id){
   if(avatarGltfCache[id])return Promise.resolve(avatarGltfCache[id]);
   if(avatarLoadPromises[id])return avatarLoadPromises[id];
   const modelInfo=AVATAR_MODELS[id];
-  const filenames=[modelInfo.file].concat(modelInfo.aliases||[]);
+  const filenames=Array.from(new Set([modelInfo.file].concat(modelInfo.aliases||[])));
   avatarLoadPromises[id]=new Promise((resolve,reject)=>{
     const tryFilename=(index,lastError)=>{
       if(index>=filenames.length){
@@ -400,6 +267,35 @@ function setAvatarAnimation(target,name){
   if(prev&&prev!==next)prev.fadeOut(0.18);
   target.userData.avatarActionName=name;
 }
+function fitAvatarModel(model,id,targetHeight){
+  targetHeight=targetHeight||1.78;
+  // Male Agent 1 and Naomi carry a GLB-authored 0.01 scale on the skinned root while their
+  // bind-pose mesh bounds are misleadingly tiny. Preserve their original root/bone transforms;
+  // use a nominal human size only for card-camera framing.
+  if(id==='male1'){
+    model.position.set(0,0,0);
+    model.scale.set(1,1,1);
+    model.updateMatrixWorld(true);
+    return {size:new THREE.Vector3(1.70,targetHeight,0.36),preservedRigScale:true};
+  }
+  model.updateMatrixWorld(true);
+  let bounds=new THREE.Box3().setFromObject(model);
+  const rawSize=bounds.getSize(new THREE.Vector3());
+  if(!Number.isFinite(rawSize.y)||rawSize.y<0.10)throw new Error('Model bounds are not safe to auto-fit: '+(AVATAR_MODELS[id]&&AVATAR_MODELS[id].file||id));
+  // Only regular-root player models are uniformly fitted. No per-axis deformation.
+  model.scale.multiplyScalar(targetHeight/rawSize.y);
+  model.updateMatrixWorld(true);
+  bounds=new THREE.Box3().setFromObject(model);
+  const center=bounds.getCenter(new THREE.Vector3());
+  model.position.x-=center.x;
+  model.position.y-=bounds.min.y;
+  model.position.z-=center.z;
+  model.updateMatrixWorld(true);
+  bounds=new THREE.Box3().setFromObject(model);
+  const size=bounds.getSize(new THREE.Vector3());
+  if(!Number.isFinite(size.y)||size.y<0.10)throw new Error('Fitted model bounds are invalid: '+(AVATAR_MODELS[id]&&AVATAR_MODELS[id].file||id));
+  return {size,preservedRigScale:false};
+}
 function loadSelectedModelInto(target,requestedId){
   if(!target)return Promise.reject(new Error('Avatar target was not created'));
   const id=validAvatarId(requestedId);
@@ -413,24 +309,14 @@ function loadSelectedModelInto(target,requestedId){
     const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
     model.name='selected-avatar-'+id;
     model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;o.frustumCulled=false;}});
-    // Uniform scale only. Recenter X/Z and place feet at y=0 so model pivots and root offsets cannot send a male preview off-screen.
-    model.updateMatrixWorld(true);
-    let bounds=new THREE.Box3().setFromObject(model);
-    const size=bounds.getSize(new THREE.Vector3());
-    if(!Number.isFinite(size.y)||size.y<=0)throw new Error('Model has invalid height: '+AVATAR_MODELS[id].file);
-    model.scale.multiplyScalar(1.86/size.y);
-    model.updateMatrixWorld(true);
-    bounds=new THREE.Box3().setFromObject(model);
-    const center=bounds.getCenter(new THREE.Vector3());
-    model.position.x-=center.x;model.position.y-=bounds.min.y;model.position.z-=center.z;
-    model.updateMatrixWorld(true);
-    applyAvatarColorTest(model,id,target.userData.skinTone||selectedSkinTone,target.userData.outfitColor||selectedOutfitColor,target.userData.hairColor||selectedHairColor);
-    // Remove stale child models, disposing only the per-instance tint materials (GLB source assets remain cached).
+    // Use one model-aware fitting path. Preserve the special skinned-root transform in Male Agent 1.
+    fitAvatarModel(model,id,1.86);
+    // Remove any stale child model instance; preserve the imported GLB materials and textures unchanged.
     while(target.children.length){const child=target.children[0];child.traverse(o=>{if(o.isMesh){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{if(m&&m.userData&&m.userData.rewAvatarTintClone)m.dispose();});}});target.remove(child);}
     target.add(model);
     const mixer=new THREE.AnimationMixer(model);
     const animations=gltf.animations||[];
-    const idleClip=chooseClip(animations,[/^idle(?:$|[_\s])/i,/idle/i])||animations[0]||null;
+    const idleClip=chooseClip(animations,[/^idle(?:$|[_\s])/i,/idle/i,/stand.*chat/i,/stand/i])||null;
     const walkClip=chooseClip(animations,[/^walking_2_inplace$/i,/walking_woman/i,/walking.*inplace/i,/^walking$/i,/walking_2/i,/^walk(?:ing)?/i]);
     const sitClip=chooseClip(animations,[/sit/i]);
     const actions={};
@@ -527,14 +413,8 @@ function createAvatarCardPreview(id,canvas){
     if(!canvas.isConnected||avatarCardPreviews.get(canvas)!==entry)return;
     const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
     model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;o.frustumCulled=false;}});
-    model.updateMatrixWorld(true);
-    let bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
-    if(!Number.isFinite(size.y)||size.y<=0)throw new Error('Invalid model height');
-    model.scale.multiplyScalar(1.72/size.y);model.updateMatrixWorld(true);
-    bounds=new THREE.Box3().setFromObject(model);const center=bounds.getCenter(new THREE.Vector3());
-    model.position.x-=center.x;model.position.y-=bounds.min.y;model.position.z-=center.z;model.updateMatrixWorld(true);
-    applyAvatarColorTest(model,id,selectedSkinTone,selectedOutfitColor,selectedHairColor);
-    bounds=new THREE.Box3().setFromObject(model);size=bounds.getSize(new THREE.Vector3());
+    const fitInfo=fitAvatarModel(model,id,1.72);
+    const size=fitInfo.size;
     cardScene.add(model);entry.model=model;
     // Frame each option from its actual width and height; wider male A-pose/T-pose meshes stay in view.
     const fov=cardCamera.fov*Math.PI/180,aspect=Math.max(0.5,canvas.clientWidth/Math.max(1,canvas.clientHeight));
@@ -544,13 +424,10 @@ function createAvatarCardPreview(id,canvas){
     const dist=baseDist*(AVATAR_MODELS[id].cardZoom||1.0);
     cardCamera.position.set(0,size.y*0.54,dist);cardCamera.lookAt(0,size.y*0.51,0);
     const clips=gltf.animations||[];
-    const idle=chooseClip(clips,[/^idle(?:$|[_\s])/i,/idle/i])||clips[0]||null;
-    // Prefer genuinely in-place clips before generic walk clips. On male 2, `walking_2`
-    // has roughly 1.1 units of forward hip translation; its `Walking` clip is in place.
-    const previewWalk=chooseClip(clips,[/^walking_2_inplace$/i,/walking_woman/i,/walking.*inplace/i,/^walking$/i,/^walking_2$/i,/walking/i,/running/i]);
-    // Male card previews stay on idle while we isolate the forward root-motion issue.
-    const showClip=avatarShouldStayIdle(id)?idle:(previewWalk||idle);
-    if(showClip){entry.mixer=new THREE.AnimationMixer(model);entry.mixer.clipAction(showClip).setLoop(THREE.LoopRepeat,Infinity).play();}
+    // Keep every selection card on a genuine idle/stand clip during the opening-flow stability pass.
+    // Never substitute a walking or running clip for idle, as those can move the root off-screen.
+    const idle=chooseClip(clips,[/^idle(?:$|[_\s])/i,/idle/i,/stand.*chat/i,/stand/i]);
+    if(idle){entry.mixer=new THREE.AnimationMixer(model);entry.mixer.clipAction(idle).setLoop(THREE.LoopRepeat,Infinity).play();}
     entry.ready=true;
     if(selectedAvatarId===id)statusAvatar('Choose the character you like. The male previews are standing idle during this stability test.');
   }).catch(error=>{
@@ -601,23 +478,10 @@ function renderAvatarChoices(){
   });
 }
 
-// Ambient pedestrians use distinct procedural variations and never reuse the four selectable player GLBs.
+// Temporary stability mode: no procedural/cartoon pedestrians are instantiated.
+// We will replace this disabled crowd with user-provided GLB NPCs in a separate pass.
 const PEDS=[];
-const PED_LOOKS=[
- {body:0,height:1,b:0,s:1,h:1,hc:0,j:5,p:0,o:0},
- {body:1,height:2,b:2,s:4,h:0,hc:5,j:1,p:2,o:1},
- {body:0,height:0,b:1,s:3,h:3,hc:2,j:3,p:1,o:0},
- {body:1,height:1,b:0,s:5,h:4,hc:0,j:2,p:3,o:2},
- {body:0,height:2,b:2,s:2,h:2,hc:4,j:4,p:0,o:1},
- {body:1,height:0,b:1,s:0,h:0,hc:3,j:5,p:2,o:0},
- {body:0,height:1,b:1,s:4,h:3,hc:1,j:2,p:3,o:2},
- {body:1,height:2,b:2,s:2,h:4,hc:5,j:0,p:1,o:1}
-];
-[['z',7,-46,46,1.5,0],['z',-7.2,-46,46,1.3,40],['z',7.4,-46,46,1.7,95],['x',7,-46,46,1.4,20],['x',-7.2,-46,46,1.6,70],['x',7.3,-46,46,1.2,130],['z',-6.8,-46,46,1.5,150],['x',-7,-46,46,1.3,10]]
- .forEach((d,i)=>{const h=new THREE.Group(),person=human(PED_LOOKS[i],FIRMS[i%FIRMS.length].c);person.scale.multiplyScalar(0.88);h.add(person);scene.add(h);PEDS.push({h,person,d});});
-function updatePeds(t,dt){PEDS.forEach(({h,person,d})=>{const[ax,fx,lo,hi,sp,off]=d,L=hi-lo,u=(t*sp+off)%(2*L),dir=u<L?1:-1,pos=u<L?lo+u:hi-(u-L);
-  const nx=ax==='z'?fx:pos,nz=ax==='z'?pos:fx;const dist=Math.hypot(nx-h.position.x,nz-h.position.z);walkAnim(person,dist,dt);
-  h.position.set(nx,0,nz);h.rotation.y=ax==='z'?(dir>0?0:Math.PI):(dir>0?Math.PI/2:-Math.PI/2);});}
+function updatePeds(){}
 
 // ---------- UI ----------
 const E=id=>document.getElementById(id);
@@ -639,24 +503,27 @@ const QZ=[
 {f:"Advertising must be accurate. If a listing has an error, like the wrong square footage, correct it promptly.",q:"You discover a listing advertises the wrong square footage. What should you do?",o:["Leave it until someone complains","Correct the listing promptly and communicate the correction as appropriate","Increase the number to make it more attractive","Ask another agent to advertise the same number"],a:1,w:"Fix errors quickly. Accurate advertising protects clients and your license."},
 {f:"A salesperson is paid for brokerage work through their sponsoring broker, not directly by clients or other parties.",q:"Under New York licensing rules, how is a salesperson generally paid for licensed brokerage activity?",o:["Directly by anyone, regardless of the arrangement","Only in cash","Through the salesperson's sponsoring broker, subject to applicable rules","Only after becoming a property owner"],a:2,w:"Commissions flow through the sponsoring broker, which is why the game applies a firm split."}];
 let SEQ=[],si=0,score=0,mentorG=null;
-// Naomi is loaded from public/assets/naomi-senior-agent.glb. Her Talk_Passionately
-// clip plays only while browser narration is speaking; this GLB has no idle clip.
+// Naomi is loaded from public/assets/naomi-senior-agent.glb. For this stability build,
+// keep the rig in its authored pose; browser narration is independent of skeletal animation.
 let voiceEnabled=true,mentorBody=null,activeNaomiUtterance=null,naomiTalking=false,naomiLoadToken=0,naomiGltfCache=null,naomiGltfPromise=null;
+let naomiAssetStatusText='',naomiAssetStatusError=false,naomiAssetState='idle',naomiPendingGreeting='';
 const NAOMI_MODEL_URL='/assets/naomi-senior-agent.glb';
+// Naomi asset loading is isolated from player-avatar rendering; custom color masks are disabled in this build.
 function setNaomiTalking(on){
+  // Audio narration is enabled, but we keep Naomi's GLB in its authored pose
+  // until her embedded talk animation is verified not to distort the skinned mesh.
   naomiTalking=!!on;
   const ud=mentorBody&&mentorBody.userData;
-  if(!ud||!ud.naomiMixer||!ud.naomiTalkAction)return;
-  if(naomiTalking){
-    if(!ud.naomiTalkAction.isRunning()){
-      ud.naomiMixer.stopAllAction();
-      ud.naomiTalkAction.reset();ud.naomiTalkAction.enabled=true;
-      ud.naomiTalkAction.setEffectiveWeight(1);ud.naomiTalkAction.setEffectiveTimeScale(1);
-      ud.naomiTalkAction.setLoop(THREE.LoopRepeat,Infinity);ud.naomiTalkAction.play();
-    }
-  }else{
-    ud.naomiMixer.stopAllAction();ud.naomiTalkAction.reset();ud.naomiMixer.update(0);
-  }
+  if(ud&&ud.naomiMixer)ud.naomiMixer.stopAllAction();
+}
+function setNaomiModelStatus(text,isError=false,state){
+  if(state)naomiAssetState=state;
+  naomiAssetStatusText=text||'';naomiAssetStatusError=!!isError;
+  const el=document.getElementById('naomiModelStatus');
+  if(el){el.textContent=naomiAssetStatusText;el.style.display=naomiAssetStatusText?'block':'none';el.style.color=naomiAssetStatusError?'#fca5a5':'#a9c3dd';}
+  const retry=document.getElementById('naomiRetry');
+  if(retry)retry.style.display=naomiAssetState==='error'?'inline-block':'none';
+  document.querySelectorAll('[data-naomi-start]').forEach(button=>{button.disabled=naomiAssetState!=='loaded';});
 }
 function stopNaomiSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeNaomiUtterance=null;setNaomiTalking(false);}
 function speakNaomi(text){
@@ -666,8 +533,8 @@ function speakNaomi(text){
   const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/en[-_]US/i.test(v.lang)&&/samantha|zira|jenny|aria|susan|serena|google us english/i.test(v.name))||voices.find(v=>/en[-_]US/i.test(v.lang));if(voice)u.voice=voice;
   u.onstart=()=>setNaomiTalking(true);u.onend=()=>setNaomiTalking(false);u.onerror=()=>setNaomiTalking(false);activeNaomiUtterance=u;window.speechSynthesis.speak(u);
 }
-function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button>';}
-function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
+function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button><div id="naomiModelStatus" class="k" role="status" aria-live="polite" style="display:'+(naomiAssetStatusText?'block':'none')+';color:'+(naomiAssetStatusError?'#fca5a5':'#a9c3dd')+'">'+naomiAssetStatusText+'</div><button class="b" id="naomiRetry" onclick="retryNaomiLoad()" style="display:'+(naomiAssetState==='error'?'inline-block':'none')+'">Retry Naomi model</button>'; }
+function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else if(naomiAssetState==='loaded')speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
 function loadNaomiModel(){
   if(naomiGltfCache)return Promise.resolve(naomiGltfCache);
   if(naomiGltfPromise)return naomiGltfPromise;
@@ -677,38 +544,54 @@ function loadNaomiModel(){
   return naomiGltfPromise;
 }
 function fitNaomiModel(model){
-  model.updateMatrixWorld(true);let bounds=new THREE.Box3().setFromObject(model);const size=bounds.getSize(new THREE.Vector3());
-  if(!Number.isFinite(size.y)||size.y<=0)throw new Error('Naomi GLB has invalid model bounds');
-  model.scale.multiplyScalar(1.88/size.y);model.updateMatrixWorld(true);bounds=new THREE.Box3().setFromObject(model);const center=bounds.getCenter(new THREE.Vector3());
-  model.position.x-=center.x;model.position.y-=bounds.min.y;model.position.z-=center.z;model.updateMatrixWorld(true);
+  // Preserve this GLB's authored skinned-root scale. Static Box3 bounds do not reflect its bind-pose body.
+  model.position.set(0,0,0);
+  model.scale.set(1,1,1);
+  model.updateMatrixWorld(true);
 }
 function mentor(on){
-  // Invalidate outstanding loads when changing screens, preventing late async loads from reappearing.
+  // Never substitute the cartoon mentor: the exam unlocks only after the real Naomi GLB loads.
   naomiLoadToken++;
   const token=naomiLoadToken;
   if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}
   if(!on){stopNaomiSpeech();return;}
+  naomiAssetState='loading';
+  setNaomiModelStatus('Loading Naomi’s 3D model…',false,'loading');
   mentorG=new THREE.Group();mentorBody=new THREE.Group();mentorG.add(mentorBody);
-  // Keep the prior cartoon mentor until the realistic GLB finishes loading; it is the safe fallback.
-  const fallback=human({body:0,height:1,b:1,s:2,h:1,hc:1,j:5,p:0,o:0},0x9b59b6);fallback.scale.multiplyScalar(0.94);mentorBody.add(fallback);mentorBody.userData.naomiFallback=fallback;
-  const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.48;mentorG.add(t);
+  const t=label('Naomi · Senior Agent','#9be7a8',2.6);t.position.y=2.48;mentorG.add(t);
   mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);
   loadNaomiModel().then(gltf=>{
     if(token!==naomiLoadToken||!mentorG||!mentorBody||mentorG.parent!==scene)return;
     const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
-    model.name='naomi-senior-agent-model';model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;o.frustumCulled=false;}});fitNaomiModel(model);
-    const old=mentorBody.userData.naomiFallback;if(old){mentorBody.remove(old);mentorBody.userData.naomiFallback=null;}
+    model.name='naomi-senior-agent-model';
+    model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;o.frustumCulled=false;}});
+    fitNaomiModel(model);
     mentorBody.add(model);
-    const mixer=new THREE.AnimationMixer(model);const talkClip=chooseClip(gltf.animations,[/talk.*passionately/i,/talk/i]);
-    mentorBody.userData.naomiMixer=mixer;mentorBody.userData.naomiModel=model;mentorBody.userData.naomiTalkAction=talkClip?mixer.clipAction(talkClip):null;
-    if(!talkClip)console.warn('Naomi GLB has no talk animation; model will remain in its default pose. Available animations:',(gltf.animations||[]).map(a=>a.name));
-    if(naomiTalking)setNaomiTalking(true);
+    const nameplate=label('Naomi · Senior Agent','#9be7a8',2.6);nameplate.position.y=2.48;mentorG.add(nameplate);
+    mentorBody.userData.naomiModel=model;
+    mentorBody.userData.naomiAnimations=(gltf.animations||[]).map(a=>a.name);
+    setNaomiModelStatus('Naomi’s 3D model loaded. Exam options are ready.',false,'loaded');
+    console.info('Naomi GLB loaded in authored pose; animation paused for stability.',mentorBody.userData.naomiAnimations);
+    if(naomiPendingGreeting){const greeting=naomiPendingGreeting;naomiPendingGreeting='';speakNaomi(greeting);}
   }).catch(error=>{
-    if(token===naomiLoadToken)console.error('Could not load Naomi GLB from '+NAOMI_MODEL_URL+'; keeping cartoon mentor fallback.',error);
+    if(token===naomiLoadToken){
+      const message='Naomi’s 3D model did not load. Confirm public/assets/naomi-senior-agent.glb exists and retry. The exam remains locked until it loads.';
+      setNaomiModelStatus(message,true,'error');
+      console.error('Could not load Naomi GLB from '+NAOMI_MODEL_URL+'. No cartoon fallback is enabled.',error);
+    }
   });
 }
-function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
-function start(m){SEQ=[];score=0;si=0;if(m==='g'){QZ.forEach((x,i)=>{SEQ.push({t:'s',i});SEQ.push({t:'q',i});});}else{[[0,5],[5,10]].forEach(([a,b])=>{for(let i=a;i<b;i++)SEQ.push({t:'s',i});for(let i=a;i<b;i++)SEQ.push({t:'q',i});});}lesson();}
+function retryNaomiLoad(){modes();}
+function modes(){
+  const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";
+  naomiPendingGreeting=greeting;
+  E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" data-naomi-start disabled onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" data-naomi-start disabled onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';
+  // Clear the player model preview so only Naomi occupies the training scene.
+  if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
+  setNaomiModelStatus(naomiAssetStatusText||'Preparing Naomi’s 3D model…',naomiAssetStatusError,naomiAssetState);
+  mentor(true);
+}
+function start(m){if(naomiAssetState!=='loaded'){setNaomiModelStatus(naomiAssetState==='error'?'Naomi did not load. Use Retry Naomi model.':'Please wait for Naomi’s 3D model to finish loading.',naomiAssetState==='error',naomiAssetState);return;}SEQ=[];score=0;si=0;if(m==='g'){QZ.forEach((x,i)=>{SEQ.push({t:'s',i});SEQ.push({t:'q',i});});}else{[[0,5],[5,10]].forEach(([a,b])=>{for(let i=a;i<b;i++)SEQ.push({t:'s',i});for(let i=a;i<b;i++)SEQ.push({t:'q',i});});}lesson();}
 function lesson(){const st=SEQ[si],el=E('lesson');if(!st){finish();return;}const x=QZ[st.i],pr='<div class=k>Step '+(si+1)+' of '+SEQ.length+' · Score '+score+'</div>';
   if(st.t==='s'){el.innerHTML=voiceButton()+pr+'<div class=bubble><b>Naomi</b><br>'+x.f+'</div><button class="go" onclick="adv()">Got it</button>';speakNaomi(x.f);}
   else{el.innerHTML=voiceButton()+pr+'<div class=bubble><b>Naomi</b> asks:<br>'+x.q+'</div>'+x.o.map((o,i)=>'<div class=opt2 onclick="pick('+i+')"><b>'+'ABCD'[i]+'.</b> '+o+'</div>').join('')+'<div id=fb></div>';speakNaomi(x.q);}}
@@ -716,13 +599,13 @@ function pick(i){const q=QZ[SEQ[si].i],fb=E('fb');if(fb.dataset.d)return;fb.data
   [...document.querySelectorAll('.opt2')].forEach((e,j)=>{e.style.borderColor=j===q.a?'#2ecc71':(j===i?'#e74c3c':'#2c3f56');});
   const feedback=(i===q.a?'Correct. ':'Not quite. ')+q.w;fb.innerHTML='<div class=bubble><b>Naomi</b><br>'+(i===q.a?'✔ Correct. ':'✘ Not quite. ')+q.w+'</div><button class="go" onclick="adv()">Next</button>';speakNaomi(feedback);}
 function adv(){si++;lesson();}
-function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Your first client quest is unlocked: meet Maya near the Corner Café. Now choose your firm.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok)G.badge=1;}
-function toFirm(){mentor(false);show('s4');}
+function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Choose your firm to continue. Client and pedestrian characters are temporarily disabled while their GLB replacements are prepared.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok)G.badge=1;}
+function toFirm(){naomiPendingGreeting='';mentor(false);show('s4');}
 E('b0').onclick=()=>show('s1');
 E('chooseFemale').onclick=()=>beginGenderSelection('Female');
 E('chooseMale').onclick=()=>beginGenderSelection('Male');
 E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
-E('b1').onclick=()=>{disposeAvatarCardPreviews();show('s2');modes();};
+E('b1').onclick=()=>{disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
 E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});E('join').style.display='none';};
 renderFirms();show('s0');
@@ -738,6 +621,7 @@ NB[1].pros.push({n:"Nora",rent:1,sq:800,bd:1,bel:0.9,why:"is renting out her con
 NB[2].pros.push({n:"Theo",rent:1,sq:900,bd:2,bel:1.1,why:"owns a loft and wants it rented this month",goal:"wants top rent from a good tenant",x:7.4,z:-26,ry:-Math.PI/2,look:{b:2,s:3,h:0,hc:1,j:3,p:2,o:0}});
 // ---------- career, deals, chat ----------
 const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,near:null,focus:null,P:{},offers:[],msgs:[],chat:[]},NPCS=[];
+const ENABLE_PROCEDURAL_NPCS=false; // Temporarily off until GLB NPCs are supplied.
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
 const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
 const NYC="Co-ops need board approval; condos are easier to buy. Buyers pay a 1% mansion tax on purchases of $1M or more. Rental security deposits are capped at one month's rent, and landlords commonly want annual income of 40× the monthly rent. (Approximate figures for gameplay.)";
@@ -746,7 +630,9 @@ function mkNpc(look,name,tag,col,x,z){
   const g=new THREE.Group(),person=human(namedNpcLook(look,name),0x8a6b52);person.scale.multiplyScalar(0.94);g.add(person);
   const t=label(name+" · "+tag,col,2.8);t.position.y=2.48;g.add(t);const m=label("!",col,1.1);m.position.y=3.10;g.add(m);
   g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z,person};
-}function spawnNPCs(){NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
+}function spawnNPCs(){
+  NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
+  if(!ENABLE_PROCEDURAL_NPCS)return;
   NB[G.nb].pros.forEach((p,i)=>{const P=G.P[G.nb+"-"+i];if(P&&(P.lost||P.done))return;const n=mkNpc(p.look,p.n,p.rent?"Landlord":"Client","#ffd54a",p.x,p.z);n.t={k:"s",pi:i};n.name=p.n;NPCS.push(n);});
   Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const n=mkNpc(b.look,b.n,P.p.rent?"Tenant?":"Buyer?","#7fd0ff",b.x,b.z);n.t={k:"b",pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});}
 function mk(p,ni,pi){let s=(ni+1)*97+(pi+1)*31;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};

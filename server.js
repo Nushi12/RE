@@ -6,7 +6,7 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const BUILD_ID = 'REW-NAOMI-SENIOR-AGENT-GLB-TALK-2026-10-19';
+const BUILD_ID = 'REW-OPENING-FLOW-STABLE-2026-10-20';
 
 // Keep model assets inside public/assets and make the requested /assets/<file> URLs work.
 app.get('/version', (_req, res) => res.type('text/plain').send(BUILD_ID));
@@ -21,6 +21,8 @@ app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const FIRMS = ['Elevate Realty','Nexus Real Estate','Vantage Realty','Vertex Properties','Northstar Realty','Haven Real Estate','UrbanEdge Realty','Momentum Realty','Blackstone Estates','Sterling Estates','Aurelia Realty','Park & Crown','Summit Estates','Bellmont Properties'];
 const LIMIT = 48;
+const AVATAR_IDS = new Set(['female1', 'female2', 'male1', 'male2']);
+function cleanAvatar(id) { return AVATAR_IDS.has(String(id || '')) ? String(id) : 'female1'; }
 const RANGES = { b: 3, s: 6, h: 6, hc: 6, j: 6, p: 4, o: 3 };
 const players = {};
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -34,7 +36,7 @@ io.on('connection', (socket) => {
   socket.on('join', (d = {}) => {
     const name = String(d.name || 'Agent').trim().slice(0, 16) || 'Agent';
     const firm = FIRMS.includes(d.firm) ? d.firm : FIRMS[0];
-    players[socket.id] = { id: socket.id, name, firm, look: cleanLook(d.look), x: (Math.random() - 0.5) * 6, z: 3 + Math.random() * 2, ry: 0, n: 0 };
+    players[socket.id] = { id: socket.id, name, firm, look: cleanLook(d.look), avatar: cleanAvatar(d.avatar), skinTone: 'original', outfitColor: 'original', hairColor: 'original', x: (Math.random() - 0.5) * 6, z: 3 + Math.random() * 2, ry: 0, n: 0 };
     socket.emit('init', { id: socket.id, players });
     socket.broadcast.emit('joined', players[socket.id]);
   });
