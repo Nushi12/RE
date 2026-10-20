@@ -1,20 +1,28 @@
-# RealEstate World — Stable Avatar Baseline
+# RealEstate World — Naomi Senior Agent GLB integration
 
-This update consolidates the existing avatar features into a stable baseline without changing the career, licensing, Socket.IO multiplayer, or city gameplay systems.
+This update replaces the procedural cartoon mentor in the licensing/training screen with the supplied `naomi-senior-agent.glb` model. It preserves a cartoon fallback in case the asset cannot load.
 
-## Changes
-- Corrects the color-mask color-space bug: material texture samples are converted from linear RGB back to sRGB before skin, hair, and outfit classification. This prevents dark hair/shadows from masking the outfit and reduces beige trousers being classified as skin.
-- Makes the skin, hair, and outfit masks mutually exclusive in the shader. Each selectable model has its own mask rules.
-- Keeps male characters on idle animation while isolating root-motion problems.
-- Moves preview framing values into `AVATAR_MODELS`; male 2 gets a wider card camera and a more distant main preview camera to prevent the persistent close crop.
-- Keeps the current cartoon pedestrians, clients, and landlords. The four selected player models are not used as NPCs.
-- Preserves skin-tone, outfit-color, and hair-color controls and their multiplayer properties.
+## Naomi model facts inspected
 
-## Deploy
-1. Replace the repository-root `index.html` and `server.js` with the files from this package.
-2. Keep the existing `public/assets` folder and its model files. Do not upload the models again for this code-only update. The code tries the current lowercase/hyphen names first and existing underscore/original names as fallbacks.
-3. Commit to `main` and wait for Render to redeploy.
-4. Open `/version`; it should show `REW-AVATAR-STABLE-COLOR-FRAMING-2026-10-19`.
+- GLB 2.0 file, about 21.1 MB
+- One mesh, one material, one skin/rig
+- Embedded clips: `Running`, `Walking`, and `Talk_Passionately`
+- There is no dedicated idle clip in this file. The model stays in its default rig pose while narration is silent; `Talk_Passionately` plays while browser narration speaks.
 
-## Honest limitation
-These GLBs each use a baked texture atlas rather than separate skin/clothing/hair materials. The updated shader uses per-character texture-color masks, so recoloring is substantially more selective, but it is not equivalent to separate artist-authored materials. Small shaded details can still be affected. For perfect independent controls, the models would need material-separated meshes or authored mask maps.
+## GitHub upload layout
+
+Keep the current four player-avatar GLBs in `public/assets/` and add Naomi here with this exact filename:
+
+`public/assets/naomi-senior-agent.glb`
+
+The code requests it at `/assets/naomi-senior-agent.glb`.
+
+## Install
+
+1. Replace the root-level `index.html` and `server.js` in the `Nushi12/RE` GitHub repository with the copies in this package.
+2. Upload `public/assets/naomi-senior-agent.glb` to the same location in GitHub. If it is already uploaded there with that exact spelling, leave it in place.
+3. Commit the changes to `main` and wait for Render to redeploy.
+4. Visit `/version`. Expected output: `REW-NAOMI-SENIOR-AGENT-GLB-TALK-2026-10-19`.
+5. Visit `/assets/naomi-senior-agent.glb`. It should return/download the model, not show a 404.
+
+The updated server maps `/assets/*` to `public/assets/*` explicitly. Player GLB files and other avatar settings are not renamed by this update.

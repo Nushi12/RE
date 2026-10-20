@@ -74,7 +74,7 @@ try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for
 // Only Female and Male are supported. Map any previously saved third option to Male.
 look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
-const CREATOR_BUILD='REW-AVATAR-STABLE-COLOR-FRAMING-2026-10-19';
+const CREATOR_BUILD='REW-NAOMI-SENIOR-AGENT-GLB-TALK-2026-10-19';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
 const BODY_OPTIONS=['Female','Male'];
@@ -203,12 +203,11 @@ function human(L,fc){
 // ---------- four complete rigged avatar models ----------
 // Each selectable agent is a full GLB. Color testing uses shader masks on the baked texture; it never reshapes or changes rigging.
 const AVATAR_MODELS={
-  // Try the clean filenames first, then the original uploaded filenames as fallbacks.
-  // This handles capitalization, underscores, and hyphens in GitHub filenames.
-  female1:{label:'Female Agent 1',gender:'Female',file:'female-agent-1.glb',aliases:['Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
-  female2:{label:'Female Agent 2',gender:'Female',file:'female-agent-2.glb',aliases:['Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Different complete character',cardZoom:1.0,previewCameraZ:10.2},
-  male1:{label:'Male Agent 1',gender:'Male',file:'male-agent-1.glb',aliases:['Male_rigged_agent1.glb','Male_rigged_agent.glb','male_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
-  male2:{label:'Male Agent 2',gender:'Male',file:'male-agent-2.glb',aliases:['Male_rigged_agent(1).glb','Male_rigged_agent.glb','male_rigged_agent(1).glb'],description:'Different complete character',cardZoom:2.15,previewCameraZ:12.5}
+  // Match the hyphenated filenames in public/assets first; keep older names as fallback aliases.
+  female1:{label:'Female Agent 1',gender:'Female',file:'Female-rigged-agent.glb',aliases:['female-rigged-agent.glb','female-agent-1.glb','Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
+  female2:{label:'Female Agent 2',gender:'Female',file:'Female-rigged-agent1.glb',aliases:['female-rigged-agent1.glb','female-agent-2.glb','Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Different complete character',cardZoom:1.0,previewCameraZ:10.2},
+  male1:{label:'Male Agent 1',gender:'Male',file:'Male-rigged-agent1.glb',aliases:['male-rigged-agent1.glb','male-agent-1.glb','Male_rigged_agent1.glb','male_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
+  male2:{label:'Male Agent 2',gender:'Male',file:'Male-rigged-agent.glb',aliases:['male-rigged-agent.glb','male-agent-2.glb','Male_rigged_agent(1).glb','Male_rigged_agent.glb','male_rigged_agent(1).glb'],description:'Different complete character',cardZoom:2.15,previewCameraZ:12.5}
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
@@ -267,7 +266,7 @@ function applyAvatarColorTest(model,id,skinKey,outfitKey,hairKey){
     female1:'bool rewOutfitPx = ((rewClass.b > rewClass.r * 1.04 && rewClass.b > rewClass.g * 1.005 && rewLuma < 0.48) || (rewLuma > 0.045 && rewLuma < 0.35 && rewSaturation < 0.20));',
     female2:'bool rewOutfitPx = (rewClass.r > rewClass.g * 1.18 && rewClass.r > rewClass.b * 1.05 && rewLuma < 0.46 && (rewClass.r - rewClass.g) > 0.035 && rewSaturation > 0.10);',
     male1:'bool rewOutfitPx = (rewLuma > 0.035 && rewLuma < 0.38 && rewSaturation < 0.28) || (rewClass.b > rewClass.r * 1.04 && rewLuma < 0.42);',
-    male2:'bool rewOutfitPx = ((rewLuma > 0.07 && rewLuma < 0.48 && rewSaturation < 0.27) || (rewLuma > 0.22 && rewLuma < 0.86 && rewClass.r > rewClass.g * 1.02 && rewClass.r < rewClass.g * 1.30 && rewClass.g > rewClass.b * 1.02 && (rewClass.g - rewClass.b) > 0.025 && rewSaturation < 0.43);'
+    male2:'bool rewOutfitPx = ((rewLuma > 0.07 && rewLuma < 0.48 && rewSaturation < 0.27) || (rewLuma > 0.22 && rewLuma < 0.86 && rewClass.r > rewClass.g * 1.02 && rewClass.r < rewClass.g * 1.30 && rewClass.g > rewClass.b * 1.02 && (rewClass.g - rewClass.b) > 0.025 && rewSaturation < 0.43));'
   };
   // Model-specific hair masks: female 2 and male 2 have dark hair; male 1 has gray hair.
   // These masks are evaluated in sRGB and take priority over outfit recolouring.
@@ -463,6 +462,7 @@ function updateRealisticCharacters(dt,t){
     if(!target.parent||(target.parent!==scene&&!target.parent.parent)){avatarActors.delete(target);continue;}
     if(target.userData.avatarMixer)target.userData.avatarMixer.update(dt);
   }
+  if(mentorBody&&mentorG&&mentorG.parent===scene&&mentorBody.userData.naomiMixer)mentorBody.userData.naomiMixer.update(dt);
 }
 function walkAnim(g,dist,dt){
   if(!g)return;
@@ -639,9 +639,25 @@ const QZ=[
 {f:"Advertising must be accurate. If a listing has an error, like the wrong square footage, correct it promptly.",q:"You discover a listing advertises the wrong square footage. What should you do?",o:["Leave it until someone complains","Correct the listing promptly and communicate the correction as appropriate","Increase the number to make it more attractive","Ask another agent to advertise the same number"],a:1,w:"Fix errors quickly. Accurate advertising protects clients and your license."},
 {f:"A salesperson is paid for brokerage work through their sponsoring broker, not directly by clients or other parties.",q:"Under New York licensing rules, how is a salesperson generally paid for licensed brokerage activity?",o:["Directly by anyone, regardless of the arrangement","Only in cash","Through the salesperson's sponsoring broker, subject to applicable rules","Only after becoming a property owner"],a:2,w:"Commissions flow through the sponsoring broker, which is why the game applies a firm split."}];
 let SEQ=[],si=0,score=0,mentorG=null;
-// Browser speech follows the same Naomi text displayed in the training/career dashboard.
-let voiceEnabled=true,mentorBody=null,activeNaomiUtterance=null;
-function setNaomiTalking(on){if(mentorBody&&mentorBody.userData)mentorBody.userData.talking=!!on;}
+// Naomi is loaded from public/assets/naomi-senior-agent.glb. Her Talk_Passionately
+// clip plays only while browser narration is speaking; this GLB has no idle clip.
+let voiceEnabled=true,mentorBody=null,activeNaomiUtterance=null,naomiTalking=false,naomiLoadToken=0,naomiGltfCache=null,naomiGltfPromise=null;
+const NAOMI_MODEL_URL='/assets/naomi-senior-agent.glb';
+function setNaomiTalking(on){
+  naomiTalking=!!on;
+  const ud=mentorBody&&mentorBody.userData;
+  if(!ud||!ud.naomiMixer||!ud.naomiTalkAction)return;
+  if(naomiTalking){
+    if(!ud.naomiTalkAction.isRunning()){
+      ud.naomiMixer.stopAllAction();
+      ud.naomiTalkAction.reset();ud.naomiTalkAction.enabled=true;
+      ud.naomiTalkAction.setEffectiveWeight(1);ud.naomiTalkAction.setEffectiveTimeScale(1);
+      ud.naomiTalkAction.setLoop(THREE.LoopRepeat,Infinity);ud.naomiTalkAction.play();
+    }
+  }else{
+    ud.naomiMixer.stopAllAction();ud.naomiTalkAction.reset();ud.naomiMixer.update(0);
+  }
+}
 function stopNaomiSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeNaomiUtterance=null;setNaomiTalking(false);}
 function speakNaomi(text){
   if(!voiceEnabled||!text||!('speechSynthesis' in window))return;
@@ -652,7 +668,46 @@ function speakNaomi(text){
 }
 function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button>';}
 function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
-function mentor(on){if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}if(!on){stopNaomiSpeech();return;}mentorG=new THREE.Group();mentorBody=human({body:0,height:1,b:1,s:2,h:1,hc:1,j:5,p:0,o:0},0x9b59b6);mentorBody.scale.multiplyScalar(0.94);mentorG.add(mentorBody);const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.48;mentorG.add(t);mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);}function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
+function loadNaomiModel(){
+  if(naomiGltfCache)return Promise.resolve(naomiGltfCache);
+  if(naomiGltfPromise)return naomiGltfPromise;
+  naomiGltfPromise=new Promise((resolve,reject)=>{
+    new THREE.GLTFLoader().load(NAOMI_MODEL_URL,gltf=>{naomiGltfCache=gltf;resolve(gltf);},undefined,error=>{naomiGltfPromise=null;reject(error||new Error('Failed to load Naomi model at '+NAOMI_MODEL_URL));});
+  });
+  return naomiGltfPromise;
+}
+function fitNaomiModel(model){
+  model.updateMatrixWorld(true);let bounds=new THREE.Box3().setFromObject(model);const size=bounds.getSize(new THREE.Vector3());
+  if(!Number.isFinite(size.y)||size.y<=0)throw new Error('Naomi GLB has invalid model bounds');
+  model.scale.multiplyScalar(1.88/size.y);model.updateMatrixWorld(true);bounds=new THREE.Box3().setFromObject(model);const center=bounds.getCenter(new THREE.Vector3());
+  model.position.x-=center.x;model.position.y-=bounds.min.y;model.position.z-=center.z;model.updateMatrixWorld(true);
+}
+function mentor(on){
+  // Invalidate outstanding loads when changing screens, preventing late async loads from reappearing.
+  naomiLoadToken++;
+  const token=naomiLoadToken;
+  if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}
+  if(!on){stopNaomiSpeech();return;}
+  mentorG=new THREE.Group();mentorBody=new THREE.Group();mentorG.add(mentorBody);
+  // Keep the prior cartoon mentor until the realistic GLB finishes loading; it is the safe fallback.
+  const fallback=human({body:0,height:1,b:1,s:2,h:1,hc:1,j:5,p:0,o:0},0x9b59b6);fallback.scale.multiplyScalar(0.94);mentorBody.add(fallback);mentorBody.userData.naomiFallback=fallback;
+  const t=label("Naomi · Senior Agent","#9be7a8",2.6);t.position.y=2.48;mentorG.add(t);
+  mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);
+  loadNaomiModel().then(gltf=>{
+    if(token!==naomiLoadToken||!mentorG||!mentorBody||mentorG.parent!==scene)return;
+    const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
+    model.name='naomi-senior-agent-model';model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;o.frustumCulled=false;}});fitNaomiModel(model);
+    const old=mentorBody.userData.naomiFallback;if(old){mentorBody.remove(old);mentorBody.userData.naomiFallback=null;}
+    mentorBody.add(model);
+    const mixer=new THREE.AnimationMixer(model);const talkClip=chooseClip(gltf.animations,[/talk.*passionately/i,/talk/i]);
+    mentorBody.userData.naomiMixer=mixer;mentorBody.userData.naomiModel=model;mentorBody.userData.naomiTalkAction=talkClip?mixer.clipAction(talkClip):null;
+    if(!talkClip)console.warn('Naomi GLB has no talk animation; model will remain in its default pose. Available animations:',(gltf.animations||[]).map(a=>a.name));
+    if(naomiTalking)setNaomiTalking(true);
+  }).catch(error=>{
+    if(token===naomiLoadToken)console.error('Could not load Naomi GLB from '+NAOMI_MODEL_URL+'; keeping cartoon mentor fallback.',error);
+  });
+}
+function modes(){mentor(true);const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';speakNaomi(greeting);}
 function start(m){SEQ=[];score=0;si=0;if(m==='g'){QZ.forEach((x,i)=>{SEQ.push({t:'s',i});SEQ.push({t:'q',i});});}else{[[0,5],[5,10]].forEach(([a,b])=>{for(let i=a;i<b;i++)SEQ.push({t:'s',i});for(let i=a;i<b;i++)SEQ.push({t:'q',i});});}lesson();}
 function lesson(){const st=SEQ[si],el=E('lesson');if(!st){finish();return;}const x=QZ[st.i],pr='<div class=k>Step '+(si+1)+' of '+SEQ.length+' · Score '+score+'</div>';
   if(st.t==='s'){el.innerHTML=voiceButton()+pr+'<div class=bubble><b>Naomi</b><br>'+x.f+'</div><button class="go" onclick="adv()">Got it</button>';speakNaomi(x.f);}
