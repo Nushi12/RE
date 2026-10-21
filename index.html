@@ -81,14 +81,14 @@ const BODY_OPTIONS=['Female','Male'];
 const OPTS=[['body','Character type / body',BODY_OPTIONS],['height','Height',['Petite','Average','Tall']],['b','Build',['Slim','Average','Broad']],['face','Face shape',['Soft','Angular','Round']],['s','Skin tone',SKIN],['h','Hair style',['Short','Long','Bun','Curly','Ponytail','Bald']],['hc','Hair color',HAIRC],['fh','Facial hair',['None','Stubble','Full beard','Mustache']],['eye','Eye color',EYES],['o','Outfit',['Blazer & slacks','Blouse & slacks','Dress','Smart casual']],['j','Top color',JACK],['p','Trousers / shoes',PANT]];
 const NB=[
 {name:'Upper East Side',lvl:1,ppsf:1350,rppsf:5.0,style:'brownstone',road:0x373b42,trees:1,seed:11,sky:0x9fc3e6,sw:0x8f8b82,brick:[0x8a4b3a,0x9c5b45,0x7a4a3c,0xa8683f,0x6e4036,0xb08968,0xa9a39a],h:[12.8,12.8,16,16,19.2],tw:28,cafe:'Corner Café',office:'Vantage Realty Office',park:'Neighborhood Park',
- pros:[{n:'Maya',sq:900,bd:2,bel:1.11,why:'is relocating for a new job in about 3 months',goal:'wants enough proceeds for a down payment',x:-7.2,z:18.5,ry:Math.PI/2,look:{b:0,s:2,h:1,hc:1,j:5,p:0,o:0}},
-       {n:'Robert',sq:1400,bd:3,bel:0.9,why:'is downsizing after retiring',goal:'is in no rush and wants the best price',x:7.2,z:-31,ry:-Math.PI/2,look:{b:2,s:1,h:0,hc:5,j:1,p:2,o:1}}]},
+ pros:[{n:'Maya',modelFile:'Maya-seller.glb',sq:900,bd:2,bel:1.11,why:'is relocating for a new job in about 3 months',goal:'wants enough proceeds for a down payment',x:-7.2,z:18.5,ry:Math.PI/2,look:{b:0,s:2,h:1,hc:1,j:5,p:0,o:0}},
+       {n:'Robert',modelFile:'robert.glb',sq:1400,bd:3,bel:0.9,why:'is downsizing after retiring',goal:'is in no rush and wants the best price',x:7.2,z:-31,ry:-Math.PI/2,look:{b:2,s:1,h:0,hc:5,j:1,p:2,o:1}}]},
 {name:'Midtown',lvl:3,ppsf:1750,rppsf:5.4,style:'glass',road:0x2b2f36,trees:0,seed:23,sky:0xb8cde0,sw:0x7d7f84,brick:[0x6d8196,0x7f94a8,0x5b6f84,0x8fa3b5,0x4f6378,0xa3b1bd],h:[25.6,32,38.4,44.8],tw:60,cafe:'Midtown Deli',office:'Nexus Real Estate',park:'Plaza',
- pros:[{n:'Priya',sq:1100,bd:2,bel:1.15,why:'is an investor who wants to sell before year end',goal:'wants a quick, clean sale',x:7.2,z:24,ry:-Math.PI/2,look:{b:0,s:3,h:4,hc:0,j:3,p:0,o:2}},
-       {n:'Daniel',sq:1700,bd:3,bel:0.88,why:'is settling an estate with family',goal:'just wants it to be fair and finished',x:-7.2,z:-22,ry:Math.PI/2,look:{b:2,s:4,h:5,hc:0,j:5,p:2,o:0}}]},
+ pros:[{n:'Priya',modelFile:'priya.glb',sq:1100,bd:2,bel:1.15,why:'is an investor who wants to sell before year end',goal:'wants a quick, clean sale',x:7.2,z:24,ry:-Math.PI/2,look:{b:0,s:3,h:4,hc:0,j:3,p:0,o:2}},
+       {n:'Daniel',modelFile:'Daniel.glb',sq:1700,bd:3,bel:0.88,why:'is settling an estate with family',goal:'just wants it to be fair and finished',x:-7.2,z:-22,ry:Math.PI/2,look:{b:2,s:4,h:5,hc:0,j:5,p:2,o:0}}]},
 {name:'SoHo',lvl:4,ppsf:2300,rppsf:7.8,style:'loft',road:0x5b534b,trees:0.75,seed:37,sky:0xc9d3dc,sw:0x9a948a,brick:[0x7b6f63,0x9a8b78,0x6b5d52,0xa89a86,0x5f5148,0x8c7d6a],h:[12.8,16,16,19.2],tw:24,cafe:'SoHo Gallery Café',office:'Sterling Estates',park:'Courtyard',
- pros:[{n:'Elena',sq:1300,bd:2,bel:1.08,why:'inherited the loft and lives abroad',goal:'wants a hassle-free sale',x:-7.2,z:31,ry:Math.PI/2,look:{b:1,s:0,h:3,hc:4,j:2,p:1,o:2}},
-       {n:'Marcus',sq:2000,bd:3,bel:0.92,why:'is upgrading to a larger space',goal:'wants to buy next, so timing matters',x:7.2,z:18.5,ry:-Math.PI/2,look:{b:2,s:5,h:0,hc:0,j:4,p:3,o:1}}]}];
+ pros:[{n:'Elena',modelFile:'elena.glb',sq:1300,bd:2,bel:1.08,why:'inherited the loft and lives abroad',goal:'wants a hassle-free sale',x:-7.2,z:31,ry:Math.PI/2,look:{b:1,s:0,h:3,hc:4,j:2,p:1,o:2}},
+       {n:'Marcus',modelFile:'marcus.glb',sq:2000,bd:3,bel:0.92,why:'is upgrading to a larger space',goal:'wants to buy next, so timing matters',x:7.2,z:18.5,ry:-Math.PI/2,look:{b:2,s:5,h:0,hc:0,j:4,p:3,o:1}}]}];
 
 NB.forEach((n,i)=>n.i=i);
 // ---------- scene ----------
@@ -482,8 +482,7 @@ function renderAvatarChoices(){
   });
 }
 
-// Temporary stability mode: no procedural/cartoon pedestrians are instantiated.
-// We will replace this disabled crowd with user-provided GLB NPCs in a separate pass.
+// Reusable GLB pedestrian system is implemented with the NPC interaction helpers below.
 const PEDS=[];
 function updatePeds(){}
 
@@ -632,25 +631,101 @@ socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud()
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
 socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;avatars[id].tx=st[id].x;avatars[id].tz=st[id].z;avatars[id].try=st[id].ry;avatars[id].n=st[id].n||0;avatars[id].g.visible=avatars[id].n===G.nb;}});
 
-NB[0].pros.push({n:"Leo",rent:1,sq:700,bd:1,bel:1.12,why:"is a landlord with a vacant one-bedroom",goal:"wants a reliable tenant quickly",x:7.4,z:-18.5,ry:-Math.PI/2,look:{b:1,s:1,h:3,hc:2,j:2,p:1,o:1}});
-NB[1].pros.push({n:"Nora",rent:1,sq:800,bd:1,bel:0.9,why:"is renting out her condo while she travels",goal:"wants steady income and a careful tenant",x:-7.4,z:12,ry:Math.PI/2,look:{b:0,s:2,h:2,hc:3,j:5,p:0,o:2}});
-NB[2].pros.push({n:"Theo",rent:1,sq:900,bd:2,bel:1.1,why:"owns a loft and wants it rented this month",goal:"wants top rent from a good tenant",x:7.4,z:-26,ry:-Math.PI/2,look:{b:2,s:3,h:0,hc:1,j:3,p:2,o:0}});
+NB[0].pros.push({n:"Leo",modelFile:"Leo.glb",rent:1,sq:700,bd:1,bel:1.12,why:"is a landlord with a vacant one-bedroom",goal:"wants a reliable tenant quickly",x:7.4,z:-18.5,ry:-Math.PI/2,look:{b:1,s:1,h:3,hc:2,j:2,p:1,o:1}});
+NB[1].pros.push({n:"Nora",modelFile:"olivettinpc2.glb",rent:1,sq:800,bd:1,bel:0.9,why:"is renting out her condo while she travels",goal:"wants steady income and a careful tenant",x:-7.4,z:12,ry:Math.PI/2,look:{b:0,s:2,h:2,hc:3,j:5,p:0,o:2}});
+NB[2].pros.push({n:"Theo",modelFile:"theo.glb",rent:1,sq:900,bd:2,bel:1.1,why:"owns a loft and wants it rented this month",goal:"wants top rent from a good tenant",x:7.4,z:-26,ry:-Math.PI/2,look:{b:2,s:3,h:0,hc:1,j:3,p:2,o:0}});
 // ---------- career, deals, chat ----------
-const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,near:null,focus:null,P:{},offers:[],msgs:[],chat:[]},NPCS=[];
-const ENABLE_PROCEDURAL_NPCS=false; // Temporarily off until GLB NPCs are supplied.
+const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,near:null,focus:null,P:{},offers:[],msgs:[],chat:[],walkerStates:{}},NPCS=[];
+const ENABLE_PROCEDURAL_NPCS=true; // Named characters and reusable walkers now use the supplied GLB assets.
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
 const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
 const NYC="Co-ops need board approval; condos are easier to buy. Buyers pay a 1% mansion tax on purchases of $1M or more. Rental security deposits are capped at one month's rent, and landlords commonly want annual income of 40× the monthly rent. (Approximate figures for gameplay.)";
 function namedNpcLook(look,name){let h=0;for(const ch of String(name||''))h=(h*31+ch.charCodeAt(0))>>>0;const L=Object.assign({body:h%2,height:(h>>>3)%3,b:(h>>>5)%3,s:(h>>>7)%6,h:(h>>>9)%6,hc:(h>>>12)%6,j:(h>>>15)%6,p:(h>>>18)%4,o:(h>>>21)%3},look||{});if(!Number.isInteger(L.b))L.b=(h>>>5)%3;if(!Number.isInteger(L.s))L.s=(h>>>7)%6;if(!Number.isInteger(L.h))L.h=(h>>>9)%6;if(!Number.isInteger(L.hc))L.hc=(h>>>12)%6;if(!Number.isInteger(L.j))L.j=(h>>>15)%6;if(!Number.isInteger(L.p))L.p=(h>>>18)%4;if(!Number.isInteger(L.o))L.o=(h>>>21)%3;return L;}
-function mkNpc(look,name,tag,col,x,z){
-  const g=new THREE.Group(),person=human(namedNpcLook(look,name),0x8a6b52);person.scale.multiplyScalar(0.94);g.add(person);
-  const t=label(name+" · "+tag,col,2.8);t.position.y=2.48;g.add(t);const m=label("!",col,1.1);m.position.y=3.10;g.add(m);
-  g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);return{g,m,x,z,person};
-}function spawnNPCs(){
-  NPCS.forEach(n=>scene.remove(n.g));NPCS.length=0;
+const NPC_MODEL_BY_NAME={
+  Maya:'Maya-seller.glb',Robert:'robert.glb',Leo:'Leo.glb',Priya:'priya.glb',Daniel:'Daniel.glb',
+  Nora:'olivettinpc2.glb',Elena:'elena.glb',Marcus:'marcus.glb',Theo:'theo.glb'
+};
+const WALKER_MODELS=['marcinpc.glb','adriananpc3.glb','olivettinpc2.glb','kerrynpc1.glb'];
+const WALKER_NAMES=['Marcin','Adriana','Olivetti','Kerry'];
+const WALKER_CLIENT_NAMES=['Marcin Nowak','Adriana Flores','Olivetti James','Kerry Bennett'];
+const npcGltfCache=new Map(),npcGltfPromises=new Map();
+function loadNpcGltf(file){
+  if(npcGltfCache.has(file))return Promise.resolve(npcGltfCache.get(file));
+  if(npcGltfPromises.has(file))return npcGltfPromises.get(file);
+  const promise=new Promise((resolve,reject)=>new THREE.GLTFLoader().load('/assets/'+file,gltf=>{npcGltfCache.set(file,gltf);resolve(gltf);},undefined,error=>reject(error||new Error('Could not load /assets/'+file))));
+  npcGltfPromises.set(file,promise);promise.catch(()=>npcGltfPromises.delete(file));return promise;
+}
+function npcClip(gltf,role){
+  const clips=gltf.animations||[];const tests=role==='walker'?[/walk/i,/run/i,/discuss.*moving/i,/idle/i]:[/idle/i,/stand.*chat/i,/talk/i,/discuss/i,/walk/i,/run/i];
+  for(const re of tests){const c=clips.find(a=>re.test(a.name||''));if(c)return c;}return clips[0]||null;
+}
+function playNpcClip(n,role){
+  if(!n||!n.mixer||!n.gltf)return;
+  const clip=npcClip(n.gltf,role);if(!clip)return;
+  if(n.action&&n.action.getClip()===clip)return;
+  if(n.action){n.action.fadeOut(0.12);}
+  n.action=n.mixer.clipAction(clip);n.action.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(0.12).play();n.animRole=role;
+}
+function attachNpcModel(n,file){
+  n.modelFile=file||'';
+  if(!file){const person=human(namedNpcLook(n.look||{},n.name),0x8a6b52);person.scale.multiplyScalar(0.94);n.g.add(person);n.person=person;return;}
+  loadNpcGltf(file).then(gltf=>{
+    if(!n.g.parent||n.g.parent!==scene)return;
+    const model=THREE.SkeletonUtils&&THREE.SkeletonUtils.clone?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
+    model.name='npc-model-'+n.name.replace(/[^a-z0-9_-]/gi,'-');
+    model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=true;}});
+    const raw=new THREE.Box3().setFromObject(model),size=raw.getSize(new THREE.Vector3());
+    const height=Math.max(size.y,0.1),scale=1.78/height;
+    model.scale.multiplyScalar(scale);model.position.y-=raw.min.y*scale;
+    n.g.add(model);n.person=model;n.gltf=gltf;n.mixer=new THREE.AnimationMixer(model);playNpcClip(n,n.isWalker?'walker':'client');
+    n.label.position.y=2.35;n.marker.position.y=2.9;
+  }).catch(err=>{
+    console.warn('NPC GLB failed; using simple fallback for '+n.name+':',err);
+    if(n.g.parent===scene&&!n.person){const person=human(namedNpcLook(n.look||{},n.name),0x8a6b52);person.scale.multiplyScalar(0.94);n.g.add(person);n.person=person;}
+  });
+}
+function mkNpc(look,name,tag,col,x,z,modelFile,opts={}){
+  const g=new THREE.Group();
+  const t=label(name+' · '+tag,col,2.8);t.position.y=2.48;g.add(t);
+  const m=label(opts.marker||'!',col,1.1);m.position.y=3.10;g.add(m);
+  g.position.set(x,0,z);g.rotation.y=x>0?-Math.PI/2:Math.PI/2;scene.add(g);
+  const n={g,m,x,z,person:null,look:look||{},name,label:t,marker:m,modelFile:modelFile||'',isWalker:!!opts.isWalker,walkerIndex:opts.walkerIndex,walkerDirection:opts.direction||1,walkerSpeed:opts.speed||0.8,walkerMin:opts.minZ??-36,walkerMax:opts.maxZ??36,converted:false};
+  attachNpcModel(n,modelFile);return n;
+}
+function updateWalkerLabel(n){
+  const ready=lvl()>=5;
+  n.label.material.map.dispose();n.label.material.map=label((ready?'Potential client · ':'')+n.name,ready?'#ffe08a':'#d8e4f0',2.8).material.map;n.label.material.needsUpdate=true;
+}
+function spawnNPCs(){
+  NPCS.forEach(n=>{if(n.mixer)n.mixer.stopAllAction();scene.remove(n.g);});NPCS.length=0;
   if(!ENABLE_PROCEDURAL_NPCS)return;
-  NB[G.nb].pros.forEach((p,i)=>{const P=G.P[G.nb+"-"+i];if(P&&(P.lost||P.done))return;const n=mkNpc(p.look,p.n,p.rent?"Landlord":"Client","#ffd54a",p.x,p.z);n.t={k:"s",pi:i};n.name=p.n;NPCS.push(n);});
-  Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const n=mkNpc(b.look,b.n,P.p.rent?"Tenant?":"Buyer?","#7fd0ff",b.x,b.z);n.t={k:"b",pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});}
+  NB[G.nb].pros.forEach((p,i)=>{
+    const P=G.P[G.nb+'-'+i];if(P&&(P.lost||P.done))return;
+    const file=p.modelFile||NPC_MODEL_BY_NAME[p.n]||'';
+    const n=mkNpc(p.look,p.n,p.rent?'Landlord':'Client','#ffd54a',p.x,p.z,file,{marker:'!'});n.t={k:'s',pi:i};n.name=p.n;NPCS.push(n);
+  });
+  Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const file=WALKER_MODELS[(P.pi+bi)%WALKER_MODELS.length];const n=mkNpc(b.look,b.n,P.p.rent?'Tenant?':'Buyer?','#7fd0ff',b.x,b.z,file,{marker:'?'});n.t={k:'b',pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});
+  // Reuse the four supplied walker models as persistent neighborhood residents.
+  if(!G.walkerStates)G.walkerStates={};
+  WALKER_MODELS.forEach((file,i)=>{
+    const key=G.nb+'-'+i;let st=G.walkerStates[key];
+    if(st&&st.converted)return;
+    if(!st){st=G.walkerStates[key]={x:[-6.8,6.8,-6.8,6.8][i],z:[-28,-8,14,30][i],direction:i%2? -1:1,converted:false};}
+    const n=mkNpc({b:i%3,s:(i+2)%6,h:i%6,hc:(i+1)%6,j:(i+2)%6,p:i%4,o:1},WALKER_NAMES[i],'Resident','#d8e4f0',st.x,st.z,file,{isWalker:true,walkerIndex:i,direction:st.direction,speed:0.65+(i%3)*0.12,minZ:-37,maxZ:37,marker:'·'});
+    n.t={k:'w',wi:i};n.walkerState=st;n.name=WALKER_NAMES[i];n.label.material.map.dispose();n.label.material.map=label((lvl()>=5?'Potential client · ':'')+n.name,'#d8e4f0',2.8).material.map;n.label.material.needsUpdate=true;NPCS.push(n);
+  });
+}
+function updatePeds(time,dt){
+  if(!NPCS||!NPCS.length)return;
+  for(const n of NPCS){
+    if(n.mixer)n.mixer.update(dt||0);
+    if(!n.isWalker||!n.walkerState||G.focus)continue;
+    const step=(dt||0)*n.walkerSpeed*n.walkerDirection;
+    n.z+=step;if(n.z>n.walkerMax){n.z=n.walkerMax;n.walkerDirection=-1;}else if(n.z<n.walkerMin){n.z=n.walkerMin;n.walkerDirection=1;}
+    n.g.position.z=n.z;n.g.rotation.y=n.walkerDirection>0?0:Math.PI;
+    n.walkerState.x=n.x;n.walkerState.z=n.z;n.walkerState.direction=n.walkerDirection;
+  }
+}
 function mk(p,ni,pi){let s=(ni+1)*97+(pi+1)*31;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};
   const u=p.rent?10:1000,tp=(p.rent?NB[ni].rppsf:NB[ni].ppsf)*(0.97+0.06*r()),st=["Maple","Park","Grand","Lincoln","Union","Elm"],ad=()=>(100+Math.floor(r()*800))+" "+st[Math.floor(r()*6)]+" St";
   const C=[0,1,2].map(()=>{const sq=Math.round(p.sq*(0.88+0.24*r())/10)*10,pp=tp*(0.96+0.08*r());return{a:ad(),sq,m:1+Math.floor(r()*5),pr:Math.round(sq*pp/u)*u,note:p.rent?"Normal lease":"Normal sale",bad:0};});
@@ -675,7 +750,19 @@ function scen(P){const p=P.p,u=p.rent?10:1000,B=Math.round(P.tp*p.sq*p.bel/u)*u,
   if(P.sc===1)return{q:`${p.n} ${p.goal}. What do you say?`,o:rot([[p.rent?"Explain you will screen tenants on income, credit and references":"Explain you will build the price from recent comparable sales so it supports that goal",1],["Promise a price higher than any other agent would offer",-1],["Say that part is not your concern",-2]])};
   const e=ETH[p.rent?[4,1,3][P.ni]:(P.ni*2+P.pi)%4];return{q:e[0],o:rot(e[1])};}
 function leave(){G.cur=null;G.curB=null;G.focus=null;spawnNPCs();render();}
-function talk(){const t=G.near;if(!t)return;const n=NPCS.find(n=>n.t===t);if(!n)return;G.msgs=[];if(t.k==="s"){G.cur={ni:G.nb,pi:t.pi};G.curB=null;}else{G.curB={pi:t.pi,bi:t.bi};G.cur=null;}G.focus={x:n.x,z:n.z};n.g.rotation.y=Math.atan2(me.x-n.x,me.z-n.z);render();}
+function talk(){
+  const t=G.near;if(!t)return;const n=NPCS.find(n=>n.t===t);if(!n)return;G.msgs=[];
+  if(t.k==='w'){
+    if(lvl()<5){G.msgs.push(n.name+' is going about their day. Build your career to Level 5 to start developing neighborhood leads.');render();return;}
+    const wi=t.wi,st=n.walkerState||{};if(st.converted)return;
+      const rent=(wi===1||wi===3)?1:0;
+    const profile={n:n.name==='Marcin'?'Marcin Nowak':n.name==='Adriana'?'Adriana Flores':n.name==='Olivetti'?'Olivetti James':'Kerry Bennett',modelFile:n.modelFile,rent,sq:rent?(wi===1?850:720):(wi===0?1150:1450),bd:rent?1:2,bel:rent?1.04:1.08,why:rent?'is considering a move and wants a reliable agent':'is thinking about selling and wants to understand the local market',goal:rent?'wants a qualified tenant and a smooth move':'wants a fair market price and a clear timeline',x:n.x,z:n.z,ry:n.x>0?-Math.PI/2:Math.PI/2,look:n.look};
+    const pi=NB[G.nb].pros.push(profile)-1;st.converted=true;st.pi=pi;n.converted=true;n.isWalker=false;n.t={k:'s',pi};n.name=profile.n;n.label.material.map.dispose();n.label.material.map=label(profile.n+' · New client','#ffd54a',2.8).material.map;n.label.material.needsUpdate=true;playNpcClip(n,'client');
+    G.msgs.push(profile.n+' has become a new client! Ask about their needs, prepare suitable property options, and work toward a '+(rent?'rental':'sale')+'.');G.cur={ni:G.nb,pi};G.curB=null;G.focus={x:n.x,z:n.z};n.g.rotation.y=Math.atan2(me.x-n.x,me.z-n.z);render();return;
+  }
+  if(t.k==='s'){G.cur={ni:G.nb,pi:t.pi};G.curB=null;}else{G.curB={pi:t.pi,bi:t.bi};G.cur=null;}
+  G.focus={x:n.x,z:n.z};n.g.rotation.y=Math.atan2(me.x-n.x,me.z-n.z);render();
+}
 function pickS(j){const P=curP(),o=scen(P).o[j],p=P.p;P.trust=Math.min(5,P.trust+o[1]);const lost=P.trust<=0;
   P.react={t:lost?`${p.n}: "I do not think this is going to work. I will find another agent."`:o[1]>0?`${p.n}: "That makes sense. I feel good about working with you."`:o[1]===0?`${p.n}: "Hmm, okay..."`:`${p.n}: "I am not comfortable with that."`,lost};if(lost)P.lost=1;else P.sc++;render();}
 function cont(){const P=curP();P.react=null;if(P.lost){G.xp+=10;G.msgs.push(P.p.n+" walked away. Be more careful with your advice. (+10 XP for the lesson)");leave();return;}if(P.sc>=3)P.st=1;render();}
@@ -690,13 +777,13 @@ function showL(){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],v=verdict(P,b)
 function invite(id){const P=curP();socket.emit("relay",{to:id,type:"cobroke",data:{k:P.k,txt:P.p.n+"'s listing at "+f(P.price)+(P.p.rent?"/mo":"")}});G.msgs.push("Invitation sent to "+avatars[id].name+".");render();}
 function acc(i){const o=G.offers.splice(i,1)[0];socket.emit("relay",{to:o.from,type:"cob-ok",data:{k:o.d.k}});G.xp+=20;G.msgs.push("You joined "+o.name+"'s deal. Chat with them to help. You earn 40% if it closes. (+20 XP)");render();}
 function dec(i){G.offers.splice(i,1);render();}
-function closeDeal(){const P=curP(),p=P.p,R=p.rent,truth=P.tp*p.sq,r=P.price/truth,good=P.inc.every((x,i)=>x===(P.c[i].bad?0:1));let xp,days,msg;
+function closeDeal(){const P=curP(),p=P.p,R=p.rent,truth=P.tp*p.sq,r=P.price/truth,good=P.inc.every((x,i)=>x===(P.c[i].bad?0:1));const oldLevel=lvl();let xp,days,msg;
   if(r>1.04){days=R?60:150;xp=60;msg="You had to cut the price to find a taker, so it took much longer.";}
   else if(r<0.96){days=R?10:25;xp=80;msg=p.n+" got a fast "+(R?"lease":"sale")+" but left about "+f(truth-P.price)+(R?" a month":"")+" on the table.";}
   else{days=R?30:75;xp=150;msg="Priced right. A market-supported "+(R?"rent":"price")+" attracted a qualified "+(R?"tenant":"buyer")+".";}
   if(good)xp+=30;xp+=P.trust*5;const fin=P.price,q=P.rate/100,gross=R?fin*12*q:fin*q,side=R?gross:gross*0.5,net0=side*0.7,net=P.partner?net0*0.6:net0;
   if(P.partner)socket.emit("relay",{to:P.partner.id,type:"cob-pay",data:{amt:Math.round(net0*0.4),xp:60}});
-  P.res={fin,days,xp,msg,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;render();}
+  P.res={fin,days,xp,msg,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();}
 function go(i){if(lvl()<NB[i].lvl||i===G.nb)return;const prev=G.nb;G.nb=i;G.cur=null;G.curB=null;G.focus=null;G.msgs=[];Object.keys(G.P).forEach(k=>{if(G.P[k].lost&&G.P[k].ni===i)delete G.P[k];});
   buildWorld(NB[i]);spawnNPCs();me.x=0;me.z=((i+1)%3===prev)?-41:41;for(const id in avatars)if(id!==myId)avatars[id].g.visible=(avatars[id].n||0)===G.nb;render();}
 function updateNear(){if(G.focus)return;let b=null,bd=4.2;NPCS.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;
