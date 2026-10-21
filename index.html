@@ -512,32 +512,42 @@ let voiceEnabled=true,mentorBody=null,activeNaomiUtterance=null,naomiTalking=fal
 let naomiAssetStatusText='',naomiAssetStatusError=false,naomiAssetState='idle',naomiPendingGreeting='';
 // Shared game audio: gentle procedural ambient bed plus speech ducking. No external
 // audio files or third-party service are required for this first version.
-let gameAudioCtx=null,gameMusicGain=null,gameMusicEnabled=true,gameConversationAudio=false,gameMusicNodes=[];
+let gameAudioCtx=null,gameMusicGain=null,gameMusicEnabled=true,gameConversationAudio=false,gameConversationOpen=false,gameMusicNodes=[],gameMusicTimer=null,gameMusicStep=0;
+function playMusicNote(){
+  if(!gameAudioCtx||!gameMusicGain||gameAudioCtx.state!=='running')return;
+  // A quiet, looping original chiptune-style phrase (no downloaded asset needed).
+  const seq=[220,261.63,329.63,392,329.63,261.63,196,246.94,293.66,369.99,329.63,246.94,174.61,220,261.63,329.63];
+  const now=gameAudioCtx.currentTime, f=seq[gameMusicStep++%seq.length];
+  const osc=gameAudioCtx.createOscillator(),amp=gameAudioCtx.createGain();osc.type='triangle';osc.frequency.setValueAtTime(f,now);
+  amp.gain.setValueAtTime(0.0001,now);amp.gain.exponentialRampToValueAtTime(0.055,now+0.035);amp.gain.exponentialRampToValueAtTime(0.0001,now+0.34);
+  osc.connect(amp);amp.connect(gameMusicGain);osc.start(now);osc.stop(now+0.36);osc.onended=()=>{osc.disconnect();amp.disconnect();};
+}
 function initGameAudio(){
-  if(gameAudioCtx||!gameMusicEnabled)return;
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
   try{
-    gameAudioCtx=new AC();gameMusicGain=gameAudioCtx.createGain();gameMusicGain.gain.value=0;
-    gameMusicGain.connect(gameAudioCtx.destination);
-    // Soft, sustained ambient chord as a self-contained placeholder soundtrack.
-    [110,164.81,220,261.63].forEach((hz,i)=>{const osc=gameAudioCtx.createOscillator(),g=gameAudioCtx.createGain();osc.type='sine';osc.frequency.value=hz;g.gain.value=[0.14,0.07,0.045,0.025][i];osc.connect(g);g.connect(gameMusicGain);osc.start();gameMusicNodes.push(osc,g);});
-    if(gameAudioCtx.state==='suspended')gameAudioCtx.resume();syncGameMusic();
+    if(!gameAudioCtx){gameAudioCtx=new AC();gameMusicGain=gameAudioCtx.createGain();gameMusicGain.gain.value=0;gameMusicGain.connect(gameAudioCtx.destination);}
+    if(gameAudioCtx.state==='suspended')gameAudioCtx.resume().catch(e=>console.warn('Audio resume blocked:',e));
+    if(!gameMusicTimer){gameMusicTimer=setInterval(playMusicNote,390);}
+    syncGameMusic();
   }catch(e){console.warn('Game audio could not initialize:',e);}
 }
-function syncGameMusic(){if(!gameAudioCtx||!gameMusicGain)return;const now=gameAudioCtx.currentTime;gameMusicGain.gain.cancelScheduledValues(now);gameMusicGain.gain.setTargetAtTime(gameMusicEnabled&&!gameConversationAudio?0.22:0,now,0.35);}
+function syncGameMusic(){if(!gameAudioCtx||!gameMusicGain)return;const now=gameAudioCtx.currentTime;gameMusicGain.gain.cancelScheduledValues(now);gameMusicGain.gain.setTargetAtTime(gameMusicEnabled&&!gameConversationAudio&&!gameConversationOpen?0.8:0,now,0.18);if(gameAudioCtx.state==='suspended'&&(gameMusicEnabled||gameConversationAudio||gameConversationOpen))gameAudioCtx.resume().catch(()=>{});}
 function setConversationAudio(active){gameConversationAudio=!!active;syncGameMusic();}
 function speakGameLine(text,speaker='client'){
-  if(!text||!voiceEnabled||!('speechSynthesis' in window))return;
-  initGameAudio();window.speechSynthesis.cancel();
-  const clean=String(text).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();if(!clean)return;
-  setConversationAudio(true);const u=new SpeechSynthesisUtterance(clean);u.lang='en-US';u.rate=speaker==='agent'?1.02:0.94;u.pitch=speaker==='agent'?1.0:(speaker==='walker'?0.92:1.06);u.volume=0.95;
-  const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/en[-_]US/i.test(v.lang)&&/samantha|zira|jenny|aria|susan|serena|google us english/i.test(v.name))||voices.find(v=>/en[-_]US/i.test(v.lang));if(voice)u.voice=voice;
-  u.onend=()=>{if(activeGameUtterance===u){activeGameUtterance=null;if(!naomiTalking)setConversationAudio(false);}};u.onerror=()=>{if(activeGameUtterance===u){activeGameUtterance=null;if(!naomiTalking)setConversationAudio(false);}};activeGameUtterance=u;window.speechSynthesis.speak(u);
+  const clean=String(text||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();if(!clean||!voiceEnabled||!('speechSynthesis' in window))return;
+  initGameAudio();window.speechSynthesis.cancel();setConversationAudio(true);
+  const u=new SpeechSynthesisUtterance(clean);u.lang='en-US';u.rate=speaker==='agent'?1.02:0.94;u.pitch=speaker==='agent'?1.0:(speaker==='walker'?0.92:1.06);u.volume=0.95;
+  const chooseVoice=()=>{const vs=window.speechSynthesis.getVoices();return vs.find(v=>/^en[-_]US/i.test(v.lang)&&/samantha|zira|jenny|aria|susan|serena|google us english/i.test(v.name))||vs.find(v=>/^en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang));};const voice=chooseVoice();if(voice)u.voice=voice;
+  u.onstart=()=>setConversationAudio(true);u.onend=()=>{if(activeGameUtterance===u){activeGameUtterance=null;if(!naomiTalking&&!gameConversationOpen)setConversationAudio(false);}};u.onerror=()=>{if(activeGameUtterance===u){activeGameUtterance=null;if(!naomiTalking&&!gameConversationOpen)setConversationAudio(false);}};
+  activeGameUtterance=u;window.speechSynthesis.speak(u);
+  // Some browsers load their speech list asynchronously; retry voice selection once.
+  if(!voice){window.speechSynthesis.onvoiceschanged=()=>{if(activeGameUtterance===u&&!u.voice){const v=chooseVoice();if(v){try{u.voice=v;}catch(e){}}}};}
+  setTimeout(()=>{if(activeGameUtterance===u&&window.speechSynthesis.speaking===false){try{window.speechSynthesis.speak(u);}catch(e){console.warn('Speech could not start:',e);}}},250);
 }
 let activeGameUtterance=null;
 function toggleGameMusic(){gameMusicEnabled=!gameMusicEnabled;if(gameMusicEnabled)initGameAudio();syncGameMusic();render();}
 function audioControls(){return `<div class=box style=display:flex;gap:8px;flex-wrap:wrap><button class=b onclick=toggleGameMusic()>${gameMusicEnabled?'🎵 Music on':'🔇 Music off'}</button><button class=b onclick=toggleVoice()>${voiceEnabled?'🔊 Voices on':'🔇 Voices off'}</button></div>`;}
-addEventListener('pointerdown',()=>initGameAudio(),{once:true});addEventListener('keydown',()=>initGameAudio(),{once:true});
+addEventListener('pointerdown',()=>initGameAudio(),{passive:true});addEventListener('keydown',()=>initGameAudio(),{passive:true});
 const NAOMI_MODEL_URL='/assets/naomi-senior-agent.glb';
 // Naomi asset loading is isolated from player-avatar rendering; custom color masks are disabled in this build.
 function setNaomiTalking(on){
@@ -562,7 +572,7 @@ function speakNaomi(text){
   u.onstart=()=>setNaomiTalking(true);u.onend=()=>{setNaomiTalking(false);if(!activeGameUtterance)setConversationAudio(false);};u.onerror=()=>{setNaomiTalking(false);if(!activeGameUtterance)setConversationAudio(false);};activeNaomiUtterance=u;window.speechSynthesis.speak(u);
 }
 function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button><div id="naomiModelStatus" class="k" role="status" aria-live="polite" style="display:'+(naomiAssetStatusText?'block':'none')+';color:'+(naomiAssetStatusError?'#fca5a5':'#a9c3dd')+'">'+naomiAssetStatusText+'</div><button class="b" id="naomiRetry" onclick="retryNaomiLoad()" style="display:'+(naomiAssetState==='error'?'inline-block':'none')+'">Retry Naomi model</button>'; }
-function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else if(naomiAssetState==='loaded')speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
+function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled){stopNaomiSpeech();if('speechSynthesis' in window)window.speechSynthesis.cancel();activeGameUtterance=null;setConversationAudio(false);}else if(naomiAssetState==='loaded')speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
 function loadNaomiModel(){
   if(naomiGltfCache)return Promise.resolve(naomiGltfCache);
   if(naomiGltfPromise)return naomiGltfPromise;
@@ -786,7 +796,7 @@ function scen(P){const p=P.p,u=p.rent?10:1000,B=Math.round(P.tp*p.sq*p.bel/u)*u,
   if(P.sc===0)return{q:`${p.n} says: "${p.rent?"I would like to rent it for":"I think it is worth"} ${f(B)}${p.rent?"/mo":""}." ${p.n} also ${p.why}. How do you respond?`,o:rot([["Acknowledge the situation and promise to price it from real comparables that fit "+p.n+"'s timeline",1],["Say it is fine to list high and cut the price later",-1],["Say you will get back to "+p.n+" next week",0]])};
   if(P.sc===1)return{q:`${p.n} ${p.goal}. What do you say?`,o:rot([[p.rent?"Explain you will screen tenants on income, credit and references":"Explain you will build the price from recent comparable sales so it supports that goal",1],["Promise a price higher than any other agent would offer",-1],["Say that part is not your concern",-2]])};
   const e=ETH[p.rent?[4,1,3][P.ni]:(P.ni*2+P.pi)%4];return{q:e[0],o:rot(e[1])};}
-function leave(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeGameUtterance=null;setConversationAudio(false);G.cur=null;G.curB=null;G.focus=null;spawnNPCs();render();}
+function leave(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeGameUtterance=null;gameConversationOpen=false;setConversationAudio(false);G.cur=null;G.curB=null;G.focus=null;spawnNPCs();render();}
 function talk(){
   const t=G.near;if(!t)return;const n=NPCS.find(n=>n.t===t);if(!n)return;G.msgs=[];
   if(t.k==='w'){
@@ -834,6 +844,46 @@ function convCam(){const T=G.focus,mx=(me.x+T.x)/2,mz=(me.z+T.z)/2,dx=T.x-me.x,d
 let PW=0;function fit(){if(PW)camera.setViewOffset(innerWidth,innerHeight,PW/2,0,innerWidth,innerHeight);else camera.clearViewOffset();}
 function studio(on){if(world)world.visible=!on;platform.visible=on;PEDS.forEach(p=>p.h.visible=!on);const c=on?0x1c2a3c:NB[G.nb].sky;scene.background.set(c);scene.fog.color.set(c);}
 const platform=new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,0.12,40),new THREE.MeshLambertMaterial({color:0x2a3b52}));platform.position.set(-0.3,-0.06,5.8);scene.add(platform);platform.visible=false;
+// Furnished, walkable apartment used for the actual client showing interaction.
+const apartmentInterior=new THREE.Group();apartmentInterior.name='client-apartment-interior';scene.add(apartmentInterior);apartmentInterior.visible=false;
+function apartmentBox(w,h,d,x,y,z,color,rough=0.86){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:rough}));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;apartmentInterior.add(m);return m;}
+function buildApartmentInterior(){
+  if(apartmentInterior.userData.built)return;apartmentInterior.userData.built=true;
+  const floorMat=new THREE.MeshStandardMaterial({color:0xb89a74,roughness:0.82});const floor=new THREE.Mesh(new THREE.BoxGeometry(12,0.18,10),floorMat);floor.position.set(0,-0.09,0);floor.receiveShadow=true;apartmentInterior.add(floor);
+  // Warm walls with a doorway opening at the front so the room reads as a real interior.
+  apartmentBox(12,3.2,0.18,0,1.6,-5,0xe8dfd0);apartmentBox(0.18,3.2,10,-6,1.6,0,0xe8dfd0);apartmentBox(0.18,3.2,10,6,1.6,0,0xe8dfd0);
+  apartmentBox(3.7,3.2,0.18,-4.15,1.6,5,0xe8dfd0);apartmentBox(3.7,3.2,0.18,4.15,1.6,5,0xe8dfd0);apartmentBox(2.0,0.7,0.18,0,2.85,5,0xe8dfd0);
+  // Window, frame, city view panels.
+  [-2.5,2.5].forEach(x=>{apartmentBox(2.0,1.45,0.06,x,2.0,-4.88,0x8fc2df,0.3);apartmentBox(2.12,0.08,0.12,x,2.76,-4.82,0xffffff);apartmentBox(2.12,0.08,0.12,x,1.24,-4.82,0xffffff);apartmentBox(0.08,1.58,0.12,x,2.0,-4.82,0xffffff);apartmentBox(0.06,1.45,0.13,x,2.0,-4.79,0xffffff);});
+  // Living room: sofa, cushions, rug, coffee table, lamp and wall art.
+  apartmentBox(3.0,0.62,0.9,-3.65,0.38,-1.3,0x526b78);apartmentBox(3.0,0.55,0.24,-3.65,0.85,-1.65,0x617e8d);[-4.55,-3.65,-2.75].forEach(x=>apartmentBox(0.72,0.18,0.58,x,0.78,-1.15,0xd9c9b0));
+  apartmentBox(2.0,0.08,1.1,-1.1,0.32,-1.2,0xb07d4f);[-1.8,-0.4].forEach(x=>apartmentBox(0.08,0.32,0.08,x,0.16,-1.55,0x60452e));
+  apartmentBox(2.2,0.06,1.55,-2.7,0.02,-1.35,0xc8b9a2);apartmentBox(0.12,1.2,0.12,-5.1,0.6,-2.2,0x3b332c);apartmentBox(0.42,0.06,0.42,-5.1,1.25,-2.2,0xffd28a);
+  apartmentBox(1.25,1.1,0.08,2.1,2.1,-4.82,0x8a674f);apartmentBox(1.05,0.9,0.04,2.1,2.1,-4.75,0xd9c7a8);
+  // Dining table and chairs.
+  apartmentBox(1.65,0.12,1.05,2.5,0.82,0.4,0x8b603d);[-0.55,0.55].forEach(dx=>[-0.4,0.4].forEach(dz=>{apartmentBox(0.12,0.62,0.12,2.5+dx,0.31,0.4+dz,0x684a32);apartmentBox(0.48,0.12,0.46,2.5+dx,0.45,0.4+dz,0x54717a);}));
+  // Bedroom visible through a low divider, with bed, pillows and side tables.
+  apartmentBox(3.5,1.0,0.12,3.85,0.5,2.65,0xd7c6ae);apartmentBox(2.2,0.42,2.5,3.65,0.3,3.75,0xf0ece5);apartmentBox(2.22,0.18,1.0,3.65,0.55,4.2,0x9baec0);apartmentBox(0.65,0.48,0.55,2.25,0.24,3.85,0x8b603d);apartmentBox(0.65,0.48,0.55,5.0,0.24,3.85,0x8b603d);
+  // Kitchen counter and cabinets.
+  apartmentBox(2.8,0.95,0.65,-3.8,0.48,3.7,0xeee8df);apartmentBox(2.95,0.12,0.72,-3.8,1.02,3.7,0x575e63);apartmentBox(2.8,0.55,0.16,-3.8,1.45,4.0,0xf6f0e6);apartmentBox(0.75,0.04,0.48,-4.2,1.1,3.68,0x303b42);apartmentBox(0.52,0.06,0.38,-3.0,1.1,3.68,0x303b42);
+  // Warm ceiling lights represented as visible fixtures and real point lights.
+  [-2.5,2.5].forEach(x=>{const fixture=new THREE.Mesh(new THREE.SphereGeometry(0.16,12,8),new THREE.MeshStandardMaterial({color:0xffe3a6,emissive:0x6c4a19,emissiveIntensity:0.7}));fixture.position.set(x,3.0,0);apartmentInterior.add(fixture);const light=new THREE.PointLight(0xffdba1,0.55,8);light.position.set(x,2.8,0);apartmentInterior.add(light);});
+}
+let apartmentReturnState=null;
+function enterApartmentShowing(){
+  if(!G.curB||G.showing)return;initGameAudio();gameConversationOpen=true;setConversationAudio(false);buildApartmentInterior();
+  apartmentReturnState={x:me.x,z:me.z,ry:me.ry,world:world?world.visible:true,platform:platform.visible,npcs:NPCS.map(n=>({n,visible:n.g.visible})),avatars:Object.entries(avatars).map(([id,a])=>({id,visible:a.g.visible}))};
+  if(world)world.visible=false;platform.visible=false;NPCS.forEach(n=>n.g.visible=false);Object.values(avatars).forEach(a=>a.g.visible=false);const self=avatars[myId];if(self)self.g.visible=true;
+  apartmentInterior.visible=true;me.x=0;me.z=2.2;me.ry=Math.PI;G.focus=null;G.showing=true;render();
+}
+function finishApartmentShowing(){
+  if(!G.showing)return;apartmentInterior.visible=false;G.showing=false;
+  if(apartmentReturnState){if(world)world.visible=apartmentReturnState.world;platform.visible=apartmentReturnState.platform;me.x=apartmentReturnState.x;me.z=apartmentReturnState.z;me.ry=apartmentReturnState.ry;apartmentReturnState.npcs.forEach(v=>{v.n.g.visible=v.visible;});apartmentReturnState.avatars.forEach(v=>{if(avatars[v.id])avatars[v.id].g.visible=v.visible;});apartmentReturnState=null;}
+  showL();render();
+}
+function apartmentPanel(){return `<h3>🏠 Apartment showing</h3><div class=box><b>Walk through the property with your client.</b><br>Look around the furnished living room, kitchen, dining area and bedroom. Use WASD or the arrow keys to move; drag to rotate the view.</div><div class=box>Ask yourself: does the layout, light, storage and bedroom count fit the client's needs?</div><button class="b go" onclick="finishApartmentShowing()">Finish showing · Ask for feedback</button><button class=b onclick="cancelApartmentShowing()">Leave apartment</button>`;}
+function cancelApartmentShowing(){if(!G.showing)return;apartmentInterior.visible=false;G.showing=false;if(apartmentReturnState){if(world)world.visible=apartmentReturnState.world;platform.visible=apartmentReturnState.platform;me.x=apartmentReturnState.x;me.z=apartmentReturnState.z;me.ry=apartmentReturnState.ry;apartmentReturnState.npcs.forEach(v=>v.n.g.visible=v.visible);apartmentReturnState.avatars.forEach(v=>{if(avatars[v.id])avatars[v.id].g.visible=v.visible;});apartmentReturnState=null;}render();}
+
 // ----- chat + agent collaboration -----
 function chatLog(){$("chatlog").innerHTML=G.chat.slice(-6).map(m=>`<div><b style="color:${hex(m.c)}">${m.name}</b>: ${m.t}</div>`).join("");$("chatlog").scrollTop=1e5;}
 function bubble(id,t){const a=avatars[id];if(!a)return;if(a.bub)a.g.remove(a.bub);const s=label(t.slice(0,44),"#ffffff",4.4);s.position.y=3.5;a.g.add(s);a.bub=s;clearTimeout(a.bt);a.bt=setTimeout(()=>{a.g.remove(a.bub);a.bub=null;},6000);}
@@ -863,7 +913,7 @@ function bench(){const P=curP(),p=P.p,R=p.rent,U=R?10:1000,sfx=R?"/mo":"",B=Math
   return h+(P.st===5?`<button class=b onclick="leave()">Back to the street</button>`:P.st===0&&P.react?"":`<button class=b onclick="leave()">Walk away</button>`);}
 function benchB(){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],p=P.p,R=p.rent;let h=`<h3>${b.n} · ${R?"prospective tenant":"prospective buyer"}</h3><div class=k>Listing: ${p.n}'s ${p.bd} bed · ${p.sq} sf at ${f(P.price)}${R?"/mo":""}</div>`+(R?`<div class=k>Tip: NYC landlords commonly want annual income of 40× the monthly rent.</div>`:"");
   [["Ask about their "+(R?"income":"budget"),R?"Annual income: "+f(b.m):"Budget up to "+f(b.m)],["Ask what they need","Needs "+b.bd+" bedroom"+(b.bd>1?"s":"")],["Ask about timing",b.n+" "+b.why+"."]].forEach((x,i)=>h+=b.ask[i]?`<div class=box>✔ ${x[1]}</div>`:`<button class=b onclick="askB(${i})">${x[0]}</button>`);
-  h+=b.res?`<div class=box>${b.res}</div>`:`<button class="b go" onclick="showL()">Show the listing</button>`;return h+`<button class=b onclick="leave()">Back to the street</button>`;}
+  h+=b.res?`<div class=box>${b.res}</div>`:`<button class="b go" onclick="enterApartmentShowing()">🏠 Show the apartment in person</button>`;return h+`<button class=b onclick="leave()">Back to the street</button>`;}
 function quest(){const nb=NB[G.nb],ps=Object.values(G.P),act=ps.find(P=>!P.done&&!P.lost&&P.st>=3)||ps.find(P=>!P.done&&!P.lost&&P.ni===G.nb),cur=act?[1,2,2,3,4][act.st]:0;
   const next=nb.pros.find((p,i)=>{const P=G.P[G.nb+"-"+i];return !(P&&(P.done||P.lost));});
   const S=["Meet a client","Earn their trust","Run comps and price the listing","Find a buyer or tenant in the city","Return and close the deal"];
@@ -875,7 +925,7 @@ function render(){const L=lvl(),nx=60*L*L,pv=60*(L-1)*(L-1),fm=FIRMS[G.fi];
   G.offers.forEach((o,i)=>h+=`<div class=toast>🤝 <b>${o.name}</b> invites you to co-broke ${o.d.txt}. You earn 40% if it closes.<br><button class=b onclick="acc(${i})">Accept</button><button class=b onclick="dec(${i})">Decline</button></div>`);
   G.msgs.slice(-2).forEach(m=>h+=`<div class=toast>${m}</div>`);
   h+=`<h3>Locations</h3><div class=locs>`+NB.map((n,i)=>L>=n.lvl?`<div class="loc ${i===G.nb?"on":""}" onclick="go(${i})"><b>${i===G.nb?"📍 ":"➜ "}${n.name}</b><br><small>${BR[i].d}</small></div>`:`<div class="loc lock"><b>🔒 ${n.name}</b><br><small>Unlocks at level ${n.lvl}</small></div>`).join("")+`</div>`;
-  h+=audioControls();h+=G.cur?bench():G.curB?benchB():quest();$("panel").innerHTML=h;}
+  h+=audioControls();h+=G.showing?apartmentPanel():G.cur?bench():G.curB?benchB():quest();$("panel").innerHTML=h;}
 studio(true);
 
 // ---------- input + loop ----------
@@ -891,10 +941,10 @@ function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),0
     if(keys.KeyQ)camYaw+=1.8*dt;if(keys.KeyE)camYaw-=1.8*dt;
     let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);const len=Math.hypot(ix,iz);
     if(len>0&&!G.focus){ix/=len;iz/=len;const s=Math.sin(camYaw),c=Math.cos(camYaw),dx=ix*c+iz*s,dz=-ix*s+iz*c;
-      me.x=Math.max(-48,Math.min(48,me.x+dx*3.8*dt));me.z=Math.max(-48,Math.min(48,me.z+dz*3.8*dt));collide(me);me.ry=Math.atan2(dx,dz);}
+      if(G.showing){me.x=Math.max(-5.25,Math.min(5.25,me.x+dx*2.7*dt));me.z=Math.max(-4.25,Math.min(4.25,me.z+dz*2.7*dt));}else{me.x=Math.max(-48,Math.min(48,me.x+dx*3.8*dt));me.z=Math.max(-48,Math.min(48,me.z+dz*3.8*dt));collide(me);}me.ry=Math.atan2(dx,dz);}
     const a=avatars[myId];if(a){const dist=Math.hypot(me.x-a.g.position.x,me.z-a.g.position.z);a.g.position.set(me.x,0,me.z);a.g.rotation.y=angLerp(a.g.rotation.y,me.ry,0.25);walkAnim(a.h,dist,dt);}
     updateNear(dt);sendT+=dt;if(sendT>0.066){sendT=0;socket.emit('move',{x:me.x,z:me.z,ry:me.ry,n:G.nb});}
-    if(G.focus){convCam();}else{const dd=11;camera.position.set(me.x+Math.sin(camYaw)*Math.cos(camPitch)*dd,1.8+Math.sin(camPitch)*dd,me.z+Math.cos(camYaw)*Math.cos(camPitch)*dd);camera.lookAt(me.x,1.5,me.z);}
+    if(G.focus){convCam();}else if(G.showing){const dd=5.0;camera.position.set(me.x+Math.sin(camYaw)*Math.cos(camPitch)*dd,1.45+Math.sin(camPitch)*dd,me.z+Math.cos(camYaw)*Math.cos(camPitch)*dd);camera.lookAt(me.x,1.25,me.z);}else{const dd=11;camera.position.set(me.x+Math.sin(camYaw)*Math.cos(camPitch)*dd,1.8+Math.sin(camPitch)*dd,me.z+Math.cos(camYaw)*Math.cos(camPitch)*dd);camera.lookAt(me.x,1.5,me.z);}
   }else{const cameraZ=(AVATAR_MODELS[selectedAvatarId]&&AVATAR_MODELS[selectedAvatarId].previewCameraZ)||10.2;camera.position.set(0,1.5,cameraZ);camera.lookAt(-1.2,1.1,6);if(preview&&!dragging)preview.rotation.y+=dt*0.5;}
   for(const id in avatars){if(id===myId)continue;const a=avatars[id],ox=a.g.position.x,oz=a.g.position.z;
     a.g.position.x+=(a.tx-ox)*Math.min(1,12*dt);a.g.position.z+=(a.tz-oz)*Math.min(1,12*dt);a.g.rotation.y=angLerp(a.g.rotation.y,a.try,0.2);
