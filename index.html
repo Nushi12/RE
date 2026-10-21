@@ -42,20 +42,17 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 .avatar-picked{position:absolute;top:10px;right:10px;width:25px;height:25px;border-radius:50%;display:none;align-items:center;justify-content:center;background:#3b82f6;color:#fff;font-size:17px;font-weight:800;box-shadow:0 2px 8px #0008}
 .avatar-choice.sel .avatar-picked{display:flex}
 #b1:disabled{opacity:.48;cursor:wait}
-.color-test{border:1px solid #2c3f56;background:#101a28;border-radius:10px;padding:9px 10px;margin:8px 0 10px}
 .color-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:7px 0}
 .color-title{width:94px;font-size:11px;letter-spacing:.04em;font-weight:800;color:#d8e4f2;text-transform:uppercase;flex-shrink:0}
 .color-swatch{height:30px;min-width:31px;border-radius:8px;padding:0 8px;border:2px solid #3a4d64;background:var(--swatch);cursor:pointer;color:#fff;font-size:10px;font-weight:700;text-shadow:0 1px 3px #000;box-shadow:inset 0 0 0 1px #0003}
 .color-swatch[data-value="original"]{background:linear-gradient(135deg,#253449 0 45%,#e9edf1 45% 55%,#253449 55%);min-width:57px}
 .color-swatch.sel{border-color:#fff;outline:2px solid #60a5fa;outline-offset:1px}
-.color-note{font-size:10px;line-height:1.35;color:#9fb3c8;margin:2px 0 0}
-
 @media(max-width:440px){#card{padding:14px}.avatar-preview-wrap{height:170px}.gender-choice{min-height:94px}}
 </style></head><body>
 <div id="join"><div id="card">
 <div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
 <div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
-<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><div id="colorTest" class="color-test"><p class="color-note">Stability test: each character keeps its original GLB skin, hair, and clothing textures. Experimental recoloring is temporarily paused so it cannot distort models or trigger WebGL shader errors.</p></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
+<div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
 <div id="s4"><h1>Choose your firm</h1><p class="sub">This is your professional affiliation. You can see it on your name tag.</p><div id="firms"></div><button class="go" id="b4">Enter the city</button></div>
 </div></div>
@@ -74,7 +71,7 @@ try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for
 // Only Female and Male are supported. Map any previously saved third option to Male.
 look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
-const CREATOR_BUILD='REW-OPENING-8-AVATARS-NAOMI-TALK-2026-10-20';
+const CREATOR_BUILD='REW-NAOMI-DISCUSS-ANIMATION-FIX-2026-10-21';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
 const BODY_OPTIONS=['Female','Male'];
@@ -203,14 +200,10 @@ function human(L,fc){
 // ---------- four complete rigged avatar models ----------
 // Each selectable agent is a full GLB. This stability build preserves the original baked texture; recoloring is temporarily disabled.
 const AVATAR_MODELS={
-  female1:{label:'Female Agent',gender:'Female',file:'Female-rigged-agent.glb',aliases:['Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Textured character',cardZoom:1.0,previewCameraZ:10.2},
-  female2:{label:'Female Agent',gender:'Female',file:'Female-rigged-agent1.glb',aliases:['Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Textured character',cardZoom:1.0,previewCameraZ:10.2},
-  female3:{label:'Female Agent',gender:'Female',file:'female-rigged-agent2.glb',aliases:['female-rigged-agent2(2).glb','Female-rigged-agent2.glb'],description:'Textured character',cardZoom:1.0,preserveRigScale:true},
-  female4:{label:'Female Agent',gender:'Female',file:'female-agent-3.glb',aliases:['female-agent-3(2).glb'],description:'Textured character',cardZoom:1.0,preserveRigScale:true},
-  male1:{label:'Male Agent',gender:'Male',file:'Male-rigged-agent1.glb',aliases:['Male-rigged-agent1.glb','male-rigged-agent1.glb'],description:'Textured character',cardZoom:1.0,preserveRigScale:true},
-  male2:{label:'Male Agent',gender:'Male',file:'Male-rigged-agent.glb',aliases:['male-rigged-agent.glb'],description:'Textured character',cardZoom:1.0},
-  male3:{label:'Male Agent',gender:'Male',file:'male-rigged-agent2.glb',aliases:['male-rigged-agent2(2).glb','Male-rigged-agent2.glb'],description:'Textured character',cardZoom:1.0,preserveRigScale:true},
-  male4:{label:'Male Agent',gender:'Male',file:'male-rigged-agent3.glb',aliases:['male-rigged-agent3(2).glb','Male-rigged-agent3.glb'],description:'Textured character',cardZoom:1.0,preserveRigScale:true}
+  female1:{label:'Female Agent 1',gender:'Female',file:'Female_rigged_agent.glb',aliases:['Female_rigged_agent.glb','female_rigged_agent.glb','Female-rigged-agent.glb','female-rigged-agent.glb','female-agent-1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
+  female2:{label:'Female Agent 2',gender:'Female',file:'Female_rigged_agent1.glb',aliases:['Female_rigged_agent1.glb','female_rigged_agent1.glb','Female-rigged-agent1.glb','female-rigged-agent1.glb','female-agent-2.glb'],description:'Different complete character',cardZoom:1.0,previewCameraZ:10.2},
+  male1:{label:'Male Agent 1',gender:'Male',file:'Male-rigged-agent1.glb',aliases:['Male-rigged-agent1.glb','male-rigged-agent1.glb','male-agent-1.glb','Male_rigged_agent1.glb','male_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
+  male2:{label:'Male Agent 2',gender:'Male',file:'Male-rigged-agent.glb',aliases:['Male-rigged-agent.glb','male-rigged-agent.glb','male-agent-2.glb','Male_rigged_agent(1).glb','Male_rigged_agent.glb','male_rigged_agent(1).glb'],description:'Different complete character',cardZoom:1.0,previewCameraZ:10.2}
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
@@ -276,7 +269,7 @@ function fitAvatarModel(model,id,targetHeight){
   // Male Agent 1 and Naomi carry a GLB-authored 0.01 scale on the skinned root while their
   // bind-pose mesh bounds are misleadingly tiny. Preserve their original root/bone transforms;
   // use a nominal human size only for card-camera framing.
-  if(id==='male1'||(AVATAR_MODELS[id]&&AVATAR_MODELS[id].preserveRigScale)){
+  if(id==='male1'){
     model.position.set(0,0,0);
     model.scale.set(1,1,1);
     model.updateMatrixWorld(true);
@@ -514,11 +507,11 @@ let naomiAssetStatusText='',naomiAssetStatusError=false,naomiAssetState='idle',n
 const NAOMI_MODEL_URL='/assets/naomi-senior-agent.glb';
 // Naomi asset loading is isolated from player-avatar rendering; custom color masks are disabled in this build.
 function setNaomiTalking(on){
-  // Naomi's authored Talk_Passionately clip is her intended licensing pose and loops continuously.
-  // Browser narration is separate; do not stop the skeletal animation when speech starts/ends.
+  // Audio narration is enabled, but we keep Naomi's GLB in its authored pose
+  // until her embedded talk animation is verified not to distort the skinned mesh.
   naomiTalking=!!on;
   const ud=mentorBody&&mentorBody.userData;
-  if(ud&&ud.naomiTalkAction&&!ud.naomiTalkAction.isRunning())ud.naomiTalkAction.play();
+  if(ud&&ud.naomiMixer)ud.naomiMixer.stopAllAction();
 }
 function setNaomiModelStatus(text,isError=false,state){
   if(state)naomiAssetState=state;
@@ -574,15 +567,17 @@ function mentor(on){
     const nameplate=label('Naomi · Senior Agent','#9be7a8',2.6);nameplate.position.y=2.48;mentorG.add(nameplate);
     mentorBody.userData.naomiModel=model;
     mentorBody.userData.naomiAnimations=(gltf.animations||[]).map(a=>a.name);
-    const naomiMixer=new THREE.AnimationMixer(model);
-    const talkClip=chooseClip(gltf.animations,[/^talk[_\s-]*passionately$/i,/talk.*passionately/i]);
-    if(!talkClip)throw new Error('Naomi GLB loaded but the Talk_Passionately animation clip was not found. Available clips: '+mentorBody.userData.naomiAnimations.join(', '));
-    const talkAction=naomiMixer.clipAction(talkClip);
-    talkAction.reset();talkAction.enabled=true;talkAction.setEffectiveWeight(1);talkAction.setEffectiveTimeScale(1);talkAction.setLoop(THREE.LoopRepeat,Infinity);talkAction.play();
-    mentorBody.userData.naomiMixer=naomiMixer;
-    mentorBody.userData.naomiTalkAction=talkAction;
-    setNaomiModelStatus('Naomi’s 3D model and Talk_Passionately animation loaded. Exam options are ready.',false,'loaded');
-    console.info('Naomi GLB and Talk_Passionately animation playing.',mentorBody.userData.naomiAnimations);
+    const discussClip=(gltf.animations||[]).find(a=>a.name==='Discuss_While_Moving');
+    if(!discussClip) throw new Error('Required Naomi animation Discuss_While_Moving was not found. Available clips: '+mentorBody.userData.naomiAnimations.join(', '));
+    const mixer=new THREE.AnimationMixer(model);
+    const discussAction=mixer.clipAction(discussClip);
+    discussAction.reset();
+    discussAction.setLoop(THREE.LoopRepeat,Infinity);
+    discussAction.play();
+    mentorBody.userData.naomiMixer=mixer;
+    mentorBody.userData.naomiTalkAction=discussAction;
+    setNaomiModelStatus('Naomi’s 3D model and Discuss_While_Moving animation loaded. Exam options are ready.',false,'loaded');
+    console.info('Naomi GLB loaded; looping Discuss_While_Moving.',mentorBody.userData.naomiAnimations);
     if(naomiPendingGreeting){const greeting=naomiPendingGreeting;naomiPendingGreeting='';speakNaomi(greeting);}
   }).catch(error=>{
     if(token===naomiLoadToken){
