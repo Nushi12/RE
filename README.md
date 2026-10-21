@@ -40,3 +40,15 @@ Keep the currently working `naomi-senior-agent.glb` and all eight existing playe
 - This update does not implement account-based save/resume; walker conversion state is session-only.
 - It does not add interior apartment environments yet. The existing transaction flow is preserved.
 - Code was syntax-checked, but not live-tested against Render or browser-tested with all GLB downloads.
+
+
+## NPC scale correction (2026-10-21)
+The supplied NPC GLBs were appearing approximately 10x too large in the scene. The NPC normalization factor is reduced by 10x and the NPC name/interaction labels are lowered to suit the corrected character size. This targets NPC models only; player avatars and Naomi code are not changed by this scale fix.
+
+This package includes the 12 NPC GLB binaries under `public/assets/` using canonical filenames (without upload suffixes). Merge/replace the package files in the repository, but preserve your existing `public/assets/naomi-senior-agent.glb` and the eight player avatar GLBs.
+
+The scale change is based on the reported live screenshot and has not yet been verified on Render. After deploying, check a named NPC and a walker first; if either is still visibly too large/small, adjust the single NPC scale multiplier in `attachNpcModel()`.
+
+
+## Corrected NPC normalization
+The NPC loader now sets each GLB to a measured target height of 1.72 scene units using the measured bounding box, rather than applying a fixed extra 0.1 multiplier. It recalculates the bounding box after scaling and grounds the model, with labels positioned above a normal human-height character. This is a code correction; it has not been deployed or verified live.

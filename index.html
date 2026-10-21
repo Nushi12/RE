@@ -674,11 +674,20 @@ function attachNpcModel(n,file){
     const model=THREE.SkeletonUtils&&THREE.SkeletonUtils.clone?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
     model.name='npc-model-'+n.name.replace(/[^a-z0-9_-]/gi,'-');
     model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=true;}});
+    // Normalize from the model's measured world-space height. Do not multiply
+    // by the GLB's original scale: some supplied models already carry a scale
+    // transform, which caused giant characters in the deployed scene.
+    model.updateMatrixWorld(true);
     const raw=new THREE.Box3().setFromObject(model),size=raw.getSize(new THREE.Vector3());
-    const height=Math.max(size.y,0.1),scale=1.78/height;
-    model.scale.multiplyScalar(scale);model.position.y-=raw.min.y*scale;
+    const height=Math.max(size.y,0.001),targetHeight=1.72;
+    const scale=targetHeight/height;
+    model.scale.setScalar(scale);
+    model.updateMatrixWorld(true);
+    const scaledBox=new THREE.Box3().setFromObject(model);
+    model.position.y-=scaledBox.min.y;
     n.g.add(model);n.person=model;n.gltf=gltf;n.mixer=new THREE.AnimationMixer(model);playNpcClip(n,n.isWalker?'walker':'client');
-    n.label.position.y=2.35;n.marker.position.y=2.9;
+    // Labels stay just above a normal human-height NPC.
+    n.label.position.y=1.92;n.marker.position.y=2.24;
   }).catch(err=>{
     console.warn('NPC GLB failed; using simple fallback for '+n.name+':',err);
     if(n.g.parent===scene&&!n.person){const person=human(namedNpcLook(n.look||{},n.name),0x8a6b52);person.scale.multiplyScalar(0.94);n.g.add(person);n.person=person;}
