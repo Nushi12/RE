@@ -510,6 +510,34 @@ let SEQ=[],si=0,score=0,mentorG=null;
 // keep the rig in its authored pose; browser narration is independent of skeletal animation.
 let voiceEnabled=true,mentorBody=null,activeNaomiUtterance=null,naomiTalking=false,naomiLoadToken=0,naomiGltfCache=null,naomiGltfPromise=null;
 let naomiAssetStatusText='',naomiAssetStatusError=false,naomiAssetState='idle',naomiPendingGreeting='';
+// Shared game audio: gentle procedural ambient bed plus speech ducking. No external
+// audio files or third-party service are required for this first version.
+let gameAudioCtx=null,gameMusicGain=null,gameMusicEnabled=true,gameConversationAudio=false,gameMusicNodes=[];
+function initGameAudio(){
+  if(gameAudioCtx||!gameMusicEnabled)return;
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  try{
+    gameAudioCtx=new AC();gameMusicGain=gameAudioCtx.createGain();gameMusicGain.gain.value=0;
+    gameMusicGain.connect(gameAudioCtx.destination);
+    // Soft, sustained ambient chord as a self-contained placeholder soundtrack.
+    [110,164.81,220,261.63].forEach((hz,i)=>{const osc=gameAudioCtx.createOscillator(),g=gameAudioCtx.createGain();osc.type='sine';osc.frequency.value=hz;g.gain.value=[0.14,0.07,0.045,0.025][i];osc.connect(g);g.connect(gameMusicGain);osc.start();gameMusicNodes.push(osc,g);});
+    if(gameAudioCtx.state==='suspended')gameAudioCtx.resume();syncGameMusic();
+  }catch(e){console.warn('Game audio could not initialize:',e);}
+}
+function syncGameMusic(){if(!gameAudioCtx||!gameMusicGain)return;const now=gameAudioCtx.currentTime;gameMusicGain.gain.cancelScheduledValues(now);gameMusicGain.gain.setTargetAtTime(gameMusicEnabled&&!gameConversationAudio?0.22:0,now,0.35);}
+function setConversationAudio(active){gameConversationAudio=!!active;syncGameMusic();}
+function speakGameLine(text,speaker='client'){
+  if(!text||!voiceEnabled||!('speechSynthesis' in window))return;
+  initGameAudio();window.speechSynthesis.cancel();
+  const clean=String(text).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();if(!clean)return;
+  setConversationAudio(true);const u=new SpeechSynthesisUtterance(clean);u.lang='en-US';u.rate=speaker==='agent'?1.02:0.94;u.pitch=speaker==='agent'?1.0:(speaker==='walker'?0.92:1.06);u.volume=0.95;
+  const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/en[-_]US/i.test(v.lang)&&/samantha|zira|jenny|aria|susan|serena|google us english/i.test(v.name))||voices.find(v=>/en[-_]US/i.test(v.lang));if(voice)u.voice=voice;
+  u.onend=()=>{if(activeGameUtterance===u){activeGameUtterance=null;if(!naomiTalking)setConversationAudio(false);}};u.onerror=()=>{if(activeGameUtterance===u){activeGameUtterance=null;if(!naomiTalking)setConversationAudio(false);}};activeGameUtterance=u;window.speechSynthesis.speak(u);
+}
+let activeGameUtterance=null;
+function toggleGameMusic(){gameMusicEnabled=!gameMusicEnabled;if(gameMusicEnabled)initGameAudio();syncGameMusic();render();}
+function audioControls(){return `<div class=box style=display:flex;gap:8px;flex-wrap:wrap><button class=b onclick=toggleGameMusic()>${gameMusicEnabled?'🎵 Music on':'🔇 Music off'}</button><button class=b onclick=toggleVoice()>${voiceEnabled?'🔊 Voices on':'🔇 Voices off'}</button></div>`;}
+addEventListener('pointerdown',()=>initGameAudio(),{once:true});addEventListener('keydown',()=>initGameAudio(),{once:true});
 const NAOMI_MODEL_URL='/assets/naomi-senior-agent.glb';
 // Naomi asset loading is isolated from player-avatar rendering; custom color masks are disabled in this build.
 function setNaomiTalking(on){
@@ -525,13 +553,13 @@ function setNaomiModelStatus(text,isError=false,state){
   if(retry)retry.style.display=naomiAssetState==='error'?'inline-block':'none';
   document.querySelectorAll('[data-naomi-start]').forEach(button=>{button.disabled=naomiAssetState!=='loaded';});
 }
-function stopNaomiSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeNaomiUtterance=null;setNaomiTalking(false);}
+function stopNaomiSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeNaomiUtterance=null;setNaomiTalking(false);if(!activeGameUtterance)setConversationAudio(false);}
 function speakNaomi(text){
   if(!voiceEnabled||!text||!('speechSynthesis' in window))return;
-  window.speechSynthesis.cancel();setNaomiTalking(false);
+  initGameAudio();window.speechSynthesis.cancel();setNaomiTalking(false);setConversationAudio(true);
   const u=new SpeechSynthesisUtterance(String(text).replace(/<[^>]*>/g,' '));u.lang='en-US';u.rate=0.96;u.pitch=1.02;u.volume=0.95;
   const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/en[-_]US/i.test(v.lang)&&/samantha|zira|jenny|aria|susan|serena|google us english/i.test(v.name))||voices.find(v=>/en[-_]US/i.test(v.lang));if(voice)u.voice=voice;
-  u.onstart=()=>setNaomiTalking(true);u.onend=()=>setNaomiTalking(false);u.onerror=()=>setNaomiTalking(false);activeNaomiUtterance=u;window.speechSynthesis.speak(u);
+  u.onstart=()=>setNaomiTalking(true);u.onend=()=>{setNaomiTalking(false);if(!activeGameUtterance)setConversationAudio(false);};u.onerror=()=>{setNaomiTalking(false);if(!activeGameUtterance)setConversationAudio(false);};activeNaomiUtterance=u;window.speechSynthesis.speak(u);
 }
 function voiceButton(){return '<button class="b" onclick="toggleVoice()">'+(voiceEnabled?'🔊 Voice on':'🔇 Voice off')+'</button><div id="naomiModelStatus" class="k" role="status" aria-live="polite" style="display:'+(naomiAssetStatusText?'block':'none')+';color:'+(naomiAssetStatusError?'#fca5a5':'#a9c3dd')+'">'+naomiAssetStatusText+'</div><button class="b" id="naomiRetry" onclick="retryNaomiLoad()" style="display:'+(naomiAssetState==='error'?'inline-block':'none')+'">Retry Naomi model</button>'; }
 function toggleVoice(){voiceEnabled=!voiceEnabled;if(!voiceEnabled)stopNaomiSpeech();else if(naomiAssetState==='loaded')speakNaomi('Voice narration is on.');const b=document.querySelector('#lesson button[onclick="toggleVoice()"]');if(b)b.textContent=voiceEnabled?'🔊 Voice on':'🔇 Voice off';}
@@ -758,7 +786,7 @@ function scen(P){const p=P.p,u=p.rent?10:1000,B=Math.round(P.tp*p.sq*p.bel/u)*u,
   if(P.sc===0)return{q:`${p.n} says: "${p.rent?"I would like to rent it for":"I think it is worth"} ${f(B)}${p.rent?"/mo":""}." ${p.n} also ${p.why}. How do you respond?`,o:rot([["Acknowledge the situation and promise to price it from real comparables that fit "+p.n+"'s timeline",1],["Say it is fine to list high and cut the price later",-1],["Say you will get back to "+p.n+" next week",0]])};
   if(P.sc===1)return{q:`${p.n} ${p.goal}. What do you say?`,o:rot([[p.rent?"Explain you will screen tenants on income, credit and references":"Explain you will build the price from recent comparable sales so it supports that goal",1],["Promise a price higher than any other agent would offer",-1],["Say that part is not your concern",-2]])};
   const e=ETH[p.rent?[4,1,3][P.ni]:(P.ni*2+P.pi)%4];return{q:e[0],o:rot(e[1])};}
-function leave(){G.cur=null;G.curB=null;G.focus=null;spawnNPCs();render();}
+function leave(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeGameUtterance=null;setConversationAudio(false);G.cur=null;G.curB=null;G.focus=null;spawnNPCs();render();}
 function talk(){
   const t=G.near;if(!t)return;const n=NPCS.find(n=>n.t===t);if(!n)return;G.msgs=[];
   if(t.k==='w'){
@@ -771,18 +799,19 @@ function talk(){
   }
   if(t.k==='s'){G.cur={ni:G.nb,pi:t.pi};G.curB=null;}else{G.curB={pi:t.pi,bi:t.bi};G.cur=null;}
   G.focus={x:n.x,z:n.z};n.g.rotation.y=Math.atan2(me.x-n.x,me.z-n.z);render();
+  if(G.cur){const P=curP();speakGameLine(scen(P).q,n.isWalker?'walker':'client');}else if(G.curB){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi];speakGameLine(b.n+' says: Tell me about the property and whether it fits my needs.','client');}
 }
-function pickS(j){const P=curP(),o=scen(P).o[j],p=P.p;P.trust=Math.min(5,P.trust+o[1]);const lost=P.trust<=0;
+function pickS(j){const P=curP(),o=scen(P).o[j],p=P.p;speakGameLine(o[0],'agent');P.trust=Math.min(5,P.trust+o[1]);const lost=P.trust<=0;
   P.react={t:lost?`${p.n}: "I do not think this is going to work. I will find another agent."`:o[1]>0?`${p.n}: "That makes sense. I feel good about working with you."`:o[1]===0?`${p.n}: "Hmm, okay..."`:`${p.n}: "I am not comfortable with that."`,lost};if(lost)P.lost=1;else P.sc++;render();}
-function cont(){const P=curP();P.react=null;if(P.lost){G.xp+=10;G.msgs.push(P.p.n+" walked away. Be more careful with your advice. (+10 XP for the lesson)");leave();return;}if(P.sc>=3)P.st=1;render();}
+function cont(){const P=curP();if(P.react)speakGameLine(P.react.t,'client');P.react=null;if(P.lost){G.xp+=10;G.msgs.push(P.p.n+" walked away. Be more careful with your advice. (+10 XP for the lesson)");leave();return;}if(P.sc>=3)P.st=1;render();}
 function tg(i){const P=curP();if(P.st===1){P.inc[i]^=1;render();}}
 function toStage(s){const P=curP();if(s===2){const e=est(P);if(!e)return;P.price=e.v;}P.st=s;render();}
 function pr(d){const P=curP();P.price=Math.max(P.p.rent?500:100000,P.price+d);render();}
 function rt(d){const P=curP(),r=P.p.rent;P.rate=Math.min(r?15:6,Math.max(r?10:4,P.rate+d));render();}
 function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);G.msgs.push("✍ Listing signed at "+f(P.price)+(P.p.rent?"/mo":"")+". Walk the city and find a "+(P.p.rent?"tenant":"buyer")+" (blue ?). Then return to "+P.p.n+" to close.");leave();}
 function reduce(){const P=curP(),u=P.p.rent?10:1000;P.price=Math.round(P.price*0.95/u)*u;P.buyers.forEach(b=>{b.declined=0;b.res=null;});G.msgs.push("Price reduced to "+f(P.price)+". People who passed may reconsider.");spawnNPCs();render();}
-function askB(i){G.curB&&(PP(G.nb,G.curB.pi).buyers[G.curB.bi].ask[i]=1);render();}
-function showL(){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],v=verdict(P,b);if(!v){P.st=4;P.mb=G.curB.bi;b.res="✔ "+b.n+': "I love it. Let us make an offer!"';G.msgs.push("🎉 "+b.n+" wants to make an offer. Return to "+P.p.n+" to close the deal.");}else{b.declined=1;b.res="✘ "+b.n+': "'+v+'"';P.fb.push(b.n+": "+v);}render();}
+function askB(i){if(G.curB){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi];b.ask[i]=1;speakGameLine(i===0?'My budget and finances are important.':i===1?'I need a place with the right number of bedrooms.':'My timing depends on the right property.','agent');}render();}
+function showL(){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],v=verdict(P,b);speakGameLine(v?b.n+' says: '+v:b.res||b.n+' says: I love it. Let us make an offer!','client');if(!v){P.st=4;P.mb=G.curB.bi;b.res="✔ "+b.n+': "I love it. Let us make an offer!"';G.msgs.push("🎉 "+b.n+" wants to make an offer. Return to "+P.p.n+" to close the deal.");}else{b.declined=1;b.res="✘ "+b.n+': "'+v+'"';P.fb.push(b.n+": "+v);}render();}
 function invite(id){const P=curP();socket.emit("relay",{to:id,type:"cobroke",data:{k:P.k,txt:P.p.n+"'s listing at "+f(P.price)+(P.p.rent?"/mo":"")}});G.msgs.push("Invitation sent to "+avatars[id].name+".");render();}
 function acc(i){const o=G.offers.splice(i,1)[0];socket.emit("relay",{to:o.from,type:"cob-ok",data:{k:o.d.k}});G.xp+=20;G.msgs.push("You joined "+o.name+"'s deal. Chat with them to help. You earn 40% if it closes. (+20 XP)");render();}
 function dec(i){G.offers.splice(i,1);render();}
@@ -846,7 +875,7 @@ function render(){const L=lvl(),nx=60*L*L,pv=60*(L-1)*(L-1),fm=FIRMS[G.fi];
   G.offers.forEach((o,i)=>h+=`<div class=toast>🤝 <b>${o.name}</b> invites you to co-broke ${o.d.txt}. You earn 40% if it closes.<br><button class=b onclick="acc(${i})">Accept</button><button class=b onclick="dec(${i})">Decline</button></div>`);
   G.msgs.slice(-2).forEach(m=>h+=`<div class=toast>${m}</div>`);
   h+=`<h3>Locations</h3><div class=locs>`+NB.map((n,i)=>L>=n.lvl?`<div class="loc ${i===G.nb?"on":""}" onclick="go(${i})"><b>${i===G.nb?"📍 ":"➜ "}${n.name}</b><br><small>${BR[i].d}</small></div>`:`<div class="loc lock"><b>🔒 ${n.name}</b><br><small>Unlocks at level ${n.lvl}</small></div>`).join("")+`</div>`;
-  h+=G.cur?bench():G.curB?benchB():quest();$("panel").innerHTML=h;}
+  h+=audioControls();h+=G.cur?bench():G.curB?benchB():quest();$("panel").innerHTML=h;}
 studio(true);
 
 // ---------- input + loop ----------
