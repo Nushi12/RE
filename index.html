@@ -74,7 +74,7 @@ try{const saved=JSON.parse(localStorage.getItem('rew-avatar-look-v3')||'{}');for
 // Only Female and Male are supported. Map any previously saved third option to Male.
 look.body=Math.max(0,Math.min(1,Number(look.body)||0));
 let selFirm=0;
-const CREATOR_BUILD='REW-8-AGENTS-NAOMI-FRAME-2026-10-21';
+const CREATOR_BUILD='REW-NAOMI-ANY-CLIP-ANIMATION-FIX-2026-10-21';
 window.__REW_AVATAR_CREATOR_BUILD=CREATOR_BUILD;
 console.info(CREATOR_BUILD);
 const BODY_OPTIONS=['Female','Male'];
@@ -514,7 +514,7 @@ let naomiAssetStatusText='',naomiAssetStatusError=false,naomiAssetState='idle',n
 const NAOMI_MODEL_URL='/assets/naomi-senior-agent.glb';
 // Naomi asset loading is isolated from player-avatar rendering; custom color masks are disabled in this build.
 function setNaomiTalking(on){
-  // Voice narration is independent of Naomi's visible model. Do not stop or alter model actions here.
+  // Narration state must never stop Naomi's animation.
   naomiTalking=!!on;
 }
 function setNaomiModelStatus(text,isError=false,state){
@@ -571,8 +571,23 @@ function mentor(on){
     const nameplate=label('Naomi · Senior Agent','#9be7a8',2.6);nameplate.position.y=2.48;mentorG.add(nameplate);
     mentorBody.userData.naomiModel=model;
     mentorBody.userData.naomiAnimations=(gltf.animations||[]).map(a=>a.name);
+    // Start a real GLB animation so Naomi does not remain in her bind-pose T-pose.
+    // Prefer a conversational clip, but use any available clip if names differ.
+    const clips=gltf.animations||[];
+    const chosenClip=clips.find(a=>/discuss|talk|gesture|idle/i.test(a.name))||clips[0];
+    if(chosenClip){
+      const mixer=new THREE.AnimationMixer(model);
+      const action=mixer.clipAction(chosenClip);
+      action.reset();
+      action.setLoop(THREE.LoopRepeat,Infinity);
+      action.play();
+      mentorBody.userData.naomiMixer=mixer;
+      mentorBody.userData.naomiAction=action;
+      console.info('Naomi animation started:',chosenClip.name,'Available clips:',mentorBody.userData.naomiAnimations);
+    } else {
+      console.warn('Naomi GLB has no animation clips; keeping model visible in authored pose.');
+    }
     setNaomiModelStatus('Naomi is ready. Exam options are available.',false,'loaded');
-    console.info('Naomi GLB loaded and kept visible in its authored pose.',mentorBody.userData.naomiAnimations);
     if(naomiPendingGreeting){const greeting=naomiPendingGreeting;naomiPendingGreeting='';speakNaomi(greeting);}
   }).catch(error=>{
     if(token===naomiLoadToken){
