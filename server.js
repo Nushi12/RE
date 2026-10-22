@@ -6,7 +6,7 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const BUILD_ID = 'REW-NEIGHBORHOOD-ASSETS-AND-CONVERSATION-2026-10-22';
+const BUILD_ID = 'REW-AUDIO-INTEGRATION-2026-10-22';
 
 // Keep model assets inside public/assets and make the requested /assets/<file> URLs work.
 app.get('/version', (_req, res) => res.type('text/plain').send(BUILD_ID));
