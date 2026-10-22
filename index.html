@@ -193,8 +193,7 @@ const districtTurn=cfg.i||0;
 placeWorldAsset('park-bench.glb',25.5,29.5,1.9,districtTurn*0.7);
 placeWorldAsset('bike-rack.glb',8.2,-10.2,1.8,Math.PI/2);
 placeWorldAsset('bus-stop-shelter.glb',5.6,7.8,3.8,Math.PI/2);
-// Park parallel to the north-south road, on its right-hand side, just inside the curb.
-placeWorldAsset('classic-car-light.glb',3.65,-18.5,2.65,0);
+placeWorldAsset('classic-car-light.glb',3.6,-18.5,4.4,Math.PI/2);
 placeWorldAsset('trash-bag-pile.glb',-8.1,15.8,0.9,districtTurn*0.35);
 // These human models are currently static environmental pedestrians. Walking clips
 // are not embedded in these files, so do not pretend they are animated walkers.
@@ -717,20 +716,11 @@ NB[2].pros.push({n:"Theo",modelFile:"theo.glb",rent:1,sq:900,bd:2,bel:1.1,why:"o
 const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,near:null,focus:null,P:{},offers:[],msgs:[],chat:[],walkerStates:{}},NPCS=[];
 const REW_SAVE_KEY='rew-career-save-v1';
 function hasGameLicense(){try{return localStorage.getItem('rew-license-passed-v1')==='1';}catch(e){return false;}}
-function writeCareerSnapshot(){
-  try{const snapshot={version:1,savedAt:new Date().toISOString(),G:{...G,cur:null,curB:null,near:null,focus:null,showing:false},neighborhoodPros:NB.map(n=>n.pros),license:hasGameLicense()||!!G.badge,selectedAvatarId,look,selectedSkinTone,selectedOutfitColor,selectedHairColor};
-    localStorage.setItem(REW_SAVE_KEY,JSON.stringify(snapshot));return true;
-  }catch(e){console.warn('Automatic save failed',e);return false;}
-}
 function saveCareer(){
-  const ok=writeCareerSnapshot();G.msgs.push(ok?'💾 Game saved on this device.':'Save failed: this browser may not have enough storage.');render();return ok;
+  try{const snapshot={version:1,savedAt:new Date().toISOString(),G:{...G,cur:null,curB:null,near:null,focus:null,showing:false},neighborhoodPros:NB.map(n=>n.pros),license:hasGameLicense()||!!G.badge,selectedAvatarId,look,selectedSkinTone,selectedOutfitColor,selectedHairColor};
+    localStorage.setItem(REW_SAVE_KEY,JSON.stringify(snapshot));G.msgs.push('💾 Game saved on this device.');render();return true;
+  }catch(e){console.error('Save failed',e);G.msgs.push('Save failed: this browser may not have enough storage.');render();return false;}
 }
-// Automatic local save protects progress on refresh/close; manual Save remains available.
-let rewAutoSaveLast=0;
-function autoSaveCareer(force=false){const now=Date.now();if(!force&&now-rewAutoSaveLast<12000)return;rewAutoSaveLast=now;writeCareerSnapshot();}
-window.addEventListener('beforeunload',()=>autoSaveCareer(true));
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')autoSaveCareer(true);});
-setInterval(()=>{if(G.joined||G.xp||G.deals||G.badge)autoSaveCareer();},12000);
 function loadCareer(){
   try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);if(!data||data.version!==1||!data.G)return false;
     Object.keys(data.G).forEach(k=>{if(k in G)G[k]=data.G[k];});G.cur=null;G.curB=null;G.near=null;G.focus=null;G.showing=false;
@@ -984,7 +974,7 @@ function closeDeal(){const P=curP(),p=P.p,R=p.rent,truth=P.tp*p.sq,r=P.price/tru
   else{days=R?30:75;xp=150;msg="Priced right. A market-supported "+(R?"rent":"price")+" attracted a qualified "+(R?"tenant":"buyer")+".";}
   if(good)xp+=30;xp+=P.trust*5;const fin=P.price,q=P.rate/100,gross=R?fin*12*q:fin*q,side=R?gross:gross*0.5,net0=side*0.7,net=P.partner?net0*0.6:net0;
   if(P.partner)socket.emit("relay",{to:P.partner.id,type:"cob-pay",data:{amt:Math.round(net0*0.4),xp:60}});
-  P.res={fin,days,xp,msg,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;autoSaveCareer(true);if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();try{saveCareer();}catch(e){}}
+  P.res={fin,days,xp,msg,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();try{saveCareer();}catch(e){}}
 function go(i){if(lvl()<NB[i].lvl||i===G.nb)return;const prev=G.nb;G.nb=i;G.cur=null;G.curB=null;G.focus=null;G.msgs=[];Object.keys(G.P).forEach(k=>{if(G.P[k].lost&&G.P[k].ni===i)delete G.P[k];});
   buildWorld(NB[i]);spawnNPCs();me.x=0;me.z=((i+1)%3===prev)?-41:41;for(const id in avatars)if(id!==myId)avatars[id].g.visible=(avatars[id].n||0)===G.nb;render();}
 function updateNear(){if(G.focus)return;let b=null,bd=4.2;NPCS.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;
@@ -1001,9 +991,7 @@ const platform=new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,0.12,40),new TH
 const apartmentInterior=new THREE.Group();apartmentInterior.name='client-apartment-interior';scene.add(apartmentInterior);apartmentInterior.visible=false;
 function apartmentBox(w,h,d,x,y,z,color,rough=0.86){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:rough}));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;apartmentInterior.add(m);return m;}
 function buildApartmentInterior(){
-  // Rebuild per listing: the room plan is selected deterministically from the property, not reused blindly.
-  while(apartmentInterior.children.length){const child=apartmentInterior.children.pop();apartmentInterior.remove(child);child.traverse?.(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});}
-  const property=G.curB||{};const layoutVariant=((Math.max(0,property.pi||0)*7+Math.max(0,property.bi||0)*3+(property.bd||1))%3);apartmentInterior.userData.layoutVariant=layoutVariant;apartmentInterior.userData.built=true;
+  if(apartmentInterior.userData.built)return;apartmentInterior.userData.built=true;
   const floorMat=new THREE.MeshStandardMaterial({color:0xb89a74,roughness:0.82});const floor=new THREE.Mesh(new THREE.BoxGeometry(12,0.18,10),floorMat);floor.position.set(0,-0.09,0);floor.receiveShadow=true;apartmentInterior.add(floor);
   // Warm walls with a doorway opening at the front so the room reads as a real interior.
   apartmentBox(12,3.2,0.18,0,1.6,-5,0xe8dfd0);apartmentBox(0.18,3.2,10,-6,1.6,0,0xe8dfd0);apartmentBox(0.18,3.2,10,6,1.6,0,0xe8dfd0);
@@ -1021,28 +1009,6 @@ function buildApartmentInterior(){
   apartmentBox(3.5,1.0,0.12,3.85,0.5,2.65,0xd7c6ae);apartmentBox(2.2,0.42,2.5,3.65,0.3,3.75,0xf0ece5);apartmentBox(2.22,0.18,1.0,3.65,0.55,4.2,0x9baec0);apartmentBox(0.65,0.48,0.55,2.25,0.24,3.85,0x8b603d);apartmentBox(0.65,0.48,0.55,5.0,0.24,3.85,0x8b603d);
   // Kitchen counter and cabinets.
   apartmentBox(2.8,0.95,0.65,-3.8,0.48,3.7,0xeee8df);apartmentBox(2.95,0.12,0.72,-3.8,1.02,3.7,0x575e63);apartmentBox(2.8,0.55,0.16,-3.8,1.45,4.0,0xf6f0e6);apartmentBox(0.75,0.04,0.48,-4.2,1.1,3.68,0x303b42);apartmentBox(0.52,0.06,0.38,-3.0,1.1,3.68,0x303b42);
-  // Distinct listing floor plans: different internal partitions and room zoning.
-  if(layoutVariant===1){
-    // Two-bedroom style: bedroom divider on the left and a more defined kitchen entry.
-    apartmentBox(0.14,2.15,3.0,-1.0,1.08,2.25,0xd9cbb8);
-    apartmentBox(2.0,0.12,0.14,-2.05,1.0,2.0,0xd9cbb8);
-    apartmentBox(0.14,2.15,2.0,1.25,1.08,-1.25,0xd9cbb8);
-    apartmentBox(1.0,0.08,1.4,0.5,0.05,0.8,0x8b9b78);
-    apartmentBox(1.7,0.42,0.85,3.8,0.28,-1.0,0x647c8a);
-  }else if(layoutVariant===2){
-    // Compact studio/loft: diagonal-feeling low divider, relocated bed and island counter.
-    apartmentBox(3.0,0.75,0.14,0.3,0.42,1.1,0xc7b49d);
-    apartmentBox(0.14,1.65,2.2,-0.8,0.83,-2.4,0xc7b49d);
-    apartmentBox(1.9,0.9,0.65,-3.8,0.45,0.2,0xd9d4ca);
-    apartmentBox(2.0,0.12,0.85,-1.8,0.92,3.5,0x6b7d87);
-    apartmentBox(2.0,0.18,0.16,1.6,1.2,-4.7,0x6f8e9e);
-  }else{
-    // One-bedroom plan: a clearly separated sleeping nook and entry-side storage.
-    apartmentBox(3.0,1.65,0.14,1.75,0.83,1.35,0xd9cbb8);
-    apartmentBox(0.14,1.65,2.4,0.25,0.83,2.45,0xd9cbb8);
-    apartmentBox(1.2,1.7,0.45,-4.7,0.85,1.6,0xb7a38c);
-    apartmentBox(1.6,0.12,0.8,-1.8,0.5,1.2,0x8d9b7c);
-  }
   // Warm ceiling lights represented as visible fixtures and real point lights.
   [-2.5,2.5].forEach(x=>{const fixture=new THREE.Mesh(new THREE.SphereGeometry(0.16,12,8),new THREE.MeshStandardMaterial({color:0xffe3a6,emissive:0x6c4a19,emissiveIntensity:0.7}));fixture.position.set(x,3.0,0);apartmentInterior.add(fixture);const light=new THREE.PointLight(0xffdba1,0.55,8);light.position.set(x,2.8,0);apartmentInterior.add(light);});
 }
@@ -1061,7 +1027,7 @@ function finishApartmentShowing(){
   if(apartmentReturnState){if(world)world.visible=apartmentReturnState.world;platform.visible=apartmentReturnState.platform;me.x=apartmentReturnState.x;me.z=apartmentReturnState.z;me.ry=apartmentReturnState.ry;apartmentReturnState.npcs.forEach(v=>{v.n.g.visible=v.visible;v.n.g.position.set(v.x,0,v.z);v.n.g.rotation.y=v.ry;v.n.x=v.x;v.n.z=v.z;});apartmentReturnState.avatars.forEach(v=>{if(avatars[v.id])avatars[v.id].g.visible=v.visible;});apartmentReturnState=null;}apartmentGuest=null;apartmentGuestTarget=null;
   showL();render();
 }
-function apartmentPanel(){const layoutName=['One-bedroom with separated sleeping nook','Two-bedroom with defined room zones','Compact studio/loft with open-plan zoning'][apartmentInterior.userData.layoutVariant||0];return `<h3>🏠 Apartment showing</h3><div class=box><b>${layoutName}</b><br>Walk through this listing with your client. Room layout and partitions vary by property.<br>Look around the living area, kitchen, dining area and sleeping space. Use WASD or the arrow keys to move; drag to rotate the view.</div><div class=box>Ask yourself: does the layout, light, storage and bedroom count fit the client's needs?</div><button class="b go" onclick="finishApartmentShowing()">Finish showing · Ask for feedback</button><button class=b onclick="cancelApartmentShowing()">Leave apartment</button>`;}
+function apartmentPanel(){return `<h3>🏠 Apartment showing</h3><div class=box><b>Walk through the property with your client.</b><br>Look around the furnished living room, kitchen, dining area and bedroom. Use WASD or the arrow keys to move; drag to rotate the view.</div><div class=box>Ask yourself: does the layout, light, storage and bedroom count fit the client's needs?</div><button class="b go" onclick="finishApartmentShowing()">Finish showing · Ask for feedback</button><button class=b onclick="cancelApartmentShowing()">Leave apartment</button>`;}
 function cancelApartmentShowing(){if(!G.showing)return;apartmentInterior.visible=false;G.showing=false;if(apartmentReturnState){if(world)world.visible=apartmentReturnState.world;platform.visible=apartmentReturnState.platform;me.x=apartmentReturnState.x;me.z=apartmentReturnState.z;me.ry=apartmentReturnState.ry;apartmentReturnState.npcs.forEach(v=>{v.n.g.visible=v.visible;v.n.g.position.set(v.x,0,v.z);v.n.g.rotation.y=v.ry;v.n.x=v.x;v.n.z=v.z;});apartmentReturnState.avatars.forEach(v=>{if(avatars[v.id])avatars[v.id].g.visible=v.visible;});apartmentReturnState=null;}apartmentGuest=null;apartmentGuestTarget=null;render();}
 
 // ----- chat + agent collaboration -----
