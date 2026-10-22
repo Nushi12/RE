@@ -889,11 +889,37 @@ function mk(p,ni,pi){let s=(ni+1)*97+(pi+1)*31;const r=()=>{s=(s*16807)%21474836
 function PP(ni,pi){const k=ni+"-"+pi;if(!G.P[k]){const p=NB[ni].pros[pi],m=mk(p,ni,pi);G.P[k]={k,ni,pi,p,c:m.C,tp:m.tp,trust:3,sc:0,react:null,inc:m.C.map(()=>1),st:0,price:0,rate:p.rent?12.5:5,done:0,lost:0,fb:[],buyers:[],mb:-1,partner:null};}return G.P[k];}
 const curP=()=>G.cur?PP(G.cur.ni,G.cur.pi):null;
 function est(P){const a=P.c.filter((c,i)=>P.inc[i]);if(!a.length)return null;const u=P.p.rent?10:1000,pp=a.reduce((s,c)=>s+c.pr/c.sq,0)/a.length;return{a,pp,v:Math.round(pp*P.p.sq/u)*u};}
+const GENERATED_CLIENT_NAMES=[
+  "Alex Morgan","Jordan Ellis","Taylor Brooks","Morgan Reed","Casey Bennett","Riley Parker","Jamie Rivera","Avery Collins","Quinn Bailey","Cameron Hayes",
+  "Skyler James","Drew Foster","Emerson Cole","Rowan Price","Peyton Gray","Reese Sullivan","Finley Ward","Dakota Ross","Harper Wells","Elliot Hughes",
+  "Sage Turner","Logan Perry","Kendall Brooks","Micah Bell","Robin Clarke","Charlie Evans","Frankie Diaz","Shiloh Murphy","Blake Cooper","Jules Bennett",
+  "Amari Johnson","Nico Patel","Samira Khan","Elise Martin","Noah Kim","Zara Ahmed","Gabriel Torres","Ivy Chen","Mateo Alvarez","Nina Shah",
+  "Theo Williams","Mila Thompson","Ethan Brooks","Leila Hassan","Isaac Rivera","Maya Wilson","Aria Singh","Lucas Bennett","Layla Robinson","Ezra Davis",
+  "Naomi Carter","Owen Mitchell","Freya Lewis","Adrian Flores","Priyanka Rao","Julian Scott","Sienna Wright","Caleb Young","Amira Jackson","Theo Martin",
+  "Luca Bennett","Anika Desai","Mason Hill","Aaliyah Green","Evan Brooks","Sofia Ramirez","Daniel Cho","Talia Cohen","Rafael Costa","Mina Park",
+  "Isabel Cruz","Andre Wilson","Nadia Ibrahim","Eli Thompson","Celeste Moore","Hugo Laurent","Asha Mehta","Miles Cooper","Rina Sato","Jasper King"
+];
+function generatedClientNamePool(P){
+  const used=new Set();
+  // Keep authored story characters and named residents intact; generated clients must not borrow their names.
+  (NB||[]).forEach(area=>(area.pros||[]).forEach(person=>{if(person&&person.n)used.add(String(person.n).toLowerCase());}));
+  (typeof WALKER_NAMES!=="undefined"?WALKER_NAMES:[]).forEach(n=>used.add(String(n).toLowerCase()));
+  (typeof WALKER_CLIENT_NAMES!=="undefined"?WALKER_CLIENT_NAMES:[]).forEach(n=>used.add(String(n).toLowerCase()));
+  if(typeof G!=="undefined"&&G.P)Object.values(G.P).forEach(existing=>{
+    if(existing===P)return;
+    (existing.buyers||[]).forEach(b=>{if(b&&b.n)used.add(String(b.n).toLowerCase());});
+  });
+  return GENERATED_CLIENT_NAMES.filter(n=>!used.has(n.toLowerCase()));
+}
 function genBuyers(P){const p=P.p;let s=(P.ni+3)*131+P.pi*17;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};
-  const truth=P.tp*p.sq,R=p.rent,fit=R?truth*40*1.06:truth*1.045,low=R?truth*40*0.74:truth*0.78,nm=["Chris","Aisha","Tomas","Mei","Omar","Sofia","Ben","Lena","Raj"];
+  const truth=P.tp*p.sq,R=p.rent,fit=R?truth*40*1.06:truth*1.045,low=R?truth*40*0.74:truth*0.78;
   const spots=[[7.4,18.5],[-7.4,-18.5],[7.4,31],[-7.4,-31],[7.4,6.5],[-7.4,-6.5]].filter(a=>Math.hypot(a[0]-p.x,a[1]-p.z)>6).sort(()=>r()-0.5);
   const kinds=[{bd:p.bd,m:fit,why:R?"wants to move within 30 days":"is ready to buy this season"},{bd:p.bd>1?p.bd-1:p.bd+1,m:fit,why:R?"is flexible on move-in date":"is relocating next year"},{bd:p.bd,m:low,why:R?"is a student sharing costs":"is a first-time buyer"}].sort(()=>r()-0.5);
-  return kinds.map((k,i)=>({n:nm[Math.floor(r()*9)],look:{body:Math.floor(r()*2),height:Math.floor(r()*3),b:Math.floor(r()*3),s:Math.floor(r()*6),face:Math.floor(r()*3),h:Math.floor(r()*6),hc:Math.floor(r()*6),fh:Math.floor(r()*4),eye:Math.floor(r()*4),j:Math.floor(r()*6),p:Math.floor(r()*4),o:Math.floor(r()*4)},bd:k.bd,m:k.m,why:k.why,x:spots[i][0],z:spots[i][1],ask:[0,0,0],declined:0,res:null}));}
+  const available=generatedClientNamePool(P);
+  // Deterministic shuffle avoids repeat names within this property's generated client list.
+  for(let i=available.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[available[i],available[j]]=[available[j],available[i]];}
+  if(available.length<kinds.length)throw new Error("Not enough unused generated client names");
+  return kinds.map((k,i)=>({n:available[i],look:{body:Math.floor(r()*2),height:Math.floor(r()*3),b:Math.floor(r()*3),s:Math.floor(r()*6),face:Math.floor(r()*3),h:Math.floor(r()*6),hc:Math.floor(r()*6),fh:Math.floor(r()*4),eye:Math.floor(r()*4),j:Math.floor(r()*6),p:Math.floor(r()*4),o:Math.floor(r()*4)},bd:k.bd,m:k.m,why:k.why,x:spots[i][0],z:spots[i][1],ask:[0,0,0],declined:0,res:null}));}
 function verdict(P,b){const p=P.p;if(b.bd!==p.bd)return "I need "+b.bd+" bedroom"+(b.bd>1?"s":"")+". This one has "+p.bd+".";if(p.rent?b.m<40*P.price:b.m<P.price)return p.rent?"My income does not meet the 40× rent requirement at "+f(P.price)+"/mo.":"That is above my budget of "+f(b.m)+".";return null;}
 const ETH=[["The seller mentions a past leak behind the wall. You…",[["Recommend disclosing it, as the law requires",1],["Suggest painting over it and staying quiet",-2],["Say it is probably fine to skip",-1]]],
 ["A family with young children asks to see the unit. The owner says no kids. You…",[["Explain you cannot discriminate under fair housing law",1],["Quietly avoid showing them",-2],["Tell them the unit is taken",-2]]],
