@@ -652,19 +652,19 @@ function pick(i){const q=QZ[SEQ[si].i],fb=E('fb');if(fb.dataset.d)return;fb.data
   [...document.querySelectorAll('.opt2')].forEach((e,j)=>{e.style.borderColor=j===q.a?'#2ecc71':(j===i?'#e74c3c':'#2c3f56');});
   const feedback=(i===q.a?'Correct. ':'Not quite. ')+q.w;fb.innerHTML='<div class=bubble><b>Naomi</b><br>'+(i===q.a?'✔ Correct. ':'✘ Not quite. ')+q.w+'</div><button class="go" onclick="adv()">Next</button>';speakNaomi(feedback);}
 function adv(){si++;lesson();}
-function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Choose your firm to continue. Client and pedestrian characters are temporarily disabled while their GLB replacements are prepared.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok)G.badge=1;}
+function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Choose your firm to continue. Client and pedestrian characters are temporarily disabled while their GLB replacements are prepared.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok){G.badge=1;try{localStorage.setItem('rew-license-passed-v1','1');}catch(e){}}}
 function toFirm(){naomiPendingGreeting='';mentor(false);show('s4');}
 E('b0').onclick=()=>show('s1');
 E('chooseFemale').onclick=()=>beginGenderSelection('Female');
 E('chooseMale').onclick=()=>beginGenderSelection('Male');
 E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
-E('b1').onclick=()=>{disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}show('s2');modes();};
+E('b1').onclick=()=>{disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}if(hasGameLicense()){G.badge=1;toFirm();return;}show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
-E('b4').onclick=()=>{const f=FIRMS[selFirm];G.fi=selFirm;G.name=E('name').value.trim()||'Agent';if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[0].office=f.n+' Office';buildWorld(NB[0]);socket.emit('join',{name:E('name').value.trim()||'Agent',firm:f.n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});E('join').style.display='none';};
+E('b4').onclick=()=>{const restored=loadCareer();const f=FIRMS[selFirm];if(!restored){G.fi=selFirm;G.name=E('name').value.trim()||'Agent';}else{G.badge=G.badge||0;}if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[G.nb].office=FIRMS[G.fi].n+' Office';buildWorld(NB[G.nb]);socket.emit('join',{name:G.name||E('name').value.trim()||'Agent',firm:FIRMS[G.fi].n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});E('join').style.display='none';};
 renderFirms();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
 socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
-  me=d.players[myId];me.ry=0;me.px=me.x;me.pz=me.z;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
+  me=d.players[myId];me.n=G.nb;me.x=me.px=me.x;me.z=me.pz=me.z;me.ry=0;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
 socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud();});
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
 socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;avatars[id].tx=st[id].x;avatars[id].tz=st[id].z;avatars[id].try=st[id].ry;avatars[id].n=st[id].n||0;avatars[id].g.visible=avatars[id].n===G.nb;}});
@@ -674,6 +674,27 @@ NB[1].pros.push({n:"Nora",modelFile:"olivettinpc2.glb",rent:1,sq:800,bd:1,bel:0.
 NB[2].pros.push({n:"Theo",modelFile:"theo.glb",rent:1,sq:900,bd:2,bel:1.1,why:"owns a loft and wants it rented this month",goal:"wants top rent from a good tenant",x:7.4,z:-26,ry:-Math.PI/2,look:{b:2,s:3,h:0,hc:1,j:3,p:2,o:0}});
 // ---------- career, deals, chat ----------
 const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,near:null,focus:null,P:{},offers:[],msgs:[],chat:[],walkerStates:{}},NPCS=[];
+const REW_SAVE_KEY='rew-career-save-v1';
+function hasGameLicense(){try{return localStorage.getItem('rew-license-passed-v1')==='1';}catch(e){return false;}}
+function saveCareer(){
+  try{const snapshot={version:1,savedAt:new Date().toISOString(),G:{...G,cur:null,curB:null,near:null,focus:null,showing:false},neighborhoodPros:NB.map(n=>n.pros),license:hasGameLicense()||!!G.badge,selectedAvatarId,look,selectedSkinTone,selectedOutfitColor,selectedHairColor};
+    localStorage.setItem(REW_SAVE_KEY,JSON.stringify(snapshot));G.msgs.push('💾 Game saved on this device.');render();return true;
+  }catch(e){console.error('Save failed',e);G.msgs.push('Save failed: this browser may not have enough storage.');render();return false;}
+}
+function loadCareer(){
+  try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);if(!data||data.version!==1||!data.G)return false;
+    Object.keys(data.G).forEach(k=>{if(k in G)G[k]=data.G[k];});G.cur=null;G.curB=null;G.near=null;G.focus=null;G.showing=false;
+    if(Array.isArray(data.neighborhoodPros))data.neighborhoodPros.forEach((pros,i)=>{if(NB[i]&&Array.isArray(pros))NB[i].pros=pros;});
+    if(data.license||G.badge){G.badge=1;localStorage.setItem('rew-license-passed-v1','1');}
+    if(data.selectedAvatarId&&AVATAR_MODELS[data.selectedAvatarId])selectedAvatarId=data.selectedAvatarId;
+    if(data.look&&typeof data.look==='object')Object.assign(look,data.look);
+    if(Number.isInteger(data.selectedSkinTone))selectedSkinTone=data.selectedSkinTone;if(Number.isInteger(data.selectedOutfitColor))selectedOutfitColor=data.selectedOutfitColor;if(Number.isInteger(data.selectedHairColor))selectedHairColor=data.selectedHairColor;
+    return true;
+  }catch(e){console.error('Load failed',e);return false;}
+}
+function saveControls(){return `<div class=box style="display:flex;gap:8px;flex-wrap:wrap"><button class=b onclick="saveCareer()">💾 Save game</button><button class=b onclick="restoreCareerFromButton()">↩ Load saved game</button></div>`;}
+function restoreCareerFromButton(){if(!loadCareer()){G.msgs.push('No valid saved game was found on this device.');render();return;}if(world)buildWorld(NB[G.nb]);spawnNPCs();me.x=0;me.z=0;render();}
+
 const ENABLE_PROCEDURAL_NPCS=true; // Named characters and reusable walkers now use the supplied GLB assets.
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
 const BR=[{d:"Pre-war co-ops, condos and brownstones. Quiet, residential, family-friendly.",sale:"$1,350/sq ft",rent:"1BR ≈ $3,500/mo",dom:"~90 days"},{d:"High-rise luxury condos and doorman rentals near offices. Fast-moving and investor-heavy.",sale:"$1,750/sq ft",rent:"1BR ≈ $4,300/mo",dom:"~100 days"},{d:"Cast-iron lofts, galleries and boutiques. Premium prices and limited inventory.",sale:"$2,300/sq ft",rent:"2BR loft ≈ $7,000/mo",dom:"~90 days"}];
@@ -792,10 +813,43 @@ const ETH=[["The seller mentions a past leak behind the wall. You…",[["Recomme
 ["The owner asks you to hold the buyer's deposit in your personal account for a day. You…",[["Decline. Deposits follow the contract and escrow rules",1],["Agree, just for a day",-2],["Ask the buyer to wire it to you",-1]]],
 ["The listing says 1,100 sq ft but it measures 950. You…",[["Correct the listing before advertising",1],["Leave it, nobody checks",-2],["Round it up a little",-1]]],
 ["A tenant offers three months of cash rent upfront to skip screening. You…",[["Apply the same screening to everyone and respect the one-month deposit cap",1],["Accept the cash and skip screening",-2],["Accept the three months of deposit",-1]]]];
-function scen(P){const p=P.p,u=p.rent?10:1000,B=Math.round(P.tp*p.sq*p.bel/u)*u,rot=a=>{const r=(P.pi+P.sc)%3;return a.map((_,i)=>a[(i+r)%3]);};
-  if(P.sc===0)return{q:`${p.n} says: "${p.rent?"I would like to rent it for":"I think it is worth"} ${f(B)}${p.rent?"/mo":""}." ${p.n} also ${p.why}. How do you respond?`,o:rot([["Acknowledge the situation and promise to price it from real comparables that fit "+p.n+"'s timeline",1],["Say it is fine to list high and cut the price later",-1],["Say you will get back to "+p.n+" next week",0]])};
-  if(P.sc===1)return{q:`${p.n} ${p.goal}. What do you say?`,o:rot([[p.rent?"Explain you will screen tenants on income, credit and references":"Explain you will build the price from recent comparable sales so it supports that goal",1],["Promise a price higher than any other agent would offer",-1],["Say that part is not your concern",-2]])};
-  const e=ETH[p.rent?[4,1,3][P.ni]:(P.ni*2+P.pi)%4];return{q:e[0],o:rot(e[1])};}
+function scen(P){
+  const p=P.p,R=!!p.rent,u=R?10:1000,B=Math.round(P.tp*p.sq*p.bel/u)*u;
+  const rotate=a=>{const n=(P.pi+P.sc)%a.length;return a.slice(n).concat(a.slice(0,n));};
+  const first=R?`I’d really like to find a good tenant soon. I don’t want the apartment sitting empty, but I also don’t want to rush into the wrong choice.`:`I’m thinking about selling, but I’m not sure what a realistic price looks like. I don’t want to leave money on the table or scare buyers away.`;
+  const second=R?`I want someone reliable, and I know we can’t just pick a tenant based on a gut feeling. How would you handle that?`:`I want to get the best price we reasonably can. How will you work out what buyers might actually pay?`;
+  const third=R?`One place nearby is asking much more than the others. It makes me wonder if we should try that number too.`:`I saw a nearby home listed for much more than I expected. Should we aim for that price as well?`;
+  const stages=[
+    {q:`${p.n}: “${first} What would you suggest?”`,o:rotate([[R?"“Let’s look at recent rentals that are genuinely similar, then I’ll explain a realistic range.”":"“Let’s look at recent comparable sales and the differences that affect value.”",1],["“Let’s start high and see if someone bites, even if the evidence points lower.”",-1],["“I can give you a number now without checking the market.”",-2]])},
+    {q:`${p.n}: “${second}”`,o:rotate([[R?"“I’ll use consistent, lawful screening criteria and explain the process before we review applications.”":"“I’ll compare recent sales, size, condition and location, then show you how I reached the estimate.”",1],["“Don’t worry about the details. I’ll promise you the result you want.”",-2],["“We can skip the checks and make the decision quickly.”",-1]])},
+    {q:`${p.n}: “${third} What do you think?”`,o:rotate([["“It’s worth checking, but an asking price isn’t proof of what a property will actually rent or sell for. I’ll verify it against stronger comparisons.”",1],["“Absolutely. The highest advertised price is always the best guide.”",-2],["“Let’s copy the number and worry about the evidence later.”",-1]])}
+  ];
+  return stages[Math.min(P.sc,2)];
+}
+function clientReply(P,choice,lost){
+  const p=P.p,R=!!p.rent,score=choice[1];
+  if(lost){const lines=["I don’t think we’re on the same page. I’m going to take some time before deciding whether to continue.","I’m not comfortable moving forward like this. I may need to speak with another agent."] ;return lines[(P.sc+P.pi)%lines.length];}
+  const positive=R?[
+    "That sounds sensible. I’d rather understand the market than just hope for the best.",
+    "Good, I appreciate you explaining how you’ll handle that. It makes me feel like there’s a plan.",
+    "Okay, that helps. Bring me the comparisons and talk me through what they really tell us."
+  ]:[
+    "That makes sense. I want a recommendation I can understand, not just a number pulled out of thin air.",
+    "I appreciate that. It’s reassuring to know you’ll explain the reasoning and keep me involved.",
+    "All right, let’s look at the evidence together before we settle on a price."
+  ];
+  const cautious=[
+    "I’m not sure I follow. Can you explain how that protects my interests?",
+    "That feels a bit risky to me. What would we be basing that decision on?",
+    "I’m still uneasy about that. Could we slow down and check the facts first?"
+  ];
+  const neutral=[
+    "Maybe. I’d like to understand the next step before we decide.",
+    "Okay, but please walk me through the reasoning so I know what to expect.",
+    "I hear you. What would you check first to make sure we’re getting this right?"
+  ];
+  const pool=score>0?positive:score===0?neutral:cautious;return pool[(P.sc+P.pi)%pool.length];
+}
 function leave(){if('speechSynthesis' in window)window.speechSynthesis.cancel();activeGameUtterance=null;gameConversationOpen=false;setConversationAudio(false);G.cur=null;G.curB=null;G.focus=null;spawnNPCs();render();}
 function talk(){
   const t=G.near;if(!t)return;const n=NPCS.find(n=>n.t===t);if(!n)return;G.msgs=[];
@@ -809,19 +863,68 @@ function talk(){
   }
   if(t.k==='s'){G.cur={ni:G.nb,pi:t.pi};G.curB=null;}else{G.curB={pi:t.pi,bi:t.bi};G.cur=null;}
   G.focus={x:n.x,z:n.z};n.g.rotation.y=Math.atan2(me.x-n.x,me.z-n.z);render();
-  if(G.cur){const P=curP();speakGameLine(scen(P).q,n.isWalker?'walker':'client');}else if(G.curB){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi];speakGameLine(b.n+' says: Tell me about the property and whether it fits my needs.','client');}
+  if(G.cur){const P=curP();gameConversationOpen=true;setConversationAudio(true);speakGameLine(scen(P).q,n.isWalker?'walker':'client');}else if(G.curB){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi];gameConversationOpen=true;setConversationAudio(true);speakGameLine(`${b.n}: ‘I’m interested, but I want to understand whether this place fits what I need. Can you tell me a little about it?’`,'client');}
 }
-function pickS(j){const P=curP(),o=scen(P).o[j],p=P.p;speakGameLine(o[0],'agent');P.trust=Math.min(5,P.trust+o[1]);const lost=P.trust<=0;
-  P.react={t:lost?`${p.n}: "I do not think this is going to work. I will find another agent."`:o[1]>0?`${p.n}: "That makes sense. I feel good about working with you."`:o[1]===0?`${p.n}: "Hmm, okay..."`:`${p.n}: "I am not comfortable with that."`,lost};if(lost)P.lost=1;else P.sc++;render();}
-function cont(){const P=curP();if(P.react)speakGameLine(P.react.t,'client');P.react=null;if(P.lost){G.xp+=10;G.msgs.push(P.p.n+" walked away. Be more careful with your advice. (+10 XP for the lesson)");leave();return;}if(P.sc>=3)P.st=1;render();}
+function pickS(j){
+  const P=curP(),s=scen(P),o=s.o[j],p=P.p;
+  P.lastAgentLine=o[0].replace(/[“”]/g,'');
+  speakGameLine(P.lastAgentLine,'agent');
+  P.trust=Math.max(0,Math.min(5,P.trust+o[1]));
+  const lost=P.trust<=0;
+  const reply=clientReply(P,o,lost);
+  P.react={speaker:p.n,t:reply,lost,agentLine:P.lastAgentLine};
+  if(lost)P.lost=1;else P.sc++;
+  render();
+}
+function cont(){
+  const P=curP();
+  if(P.react){speakGameLine(P.react.t,'client');}
+  if(P.lost){G.xp+=10;G.msgs.push(P.p.n+" decided not to continue. The conversation is part of the lesson; try a more evidence-based approach next time. (+10 XP)");render();setTimeout(()=>leave(),Math.max(2800,(P.react?.t||'').length*65));return;}
+  P.react=null;
+  if(P.sc>=3){P.st=1;gameConversationOpen=false;}
+  render();
+}
 function tg(i){const P=curP();if(P.st===1){P.inc[i]^=1;render();}}
 function toStage(s){const P=curP();if(s===2){const e=est(P);if(!e)return;P.price=e.v;}P.st=s;render();}
 function pr(d){const P=curP();P.price=Math.max(P.p.rent?500:100000,P.price+d);render();}
 function rt(d){const P=curP(),r=P.p.rent;P.rate=Math.min(r?15:6,Math.max(r?10:4,P.rate+d));render();}
 function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);G.msgs.push("✍ Listing signed at "+f(P.price)+(P.p.rent?"/mo":"")+". Walk the city and find a "+(P.p.rent?"tenant":"buyer")+" (blue ?). Then return to "+P.p.n+" to close.");leave();}
 function reduce(){const P=curP(),u=P.p.rent?10:1000;P.price=Math.round(P.price*0.95/u)*u;P.buyers.forEach(b=>{b.declined=0;b.res=null;});G.msgs.push("Price reduced to "+f(P.price)+". People who passed may reconsider.");spawnNPCs();render();}
-function askB(i){if(G.curB){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi];b.ask[i]=1;speakGameLine(i===0?'My budget and finances are important.':i===1?'I need a place with the right number of bedrooms.':'My timing depends on the right property.','agent');}render();}
-function showL(){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],v=verdict(P,b);speakGameLine(v?b.n+' says: '+v:b.res||b.n+' says: I love it. Let us make an offer!','client');if(!v){P.st=4;P.mb=G.curB.bi;b.res="✔ "+b.n+': "I love it. Let us make an offer!"';G.msgs.push("🎉 "+b.n+" wants to make an offer. Return to "+P.p.n+" to close the deal.");}else{b.declined=1;b.res="✘ "+b.n+': "'+v+'"';P.fb.push(b.n+": "+v);}render();}
+function askB(i){
+  if(!G.curB)return;
+  const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],R=!!P.p.rent;
+  const agentLines=R?[
+    `Could you tell me a little about your income and what monthly rent feels comfortable?`,
+    `How many bedrooms do you need for the place to work for you?`,
+    `When are you hoping to move? That’ll help us focus on suitable options.`
+  ]:[
+    `What budget range would feel comfortable for you? I want to focus on places that make sense financially.`,
+    `How many bedrooms do you need, and is that a must-have?`,
+    `What kind of timing are you working with? Are you hoping to move soon or are you flexible?`
+  ];
+  const clientLines=R?[
+    `My annual income is around ${f(b.m)}. I want to make sure the rent is manageable.`,
+    `I’m looking for ${b.bd} bedroom${b.bd===1?'':'s'}; I don’t want to compromise on that.`,
+    `I ${b.why}. If the place is right, I’m open to discussing the timing.`
+  ]:[
+    `I’m trying to stay around ${f(b.m)}. I’d rather not stretch beyond what I can comfortably afford.`,
+    `I need ${b.bd} bedroom${b.bd===1?'':'s'}, so the layout really matters to me.`,
+    `I ${b.why}. I can be a little flexible if the property is a good fit.`
+  ];
+  b.ask[i]=1;
+  speakGameLine(agentLines[i],'agent');
+  b.lastReply=clientLines[i];
+  setTimeout(()=>{if(G.curB&&G.curB.pi===P.pi&&G.curB.bi===P.buyers.indexOf(b))speakGameLine(clientLines[i],'client');},Math.max(900,agentLines[i].length*35));
+  render();
+}
+function showL(){
+  const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],v=verdict(P,b);
+  const line=v?`${b.n}: “I’m not sure this one works for me. ${v} I’d rather keep looking than force it.”`:`${b.n}: “I can picture myself here. It seems to fit what I’m looking for—what would the next step be?”`;
+  speakGameLine(line,'client');
+  if(!v){P.st=4;P.mb=G.curB.bi;b.res=`✔ ${b.n}: “This feels like a good fit. Let’s talk about making an offer.”`;G.msgs.push(`🎉 ${b.n} is interested in making an offer. Return to ${P.p.n} to close the deal.`);}
+  else{b.declined=1;b.res=`✘ ${b.n}: “${v}”`;P.fb.push(`${b.n}: ${v}`);}
+  render();
+}
 function invite(id){const P=curP();socket.emit("relay",{to:id,type:"cobroke",data:{k:P.k,txt:P.p.n+"'s listing at "+f(P.price)+(P.p.rent?"/mo":"")}});G.msgs.push("Invitation sent to "+avatars[id].name+".");render();}
 function acc(i){const o=G.offers.splice(i,1)[0];socket.emit("relay",{to:o.from,type:"cob-ok",data:{k:o.d.k}});G.xp+=20;G.msgs.push("You joined "+o.name+"'s deal. Chat with them to help. You earn 40% if it closes. (+20 XP)");render();}
 function dec(i){G.offers.splice(i,1);render();}
@@ -831,7 +934,7 @@ function closeDeal(){const P=curP(),p=P.p,R=p.rent,truth=P.tp*p.sq,r=P.price/tru
   else{days=R?30:75;xp=150;msg="Priced right. A market-supported "+(R?"rent":"price")+" attracted a qualified "+(R?"tenant":"buyer")+".";}
   if(good)xp+=30;xp+=P.trust*5;const fin=P.price,q=P.rate/100,gross=R?fin*12*q:fin*q,side=R?gross:gross*0.5,net0=side*0.7,net=P.partner?net0*0.6:net0;
   if(P.partner)socket.emit("relay",{to:P.partner.id,type:"cob-pay",data:{amt:Math.round(net0*0.4),xp:60}});
-  P.res={fin,days,xp,msg,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();}
+  P.res={fin,days,xp,msg,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();try{saveCareer();}catch(e){}}
 function go(i){if(lvl()<NB[i].lvl||i===G.nb)return;const prev=G.nb;G.nb=i;G.cur=null;G.curB=null;G.focus=null;G.msgs=[];Object.keys(G.P).forEach(k=>{if(G.P[k].lost&&G.P[k].ni===i)delete G.P[k];});
   buildWorld(NB[i]);spawnNPCs();me.x=0;me.z=((i+1)%3===prev)?-41:41;for(const id in avatars)if(id!==myId)avatars[id].g.visible=(avatars[id].n||0)===G.nb;render();}
 function updateNear(){if(G.focus)return;let b=null,bd=4.2;NPCS.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;
@@ -869,20 +972,23 @@ function buildApartmentInterior(){
   // Warm ceiling lights represented as visible fixtures and real point lights.
   [-2.5,2.5].forEach(x=>{const fixture=new THREE.Mesh(new THREE.SphereGeometry(0.16,12,8),new THREE.MeshStandardMaterial({color:0xffe3a6,emissive:0x6c4a19,emissiveIntensity:0.7}));fixture.position.set(x,3.0,0);apartmentInterior.add(fixture);const light=new THREE.PointLight(0xffdba1,0.55,8);light.position.set(x,2.8,0);apartmentInterior.add(light);});
 }
-let apartmentReturnState=null;
+let apartmentReturnState=null,apartmentGuest=null,apartmentGuestTarget=null;
 function enterApartmentShowing(){
   if(!G.curB||G.showing)return;initGameAudio();gameConversationOpen=true;setConversationAudio(false);buildApartmentInterior();
-  apartmentReturnState={x:me.x,z:me.z,ry:me.ry,world:world?world.visible:true,platform:platform.visible,npcs:NPCS.map(n=>({n,visible:n.g.visible})),avatars:Object.entries(avatars).map(([id,a])=>({id,visible:a.g.visible}))};
+  apartmentReturnState={x:me.x,z:me.z,ry:me.ry,world:world?world.visible:true,platform:platform.visible,npcs:NPCS.map(n=>({n,visible:n.g.visible,x:n.g.position.x,z:n.g.position.z,ry:n.g.rotation.y})),avatars:Object.entries(avatars).map(([id,a])=>({id,visible:a.g.visible}))};
   if(world)world.visible=false;platform.visible=false;NPCS.forEach(n=>n.g.visible=false);Object.values(avatars).forEach(a=>a.g.visible=false);const self=avatars[myId];if(self)self.g.visible=true;
+  // Bring the actual buyer/client model into the apartment and walk them in.
+  apartmentGuest=NPCS.find(n=>n.t&&n.t.k==='b'&&n.t.pi===G.curB.pi&&n.t.bi===G.curB.bi)||null;
+  if(apartmentGuest){apartmentGuest.g.visible=true;apartmentGuest.g.position.set(0,0,4.0);apartmentGuest.g.rotation.y=Math.PI;apartmentGuestTarget={x:0,z:1.35};playNpcClip(apartmentGuest,'walker');}
   apartmentInterior.visible=true;me.x=0;me.z=2.2;me.ry=Math.PI;G.focus=null;G.showing=true;render();
 }
 function finishApartmentShowing(){
   if(!G.showing)return;apartmentInterior.visible=false;G.showing=false;
-  if(apartmentReturnState){if(world)world.visible=apartmentReturnState.world;platform.visible=apartmentReturnState.platform;me.x=apartmentReturnState.x;me.z=apartmentReturnState.z;me.ry=apartmentReturnState.ry;apartmentReturnState.npcs.forEach(v=>{v.n.g.visible=v.visible;});apartmentReturnState.avatars.forEach(v=>{if(avatars[v.id])avatars[v.id].g.visible=v.visible;});apartmentReturnState=null;}
+  if(apartmentReturnState){if(world)world.visible=apartmentReturnState.world;platform.visible=apartmentReturnState.platform;me.x=apartmentReturnState.x;me.z=apartmentReturnState.z;me.ry=apartmentReturnState.ry;apartmentReturnState.npcs.forEach(v=>{v.n.g.visible=v.visible;v.n.g.position.set(v.x,0,v.z);v.n.g.rotation.y=v.ry;v.n.x=v.x;v.n.z=v.z;});apartmentReturnState.avatars.forEach(v=>{if(avatars[v.id])avatars[v.id].g.visible=v.visible;});apartmentReturnState=null;}apartmentGuest=null;apartmentGuestTarget=null;
   showL();render();
 }
 function apartmentPanel(){return `<h3>🏠 Apartment showing</h3><div class=box><b>Walk through the property with your client.</b><br>Look around the furnished living room, kitchen, dining area and bedroom. Use WASD or the arrow keys to move; drag to rotate the view.</div><div class=box>Ask yourself: does the layout, light, storage and bedroom count fit the client's needs?</div><button class="b go" onclick="finishApartmentShowing()">Finish showing · Ask for feedback</button><button class=b onclick="cancelApartmentShowing()">Leave apartment</button>`;}
-function cancelApartmentShowing(){if(!G.showing)return;apartmentInterior.visible=false;G.showing=false;if(apartmentReturnState){if(world)world.visible=apartmentReturnState.world;platform.visible=apartmentReturnState.platform;me.x=apartmentReturnState.x;me.z=apartmentReturnState.z;me.ry=apartmentReturnState.ry;apartmentReturnState.npcs.forEach(v=>v.n.g.visible=v.visible);apartmentReturnState.avatars.forEach(v=>{if(avatars[v.id])avatars[v.id].g.visible=v.visible;});apartmentReturnState=null;}render();}
+function cancelApartmentShowing(){if(!G.showing)return;apartmentInterior.visible=false;G.showing=false;if(apartmentReturnState){if(world)world.visible=apartmentReturnState.world;platform.visible=apartmentReturnState.platform;me.x=apartmentReturnState.x;me.z=apartmentReturnState.z;me.ry=apartmentReturnState.ry;apartmentReturnState.npcs.forEach(v=>{v.n.g.visible=v.visible;v.n.g.position.set(v.x,0,v.z);v.n.g.rotation.y=v.ry;v.n.x=v.x;v.n.z=v.z;});apartmentReturnState.avatars.forEach(v=>{if(avatars[v.id])avatars[v.id].g.visible=v.visible;});apartmentReturnState=null;}apartmentGuest=null;apartmentGuestTarget=null;render();}
 
 // ----- chat + agent collaboration -----
 function chatLog(){$("chatlog").innerHTML=G.chat.slice(-6).map(m=>`<div><b style="color:${hex(m.c)}">${m.name}</b>: ${m.t}</div>`).join("");$("chatlog").scrollTop=1e5;}
@@ -900,7 +1006,7 @@ function RATE(P){const r=P.p.rent;return `<div class=trav>Commission rate <butto
 function coBroke(P){const o=Object.keys(avatars).filter(id=>id!==myId&&avatars[id].g.visible);return `<div class=box><b>🤝 Work with another agent</b><br>${P.partner?"Partner: <b>"+P.partner.name+"</b> (earns 40% of the commission when you close)":o.length?o.map(id=>`<button class=b onclick="invite('${id}')">Invite ${avatars[id].name}</button>`).join(" "):"No other live agents here yet. Open the game in a second tab to try it."}</div>`;}
 function bench(){const P=curP(),p=P.p,R=p.rent,U=R?10:1000,sfx=R?"/mo":"",B=Math.round(P.tp*p.sq*p.bel/U)*U;let h=`<h3>${p.n} · ${p.sq} sq ft · ${p.bd} bed${R?" · rental":""}</h3>`;
   if(P.st===0){h+=`<div class=k>Client trust ${"♥".repeat(P.trust)+"♡".repeat(5-P.trust)} · wrong advice can make a client walk away</div>`;
-    if(P.react)h+=`<div class=box>${P.react.t}</div><button class="b go" onclick="cont()">Continue</button>`;else{const s=scen(P);h+=`<div class=box>${s.q}</div>`+s.o.map((o,j)=>`<button class=b style="width:100%;text-align:left;white-space:normal" onclick="pickS(${j})">${o[0]}</button>`).join("");}}
+    if(P.react)h+=`<div class=box><b>${P.react.speaker||P.p.n}</b><br>${P.react.t}</div><button class="b go" onclick="cont()">Reply</button>`;else{const s=scen(P);h+=`<div class=box>${s.q}</div><div class=k>What would you say?</div>`+s.o.map((o,j)=>`<button class=b style="width:100%;text-align:left;white-space:normal" onclick="pickS(${j})">${o[0]}</button>`).join("");}}
   else if(P.st===1){const e=est(P);h+=`<div class=k>Step 1: choose comparables${R?" (similar units that recently leased)":""}. Tap a row to include or exclude it. Use similar size, recent, normal deals.</div><table>`+P.c.map((c,i)=>`<tr onclick="tg(${i})"><td>${P.inc[i]?"☑":"☐"}</td><td>${c.a}<br><small>${c.sq} sf · ${c.m} mo ago · ${c.note}</small></td><td>${f(c.pr)}${sfx}<br><small>${fp(c.pr/c.sq,R)}/sf${sfx}</small></td></tr>`).join("")+"</table>";
     if(e)h+=`<div class=box><b>The math</b><br>Avg $/sf = (${e.a.map(c=>fp(c.pr/c.sq,R)).join(" + ")}) ÷ ${e.a.length} = <b>${fp(e.pp,R)}</b><br>Value = ${fp(e.pp,R)} × ${p.sq} sf = <b>${f(e.v)}${sfx}</b></div><button class="b go" onclick="toStage(2)">Set list price →</button>`;}
   else if(P.st===2){const e=est(P),d=(P.price/e.v-1)*100;h+=`<div class=k>Step 2: your estimate is ${f(e.v)}${sfx}. ${p.n} expects ${f(B)} (${B>=e.v?"+":""}${((B/e.v-1)*100).toFixed(0)}% vs your value). Pick a list price.</div><div class=box style="text-align:center;font-size:18px"><b>${f(P.price)}${sfx}</b><br><small>${d>=0?"+":""}${d.toFixed(1)}% vs your estimate</small></div><div class=trav>${R?RB:SB}</div>`+RATE(P)+money(P,P.price)+`<div class=k>Price too high and buyers will say no. Too low and ${p.n} loses money.</div><button class="b go" onclick="sign()">Sign the listing</button>`;}
@@ -912,7 +1018,7 @@ function bench(){const P=curP(),p=P.p,R=p.rent,U=R?10:1000,sfx=R?"/mo":"",B=Math
     if(lv>r.L0)h+=`<div class=box>🎉 <b>Level up! You are level ${lv}.</b>${NB.filter(n=>n.lvl>r.L0&&n.lvl<=lv).map(n=>"<br>Unlocked: <b>"+n.name+"</b>. Walk to the gate at the end of the avenue or pick it under Locations.").join("")}</div>`;}
   return h+(P.st===5?`<button class=b onclick="leave()">Back to the street</button>`:P.st===0&&P.react?"":`<button class=b onclick="leave()">Walk away</button>`);}
 function benchB(){const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],p=P.p,R=p.rent;let h=`<h3>${b.n} · ${R?"prospective tenant":"prospective buyer"}</h3><div class=k>Listing: ${p.n}'s ${p.bd} bed · ${p.sq} sf at ${f(P.price)}${R?"/mo":""}</div>`+(R?`<div class=k>Tip: NYC landlords commonly want annual income of 40× the monthly rent.</div>`:"");
-  [["Ask about their "+(R?"income":"budget"),R?"Annual income: "+f(b.m):"Budget up to "+f(b.m)],["Ask what they need","Needs "+b.bd+" bedroom"+(b.bd>1?"s":"")],["Ask about timing",b.n+" "+b.why+"."]].forEach((x,i)=>h+=b.ask[i]?`<div class=box>✔ ${x[1]}</div>`:`<button class=b onclick="askB(${i})">${x[0]}</button>`);
+  [["Ask about their "+(R?"income":"budget"),R?"Annual income: "+f(b.m):"Budget up to "+f(b.m)],["Ask what they need","Needs "+b.bd+" bedroom"+(b.bd>1?"s":"")],["Ask about timing",b.n+" "+b.why+"."]].forEach((x,i)=>h+=b.ask[i]?`<div class=box>✔ ${x[1]}</div>`:`<button class=b onclick="askB(${i})">${x[0]}</button>`);if(b.lastReply)h+=`<div class=box><b>${b.n}</b><br>${b.lastReply}</div>`;
   h+=b.res?`<div class=box>${b.res}</div>`:`<button class="b go" onclick="enterApartmentShowing()">🏠 Show the apartment in person</button>`;return h+`<button class=b onclick="leave()">Back to the street</button>`;}
 function quest(){const nb=NB[G.nb],ps=Object.values(G.P),act=ps.find(P=>!P.done&&!P.lost&&P.st>=3)||ps.find(P=>!P.done&&!P.lost&&P.ni===G.nb),cur=act?[1,2,2,3,4][act.st]:0;
   const next=nb.pros.find((p,i)=>{const P=G.P[G.nb+"-"+i];return !(P&&(P.done||P.lost));});
@@ -925,7 +1031,7 @@ function render(){const L=lvl(),nx=60*L*L,pv=60*(L-1)*(L-1),fm=FIRMS[G.fi];
   G.offers.forEach((o,i)=>h+=`<div class=toast>🤝 <b>${o.name}</b> invites you to co-broke ${o.d.txt}. You earn 40% if it closes.<br><button class=b onclick="acc(${i})">Accept</button><button class=b onclick="dec(${i})">Decline</button></div>`);
   G.msgs.slice(-2).forEach(m=>h+=`<div class=toast>${m}</div>`);
   h+=`<h3>Locations</h3><div class=locs>`+NB.map((n,i)=>L>=n.lvl?`<div class="loc ${i===G.nb?"on":""}" onclick="go(${i})"><b>${i===G.nb?"📍 ":"➜ "}${n.name}</b><br><small>${BR[i].d}</small></div>`:`<div class="loc lock"><b>🔒 ${n.name}</b><br><small>Unlocks at level ${n.lvl}</small></div>`).join("")+`</div>`;
-  h+=audioControls();h+=G.showing?apartmentPanel():G.cur?bench():G.curB?benchB():quest();$("panel").innerHTML=h;}
+  h+=saveControls();h+=audioControls();h+=G.showing?apartmentPanel():G.cur?bench():G.curB?benchB():quest();$("panel").innerHTML=h;}
 studio(true);
 
 // ---------- input + loop ----------
@@ -938,6 +1044,7 @@ const clock=new THREE.Clock();let sendT=0;
 const angLerp=(a,b,t)=>a+((((b-a+Math.PI)%(Math.PI*2))+Math.PI*2)%(Math.PI*2)-Math.PI)*t;
 function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),0.05);updatePeds(Date.now()/1000,dt);
   if(me){
+    if(G.showing&&apartmentGuest&&apartmentGuestTarget){const dx=apartmentGuestTarget.x-apartmentGuest.g.position.x,dz=apartmentGuestTarget.z-apartmentGuest.g.position.z,dist=Math.hypot(dx,dz);if(dist>0.08){const step=Math.min(dist,1.05*dt);apartmentGuest.g.position.x+=dx/dist*step;apartmentGuest.g.position.z+=dz/dist*step;apartmentGuest.g.rotation.y=Math.atan2(dx,dz);}else{apartmentGuestTarget=null;playNpcClip(apartmentGuest,'client');}}
     if(keys.KeyQ)camYaw+=1.8*dt;if(keys.KeyE)camYaw-=1.8*dt;
     let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);const len=Math.hypot(ix,iz);
     if(len>0&&!G.focus){ix/=len;iz/=len;const s=Math.sin(camYaw),c=Math.cos(camYaw),dx=ix*c+iz*s,dz=-ix*s+iz*c;
