@@ -94,16 +94,15 @@ NB.forEach((n,i)=>n.i=i);
 // ---------- scene ----------
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9fc3e6);scene.fog=new THREE.Fog(0x9fc3e6,70,170);
 const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.3,300);
-const renderer=new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
+const renderer=new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;
 document.body.appendChild(renderer.domElement);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);fit();});
-scene.add(new THREE.HemisphereLight(0xffffff,0x8a8070,0.85));
-const sun=new THREE.DirectionalLight(0xfff1dc,1.0);sun.position.set(45,70,25);sun.castShadow=false;
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a8070,0.65));
+const sun=new THREE.DirectionalLight(0xfff1dc,0.7);sun.position.set(45,70,25);sun.castShadow=false;
 Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,far:200});sun.shadow.mapSize.set(2048,2048);scene.add(sun);
 
 const UB=new THREE.BoxGeometry(1,1,1),mc={};
-// Physically based matte materials give city surfaces more natural response under filmic tone mapping.
-const mat=c=>mc[c]||(mc[c]=new THREE.MeshStandardMaterial({color:c,roughness:0.86,metalness:0.015}));
+const mat=c=>mc[c]||(mc[c]=new THREE.MeshLambertMaterial({color:c}));
 const wpos=(cx,cz,th,lx,lz)=>[cx+lx*Math.cos(th)+lz*Math.sin(th),cz-lx*Math.sin(th)+lz*Math.cos(th)];
 function wbox(cx,cz,th,lx,ly,lz,sx,sy,sz,c,sh){const[x,z]=wpos(cx,cz,th,lx,lz);const m=new THREE.Mesh(UB,mat(c));m.scale.set(sx,sy,sz);m.position.set(x,ly,z);m.rotation.y=th;m.castShadow=sh!==false;m.receiveShadow=true;world.add(m);return m;}
 function plane(w,d,x,z,y,c){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat(c));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=true;world.add(m);return m;}
