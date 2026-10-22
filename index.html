@@ -623,7 +623,7 @@ function speakGameLine(text,speaker='client'){
   setTimeout(()=>{if(activeGameUtterance===u&&window.speechSynthesis.speaking===false){try{window.speechSynthesis.speak(u);}catch(e){console.warn('Speech could not start:',e);}}},250);
 }
 let activeGameUtterance=null;
-function toggleGameMusic(){gameMusicEnabled=!gameMusicEnabled;if(gameMusicEnabled)initGameAudio();syncGameMusic();render();}
+function toggleGameMusic(){const nextEnabled=!gameMusicEnabled;setGameMusicEnabled(nextEnabled);if(nextEnabled)initGameAudio();else{Object.values(gameAudioElements).forEach(a=>{a.pause();a.volume=0;});}render();}
 function audioControls(){return `<div class=box style=display:flex;gap:8px;flex-wrap:wrap><button class=b onclick=toggleGameMusic()>${gameMusicEnabled?'🎵 Music on':'🔇 Music off'}</button><button class=b onclick=toggleVoice()>${voiceEnabled?'🔊 Voices on':'🔇 Voices off'}</button></div>`;}
 addEventListener('pointerdown',()=>initGameAudio(),{passive:true});addEventListener('keydown',()=>initGameAudio(),{passive:true});
 const NAOMI_MODEL_URL='/assets/naomi-senior-agent.glb';
