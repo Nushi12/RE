@@ -111,6 +111,33 @@ function label(text,color,scale){const c=document.createElement('canvas');c.widt
  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(scale,scale/4,1);s.renderOrder=10;return s;}
 
 const B=[],winList=[],GATES=[];let seed=11,world=null;
+// Reusable, cached GLB assets for neighbourhood dressing. Uploaded suffixes such as (1)
+// are deliberately not part of runtime filenames; public/assets uses canonical names.
+const worldAssetCache=new Map(),worldAssetPromises=new Map();
+function placeWorldAsset(file,x,z,targetSize,rotation=0,fitBy='max'){
+  const parent=world;
+  if(!parent)return;
+  let promise=worldAssetPromises.get(file);
+  if(!promise){
+    promise=new Promise((resolve,reject)=>new THREE.GLTFLoader().load('/assets/'+file,gltf=>{worldAssetCache.set(file,gltf);resolve(gltf);},undefined,reject));
+    worldAssetPromises.set(file,promise);promise.catch(()=>worldAssetPromises.delete(file));
+  }
+  promise.then(gltf=>{
+    if(world!==parent)return;
+    const model=THREE.SkeletonUtils&&THREE.SkeletonUtils.clone?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
+    model.updateMatrixWorld(true);
+    const initial=new THREE.Box3().setFromObject(model),size=initial.getSize(new THREE.Vector3());
+    const dimension=fitBy==='height'?size.y:Math.max(size.x,size.z);
+    if(!Number.isFinite(dimension)||dimension<0.001){console.warn('Skipping GLB with invalid bounds:',file);return;}
+    model.scale.setScalar(targetSize/dimension);model.updateMatrixWorld(true);
+    const box=new THREE.Box3().setFromObject(model);
+    model.position.y-=box.min.y;model.position.x+=x;model.position.z+=z;model.rotation.y=rotation;
+    model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=true;}});
+    model.name='world-asset-'+file.replace(/[^a-z0-9_-]/gi,'-');
+    parent.add(model);
+  }).catch(err=>console.warn('Neighbourhood asset could not load ('+file+'):',err));
+}
+
 function buildWorld(cfg){if(world)scene.remove(world);world=new THREE.Group();scene.add(world);scene.background.set(cfg.sky);scene.fog.color.set(cfg.sky);
 // ground, roads, sidewalks
 plane(300,300,0,0,-0.01,0x7c7a74);
@@ -160,6 +187,19 @@ wbox(-12,12,Math.PI/2,0,3.9,4.9,5.6,0.25,1.8,0x2f6b4a);
 let s1=label(cfg.cafe,'#f5d7a0',6);s1.position.set(-6.6,5.2,12);world.add(s1);
 let s2=label(cfg.office,'#ff8a7a',7);s2.position.set(6.6,6.2,-12);world.add(s2);
 let s3=label(cfg.park,'#c8f7c5',6);s3.position.set(30,6.5,30);world.add(s3);
+// New GLB neighbourhood dressing. Layouts are reused with small rotations/position
+// changes per district; all models are loaded from canonical public/assets filenames.
+const districtTurn=cfg.i||0;
+placeWorldAsset('park-bench.glb',25.5,29.5,1.9,districtTurn*0.7);
+placeWorldAsset('bike-rack.glb',8.2,-10.2,1.8,Math.PI/2);
+placeWorldAsset('bus-stop-shelter.glb',5.6,7.8,3.8,Math.PI/2);
+placeWorldAsset('classic-car-light.glb',3.6,-18.5,4.4,Math.PI/2);
+placeWorldAsset('trash-bag-pile.glb',-8.1,15.8,0.9,districtTurn*0.35);
+// These human models are currently static environmental pedestrians. Walking clips
+// are not embedded in these files, so do not pretend they are animated walkers.
+placeWorldAsset('man.glb',28.2,27.5,1.72,districtTurn*0.4,'height');
+placeWorldAsset('woman.glb',31.7,31.4,1.72,Math.PI+districtTurn*0.3,'height');
+placeWorldAsset('businessman.glb',-6.2,13.6,1.72,Math.PI/2+districtTurn*0.25,'height');
 GATES.length=0;
 if(cfg.style==='glass'){[14,-20,28,-36,40,-8].forEach((z,i)=>{const x=i%2?2.4:-2.4;wbox(x,z,0,0,0.6,0,1.8,1.0,4.2,0xf2c500);wbox(x,z,0,0,1.35,0,1.6,0.7,2.0,0x222222);B.push({x,z,w:1.8,d:4.2});});}
 for(const[gz,j]of[[-45,(cfg.i+1)%3],[45,(cfg.i+2)%3]]){const nm=NB[j];[-1,1].forEach(q=>wbox(0,0,0,q*5,3,gz,0.8,6,0.8,0x2b3a52));wbox(0,0,0,0,6.2,gz,10.8,0.7,0.8,0x2b3a52);
