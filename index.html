@@ -152,13 +152,12 @@ function streetBox(x,z,sx,sy,sz,y,color){
  m.position.set(x,y,z);m.receiveShadow=true;m.castShadow=true;world.add(m);return m;
 }
 for(const side of[-1,1]){
+ // Low, narrow curb stones sit almost flush with the sidewalk; no bright raised edging.
  for(const [z,len] of[[-29.5,41], [29.5,41]]){
-  streetBox(side*5.08,z,0.24,0.28,len,0.14,0xc4bdb0);
-  streetBox(side*5.29,z,0.10,0.09,len,0.06,0xddd6c9);
+  streetBox(side*5.045,z,0.11,0.075,len,0.055,0xaaa397);
  }
  for(const [x,len] of[[-29.5,41], [29.5,41]]){
-  streetBox(x,side*5.08,len,0.28,0.24,0.14,0xc4bdb0);
-  streetBox(x,side*5.29,len,0.09,0.10,0.06,0xddd6c9);
+  streetBox(x,side*5.045,len,0.075,0.11,0.055,0xaaa397);
  }
 }
 // Fine joints break up the large, uninterrupted sidewalk slabs.
