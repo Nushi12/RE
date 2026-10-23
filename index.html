@@ -841,7 +841,7 @@ function saveCareer(){
   const ok=writeCareerSnapshot();if(ok)updateSavedGameOption();G.msgs.push(ok?'💾 Game saved on this device.':'Save failed: this browser may not have enough storage.');render();return ok;
 }
 function hasValidSavedCareer(){
-  try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);return !!(data&&data.version===1&&data.G&&typeof data.G==='object'&&typeof data.G.name==='string');}catch(e){return false;}
+  try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);return !!(data&&data.version===1&&data.G&&typeof data.G==='object'&&typeof data.G.name==='string'&&data.G.name.trim().length>0);}catch(e){return false;}
 }
 function updateSavedGameOption(){const b=E('continueSaved');if(b)b.style.display=hasValidSavedCareer()?'block':'none';}
 // Automatic local save protects progress on refresh/close; manual Save remains available.
@@ -1150,7 +1150,7 @@ function apartmentBox(w,h,d,x,y,z,color,rough=0.86){const m=new THREE.Mesh(new T
 function buildApartmentInterior(){
   // Rebuild per listing: the room plan is selected deterministically from the property, not reused blindly.
   while(apartmentInterior.children.length){const child=apartmentInterior.children.pop();apartmentInterior.remove(child);child.traverse?.(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});}
-  const property=G.curB&&Number.isInteger(G.curB.pi)?(PP(G.nb,G.curB.pi)||{}):(G.curB||{});const neighborhood=NB[G.nb]||NB[0];const neighborhoodStyle=neighborhood.style||'brownstone';const bedrooms=Math.max(1,Math.min(3,Number(property.bd)||1));apartmentInterior.userData.bedrooms=bedrooms;apartmentInterior.userData.neighborhoodStyle=neighborhoodStyle;apartmentInterior.userData.built=true;
+  const property=G.curB&&Number.isInteger(G.curB.pi)?((PP(G.nb,G.curB.pi)||{}).p||{}):(G.curB||{});const neighborhood=NB[G.nb]||NB[0];const neighborhoodStyle=neighborhood.style||'brownstone';const bedrooms=Math.max(1,Math.min(3,Number(property.bd)||1));apartmentInterior.userData.bedrooms=bedrooms;apartmentInterior.userData.neighborhoodStyle=neighborhoodStyle;apartmentInterior.userData.built=true;
   const floorColor=neighborhoodStyle==='glass'?0x777d83:(neighborhoodStyle==='loft'?0x8c6a4d:0xb89a74);
   const floorMat=new THREE.MeshStandardMaterial({color:floorColor,roughness:0.82});const floor=new THREE.Mesh(new THREE.BoxGeometry(12,0.18,10),floorMat);floor.position.set(0,-0.09,0);floor.receiveShadow=true;apartmentInterior.add(floor);
   // Subtle timber floorboards and skirting make the room feel finished without changing its layout.
