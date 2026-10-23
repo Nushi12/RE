@@ -1166,15 +1166,33 @@ function buildApartmentInterior(){
   apartmentBox(3.7,3.2,0.18,-4.15,1.6,5,0xe8dfd0);apartmentBox(3.7,3.2,0.18,4.15,1.6,5,0xe8dfd0);apartmentBox(2.0,0.7,0.18,0,2.85,5,0xe8dfd0);
   // Window, frame, city view panels.
   [-2.5,2.5].forEach(x=>{apartmentBox(2.0,1.45,0.06,x,2.0,-4.88,0x8fc2df,0.3);apartmentBox(2.12,0.08,0.12,x,2.76,-4.82,0xffffff);apartmentBox(2.12,0.08,0.12,x,1.24,-4.82,0xffffff);apartmentBox(0.08,1.58,0.12,x,2.0,-4.82,0xffffff);apartmentBox(0.06,1.45,0.13,x,2.0,-4.79,0xffffff);});
-  // Living room: sofa, cushions, rug, coffee table, lamp and wall art.
-  apartmentBox(3.0,0.62,0.9,-3.65,0.38,-1.3,0x526b78);apartmentBox(3.0,0.55,0.24,-3.65,0.85,-1.65,0x617e8d);[-4.55,-3.65,-2.75].forEach(x=>apartmentBox(0.72,0.18,0.58,x,0.78,-1.15,0xd9c9b0));
-  apartmentBox(2.0,0.08,1.1,-1.1,0.32,-1.2,0xb07d4f);[-1.8,-0.4].forEach(x=>apartmentBox(0.08,0.32,0.08,x,0.16,-1.55,0x60452e));
-  apartmentBox(2.2,0.06,1.55,-2.7,0.02,-1.35,0xc8b9a2);apartmentBox(0.12,1.2,0.12,-5.1,0.6,-2.2,0x3b332c);apartmentBox(0.42,0.06,0.42,-5.1,1.25,-2.2,0xffd28a);
-  apartmentBox(1.25,1.1,0.08,2.1,2.1,-4.82,0x8a674f);apartmentBox(1.05,0.9,0.04,2.1,2.1,-4.75,0xd9c7a8);
-  // Dining table and chairs.
-  apartmentBox(1.65,0.12,1.05,2.5,0.82,0.4,0x8b603d);[-0.55,0.55].forEach(dx=>[-0.4,0.4].forEach(dz=>{apartmentBox(0.12,0.62,0.12,2.5+dx,0.31,0.4+dz,0x684a32);apartmentBox(0.48,0.12,0.46,2.5+dx,0.45,0.4+dz,0x54717a);}));
-  // Kitchen counter and cabinets.
-  apartmentBox(2.8,0.95,0.65,-3.8,0.48,3.7,0xeee8df);apartmentBox(2.95,0.12,0.72,-3.8,1.02,3.7,0x575e63);apartmentBox(2.8,0.55,0.16,-3.8,1.45,4.0,0xf6f0e6);apartmentBox(0.75,0.04,0.48,-4.2,1.1,3.68,0x303b42);apartmentBox(0.52,0.06,0.38,-3.0,1.1,3.68,0x303b42);
+  // Living/dining/kitchen furnishings are deliberately different by neighborhood.
+  if(neighborhoodStyle==='brownstone'){
+    // UES: classic upholstered sofa, warm wood furniture, traditional dining set.
+    apartmentBox(3.0,0.62,0.9,-3.65,0.38,-1.3,0x526b78);apartmentBox(3.0,0.55,0.24,-3.65,0.85,-1.65,0x617e8d);[-4.55,-3.65,-2.75].forEach(x=>apartmentBox(0.72,0.18,0.58,x,0.78,-1.15,0xd9c9b0));
+    apartmentBox(2.0,0.08,1.1,-1.1,0.32,-1.2,0xb07d4f);[-1.8,-0.4].forEach(x=>apartmentBox(0.08,0.32,0.08,x,0.16,-1.55,0x60452e));
+    apartmentBox(2.2,0.06,1.55,-2.7,0.02,-1.35,0xc8b9a2);apartmentBox(0.12,1.2,0.12,-5.1,0.6,-2.2,0x3b332c);apartmentBox(0.42,0.06,0.42,-5.1,1.25,-2.2,0xffd28a);
+    apartmentBox(1.25,1.1,0.08,2.1,2.1,-4.82,0x8a674f);apartmentBox(1.05,0.9,0.04,2.1,2.1,-4.75,0xd9c7a8);
+    apartmentBox(1.65,0.12,1.05,2.5,0.82,0.4,0x8b603d);[-0.55,0.55].forEach(dx=>[-0.4,0.4].forEach(dz=>{apartmentBox(0.12,0.62,0.12,2.5+dx,0.31,0.4+dz,0x684a32);apartmentBox(0.48,0.12,0.46,2.5+dx,0.45,0.4+dz,0x54717a);}));
+    apartmentBox(2.8,0.95,0.65,-3.8,0.48,3.7,0xeee8df);apartmentBox(2.95,0.12,0.72,-3.8,1.02,3.7,0x575e63);apartmentBox(2.8,0.55,0.16,-3.8,1.45,4.0,0xf6f0e6);apartmentBox(0.75,0.04,0.48,-4.2,1.1,3.68,0x303b42);apartmentBox(0.52,0.06,0.38,-3.0,1.1,3.68,0x303b42);
+  }else if(neighborhoodStyle==='glass'){
+    // Midtown: modular low-profile sofa, glass coffee table, metal-legged dining set and modern island.
+    apartmentBox(3.25,0.38,0.88,-3.65,0.3,-1.3,0x667b89);apartmentBox(3.25,0.48,0.2,-3.65,0.66,-1.66,0x879aa6);[-4.55,-3.65,-2.75].forEach(x=>apartmentBox(0.78,0.12,0.5,x,0.72,-1.16,0xdce5e9));
+    apartmentBox(1.9,0.07,1.05,-1.1,0.35,-1.2,0x9fb6c2);[-1.8,-0.4].forEach(x=>apartmentBox(0.045,0.32,0.045,x,0.17,-1.55,0x344b5a));
+    apartmentBox(2.3,0.035,1.5,-2.7,0.02,-1.35,0x9caeb7);apartmentBox(0.08,1.2,0.08,-5.1,0.6,-2.2,0x344b5a);apartmentBox(0.38,0.05,0.38,-5.1,1.25,-2.2,0xd7e8ef);
+    apartmentBox(1.25,1.1,0.08,2.1,2.1,-4.82,0x344b5a);apartmentBox(1.05,0.9,0.04,2.1,2.1,-4.75,0x8eb8cc);
+    apartmentBox(2.0,0.1,1.05,2.5,0.82,0.4,0x9eafb8);[-0.7,0.7].forEach(dx=>[-0.42,0.42].forEach(dz=>{apartmentBox(0.055,0.62,0.055,2.5+dx,0.31,0.4+dz,0x344b5a);apartmentBox(0.42,0.1,0.42,2.5+dx,0.45,0.4+dz,0xdbe4e9);}));
+    apartmentBox(2.8,0.95,0.65,-3.8,0.48,3.7,0xcbd5da);apartmentBox(2.95,0.12,0.72,-3.8,1.02,3.7,0x344b5a);apartmentBox(2.8,0.55,0.16,-3.8,1.45,4.0,0xb8c9d1);apartmentBox(0.75,0.04,0.48,-4.2,1.1,3.68,0x26343f);apartmentBox(0.52,0.06,0.38,-3.0,1.1,3.68,0x26343f);
+    apartmentBox(1.8,0.12,0.75,-1.1,0.82,3.1,0xdbe4e9);for(const x of[-1.65,-0.55]){apartmentBox(0.06,0.55,0.06,x,0.28,2.55,0x344b5a);apartmentBox(0.42,0.08,0.42,x,0.58,2.55,0x667b89);}
+  }else{
+    // SoHo: worn leather sofa, reclaimed timber coffee table, steel-frame dining and industrial kitchen.
+    apartmentBox(3.0,0.55,0.95,-3.65,0.34,-1.3,0x654a39);apartmentBox(3.0,0.48,0.22,-3.65,0.72,-1.66,0x49382d);[-4.55,-3.65,-2.75].forEach(x=>apartmentBox(0.72,0.15,0.56,x,0.68,-1.15,0x9b795d));
+    apartmentBox(2.05,0.1,1.1,-1.1,0.32,-1.2,0x67472f);[-1.8,-0.4].forEach(x=>apartmentBox(0.1,0.3,0.1,x,0.16,-1.55,0x252b30));
+    apartmentBox(2.2,0.06,1.55,-2.7,0.02,-1.35,0x51463e);apartmentBox(0.1,1.2,0.1,-5.1,0.6,-2.2,0x252b30);apartmentBox(0.42,0.06,0.42,-5.1,1.25,-2.2,0xe5b76b);
+    apartmentBox(1.25,1.1,0.08,2.1,2.1,-4.82,0x252b30);apartmentBox(1.05,0.9,0.04,2.1,2.1,-4.75,0x9b6b50);
+    apartmentBox(1.8,0.12,1.05,2.5,0.82,0.4,0x67472f);[-0.6,0.6].forEach(dx=>[-0.4,0.4].forEach(dz=>{apartmentBox(0.08,0.62,0.08,2.5+dx,0.31,0.4+dz,0x252b30);apartmentBox(0.44,0.1,0.42,2.5+dx,0.45,0.4+dz,0x654a39);}));
+    apartmentBox(2.8,0.95,0.65,-3.8,0.48,3.7,0x55595a);apartmentBox(2.95,0.12,0.72,-3.8,1.02,3.7,0x252b30);apartmentBox(2.8,0.55,0.16,-3.8,1.45,4.0,0x777b79);apartmentBox(0.75,0.04,0.48,-4.2,1.1,3.68,0x252b30);apartmentBox(0.52,0.06,0.38,-3.0,1.1,3.68,0x252b30);
+  }
   // The advertised bedroom count creates that many distinct enclosed bedrooms and beds.
   // One bedroom gets a spacious suite; two get side-by-side rooms; three get three compact rooms.
   const bedroomXs=bedrooms===1?[1.7]:(bedrooms===2?[-2.8,2.8]:[-3.95,0,3.95]);
