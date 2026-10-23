@@ -845,7 +845,7 @@ socket.on('room:created',room=>{updateCoopRoomUI(room);alert('Private room creat
 socket.on('room:updated',room=>updateCoopRoomUI(room));
 socket.on('room:error',d=>alert((d&&d.message)||'Could not join that room.'));
 socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
-  me=d.players[myId];me.n=G.nb;me.x=me.px=me.x;me.z=me.pz=me.z;me.ry=0;updateCoopRoomUI(d.room||{id:'public-city',name:'Public City',isPublic:true});document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
+  me=d.players[myId];me.n=G.nb;me.x=me.px=me.x;me.z=me.pz=me.z;me.ry=0;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;updateCoopRoomUI(d.room||{id:'public-city',name:'Public City',isPublic:true});cityEntered=true;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
 socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud();});
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
 socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;avatars[id].tx=st[id].x;avatars[id].tz=st[id].z;avatars[id].try=st[id].ry;avatars[id].n=st[id].n||0;avatars[id].g.visible=avatars[id].n===G.nb;}});
