@@ -146,8 +146,26 @@ for(const sx of[-1,1])for(const sz of[-1,1])plane(45,45,sx*27.5,sz*27.5,0.04,cfg
 plane(28,28,30,30,0.06,0x5aa050); // park
 for(let i=8;i<=48;i+=6)for(const s of[-1,1]){plane(0.3,2.5,0,s*i,0.03,0xf2d35e);plane(2.5,0.3,s*i,0,0.031,0xf2d35e);}
 for(const s of[-1,1])for(let i=-4;i<=4;i+=1.2){plane(0.6,2.6,i,s*6.8,0.032,0xeeeeee);plane(2.6,0.6,s*6.8,i,0.033,0xeeeeee);}
-function tree(x,z,s){s=s||1;const t=new THREE.Mesh(new THREE.CylinderGeometry(0.2*s,0.28*s,2.6*s,7),mat(0x5b4129));t.position.set(x,1.3*s,z);t.castShadow=true;world.add(t);
- [[0,4.0,0,1.9],[0.6,3.4,0.3,1.4],[-0.5,3.6,-0.4,1.5]].forEach(([a,b,c,r])=>{const l=new THREE.Mesh(new THREE.IcosahedronGeometry(r*s,1),mat(0x4f9a45));l.position.set(x+a*s,b*s,z+c*s);l.castShadow=true;world.add(l);});}
+function tree(x,z,s){
+ s=s||1;
+ const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.16*s,0.3*s,3.1*s,10),mat(0x59402b));
+ trunk.position.set(x,1.55*s,z);trunk.castShadow=true;world.add(trunk);
+ // Layered, smoother foliage replaces the repeated faceted ball silhouette.
+ const canopy=[
+  [0,3.35,0,1.05,1.15,1.0,0x3f8138],
+  [-0.62,4.05,0.05,0.9,0.95,0.9,0x559b45],
+  [0.48,4.0,0.18,0.94,1.02,0.88,0x65a94e],
+  [0.02,4.72,-0.12,0.77,0.86,0.8,0x78b95c],
+  [-0.3,3.65,-0.55,0.7,0.78,0.7,0x4c9140],
+  [0.52,3.55,-0.42,0.68,0.74,0.68,0x5a9e46]
+ ];
+ for(const [ox,oy,oz,rx,ry,rz,color] of canopy){
+  const crown=new THREE.Mesh(new THREE.SphereGeometry(1,14,10),mat(color));
+  crown.position.set(x+ox*s,oy*s,z+oz*s);
+  crown.scale.set(rx*s,ry*s,rz*s);
+  crown.castShadow=true;world.add(crown);
+ }
+}
 function lamp(x,z){const p=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.1,4.2,6),mat(0x22262b));p.position.set(x,2.1,z);world.add(p);const l=new THREE.Mesh(new THREE.SphereGeometry(0.28,8,6),new THREE.MeshBasicMaterial({color:0xfff2c0}));l.position.set(x,4.3,z);world.add(l);}
 if(cfg.trees)for(const s of[-1,1])for(const j of[11,23,35,47]){const z=cfg.trees;tree(s*6.4,j,z);tree(s*6.4,-j,z);tree(j,s*6.4,z);tree(-j,s*6.4,z);}
 for(const s of[-1,1])for(const j of[17,29,41]){lamp(s*5.6,j);lamp(s*5.6,-j);lamp(j,s*5.6);lamp(-j,s*5.6);}
