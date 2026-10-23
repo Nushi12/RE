@@ -25,6 +25,16 @@ const AVATAR_IDS = new Set(['female1', 'female2', 'female3', 'female4', 'male1',
 function cleanAvatar(id) { return AVATAR_IDS.has(String(id || '')) ? String(id) : 'female1'; }
 const RANGES = { b: 3, s: 6, h: 6, hc: 6, j: 6, p: 4, o: 3 };
 const players = {};
+// Session rooms are kept server-side; the existing public city remains the default.
+const rooms = new Map();
+const PUBLIC_ROOM = 'public-city';
+function cleanRoomCode(value) { return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); }
+function makeRoomCode() { let code; do { code = Math.random().toString(36).slice(2, 8).toUpperCase(); } while (rooms.has(code)); return code; }
+function roomPlayers(roomId) { const out = {}; for (const id in players) if (players[id].roomId === roomId) out[id] = players[id]; return out; }
+function roomSummary(room) { return { id: room.id, name: room.name, hostId: room.hostId, members: Object.keys(roomPlayers(room.id)).length, commission: room.commission || { type: 'equal', shares: [50, 50] }, teamGoals: !!room.teamGoals }; }
+function sendRoomState(roomId) { const state = {}; for (const id in players) if (players[id].roomId === roomId) state[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry, n: players[id].n }; io.to(roomId).emit('state', state); }
+function movePlayerToRoom(socket, roomId) { const p = players[socket.id]; if (!p) return; const oldRoom = p.roomId; if (oldRoom) { socket.leave(oldRoom); socket.to(oldRoom).emit('left', socket.id); } p.roomId = roomId; socket.join(roomId); socket.emit('init', { id: socket.id, players: roomPlayers(roomId), room: roomId === PUBLIC_ROOM ? { id: PUBLIC_ROOM, name: 'Public City', isPublic: true } : roomSummary(rooms.get(roomId)) }); socket.to(roomId).emit('joined', p); }
+
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function cleanLook(l = {}) {
   const o = {};
@@ -36,9 +46,35 @@ io.on('connection', (socket) => {
   socket.on('join', (d = {}) => {
     const name = String(d.name || 'Agent').trim().slice(0, 16) || 'Agent';
     const firm = FIRMS.includes(d.firm) ? d.firm : FIRMS[0];
-    players[socket.id] = { id: socket.id, name, firm, look: cleanLook(d.look), avatar: cleanAvatar(d.avatar), skinTone: 'original', outfitColor: 'original', hairColor: 'original', x: (Math.random() - 0.5) * 6, z: 3 + Math.random() * 2, ry: 0, n: 0 };
-    socket.emit('init', { id: socket.id, players });
-    socket.broadcast.emit('joined', players[socket.id]);
+    const existing = players[socket.id];
+    players[socket.id] = { ...(existing || {}), id: socket.id, name, firm, look: cleanLook(d.look), avatar: cleanAvatar(d.avatar), skinTone: 'original', outfitColor: 'original', hairColor: 'original', x: existing?.x ?? (Math.random() - 0.5) * 6, z: existing?.z ?? 3 + Math.random() * 2, ry: existing?.ry ?? 0, n: 0, roomId: PUBLIC_ROOM };
+    movePlayerToRoom(socket, PUBLIC_ROOM);
+  });
+  socket.on('room:create', (d = {}) => {
+    const p = players[socket.id]; if (!p) return;
+    const name = String(d.name || 'Team Room').trim().slice(0, 32) || 'Team Room';
+    const room = { id: makeRoomCode(), name, hostId: socket.id, commission: { type: 'equal', shares: [50, 50] }, teamGoals: !!d.teamGoals, members: new Set([socket.id]), createdAt: Date.now() };
+    rooms.set(room.id, room); p.teamId = room.id; movePlayerToRoom(socket, room.id);
+    socket.emit('room:created', roomSummary(room));
+  });
+  socket.on('room:join', (d = {}) => {
+    const p = players[socket.id]; if (!p) return;
+    const code = cleanRoomCode(d.code), room = rooms.get(code);
+    if (!room) { socket.emit('room:error', { message: 'That private room could not be found.' }); return; }
+    if (Object.keys(roomPlayers(code)).length >= 8 && !roomPlayers(code)[socket.id]) { socket.emit('room:error', { message: 'This room is full (8 agents maximum).' }); return; }
+    if (p.roomId !== code) { p.teamId = code; room.members.add(socket.id); movePlayerToRoom(socket, code); }
+    io.to(code).emit('room:updated', roomSummary(room));
+  });
+  socket.on('room:public', () => { const p = players[socket.id]; if (!p) return; if (p.roomId !== PUBLIC_ROOM && rooms.has(p.roomId)) { const old = rooms.get(p.roomId); old.members.delete(socket.id); if (!old.members.size) rooms.delete(old.id); else io.to(old.id).emit('room:updated', roomSummary(old)); } p.teamId = null; movePlayerToRoom(socket, PUBLIC_ROOM); });
+  socket.on('room:settings', (d = {}) => {
+    const p = players[socket.id], room = p && rooms.get(p.roomId);
+    if (!p || !room || room.hostId !== socket.id) return;
+    const type = String(d.commissionType || 'equal');
+    if (type === 'equal') room.commission = { type: 'equal', shares: [50, 50] };
+    else if (type === 'lead') room.commission = { type: 'lead', shares: [60, 40] };
+    else if (type === 'custom' && Number.isFinite(Number(d.leadShare)) && Number(d.leadShare) >= 1 && Number(d.leadShare) <= 99) room.commission = { type: 'custom', shares: [Number(d.leadShare), 100 - Number(d.leadShare)] };
+    else return;
+    room.teamGoals = !!d.teamGoals; io.to(room.id).emit('room:updated', roomSummary(room));
   });
   socket.on('move', (m = {}) => {
     const p = players[socket.id];
@@ -52,22 +88,23 @@ io.on('connection', (socket) => {
     const p = players[socket.id];
     if (!p) return;
     t = String(t || '').trim().slice(0, 140);
-    if (t) io.emit('chat', { id: socket.id, name: p.name, firm: p.firm, n: p.n, t });
+    if (t) io.to(p.roomId || PUBLIC_ROOM).emit('chat', { id: socket.id, name: p.name, firm: p.firm, n: p.n, t });
   });
   socket.on('relay', (m = {}) => {
     const p = players[socket.id];
     if (!p || !players[m.to] || JSON.stringify(m.data || {}).length > 600) return;
+    if (players[m.to].roomId !== p.roomId) return;
     io.to(m.to).emit('relay', { from: socket.id, name: p.name, type: String(m.type).slice(0, 20), data: m.data });
   });
   socket.on('disconnect', () => {
-    if (players[socket.id]) { delete players[socket.id]; io.emit('left', socket.id); }
+    const p = players[socket.id];
+    if (p) { const roomId = p.roomId || PUBLIC_ROOM; if (rooms.has(roomId)) { const room = rooms.get(roomId); room.members.delete(socket.id); if (!room.members.size) rooms.delete(roomId); else { if (room.hostId === socket.id) room.hostId = room.members.values().next().value; io.to(roomId).emit('room:updated', roomSummary(room)); } } delete players[socket.id]; io.to(roomId).emit('left', socket.id); }
   });
 });
 
 setInterval(() => {
-  const state = {};
-  for (const id in players) state[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry, n: players[id].n };
-  io.emit('state', state);
+  const roomIds = new Set([PUBLIC_ROOM, ...rooms.keys()]);
+  for (const roomId of roomIds) sendRoomState(roomId);
 }, 66);
 
 const PORT = process.env.PORT || 3000;
