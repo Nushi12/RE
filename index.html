@@ -22,7 +22,7 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 #hint{position:fixed;left:calc(50% - 170px);bottom:14px;transform:translateX(-50%);background:#0009;padding:7px 14px;border-radius:10px;font-size:13px;display:none}
 #panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:#0f1824ee;border-left:1px solid #2c3f56;padding:12px;overflow:auto;font-size:13px;line-height:1.5;display:none;z-index:5;box-sizing:border-box}#panel h3{margin:4px 0 8px;font-size:15px}.k{color:#9fb3c8;font-size:12px;margin:6px 0}.bar{height:8px;background:#2c3f56;border-radius:4px}.bar i{display:block;height:100%;background:#3b82f6;border-radius:4px}.box{background:#16212f;border:1px solid #2c3f56;border-radius:8px;padding:8px;margin:8px 0}.trav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}button.b{background:#1b2a3d;color:#fff;border:1px solid #2c3f56;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:12px;margin:3px 0}button.b:disabled{opacity:.5;cursor:default}button.go{background:#3b82f6;width:100%;font-size:13px}#panel table{width:100%;border-collapse:collapse}#panel td{border-top:1px solid #2c3f56;padding:5px 3px;cursor:pointer;vertical-align:top}#panel small{color:#9fb3c8}
 .go{width:100%;margin-top:14px;padding:12px;border:0;border-radius:10px;background:#3b82f6;color:#fff;font-size:15px;font-weight:600;cursor:pointer}.opt2{border:2px solid #2c3f56;border-radius:9px;padding:9px 11px;margin:6px 0;cursor:pointer;background:#0f1824;color:#f8fafc;font-size:13px}#card .box{background:#0f1824;border:1px solid #2c3f56;border-radius:8px;padding:8px;margin:8px 0;font-size:13px}#card h2{margin:6px 0}#avatarAssetStatus{margin:4px 0 8px;padding:6px 8px;border-left:2px solid #3b82f6;background:#0f1824;font-size:11px;line-height:1.4}
-.bubble{background:#0f1824;border:1px solid #3b82f6;border-radius:12px;padding:12px;margin:10px 0;line-height:1.5;font-size:14px}#card .go small{font-weight:400;opacity:.85}
+ .avatar-choices-mobile .avatar-preview-fallback{display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#a9c3dd;background:linear-gradient(145deg,#24364d,#101a29);border-radius:8px}.avatar-choice-label{display:block;font-size:11px;color:#c6d5e5;margin-top:3px}.avatar-choices-mobile .avatar-choice{min-height:84px}.bubble{background:#0f1824;border:1px solid #3b82f6;border-radius:12px;padding:12px;margin:10px 0;line-height:1.5;font-size:14px}#card .go small{font-weight:400;opacity:.85}
 .hdr{display:flex;gap:10px;align-items:center;margin-bottom:8px}.lv{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}.tile{background:#16212f;border:1px solid #2c3f56;border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;color:#9fb3c8}.tile b{display:block;font-size:14px;color:#fff}.locs{display:grid;gap:6px}.loc{border:1px solid #2c3f56;border-radius:8px;padding:7px 9px;background:#16212f;cursor:pointer}.loc small{color:#9fb3c8}.loc.on{border-color:#3b82f6;background:#1a2c47}.loc.lock{opacity:.5;cursor:default}.step{padding:2px 0;font-size:12px}.step.on{color:#fff;font-weight:700}.step.dn{color:#6fcf97}.step.up{color:#7c8da1}.toast{background:#1d3a2a;border:1px solid #2e7d4f;border-radius:8px;padding:7px;margin:6px 0;font-size:12px}.chatbox{position:fixed;left:12px;bottom:12px;width:300px;z-index:6;display:none}#chatlog{font-size:12px;background:#0009;border-radius:8px;padding:6px;max-height:130px;overflow:auto;margin-bottom:4px}#chat{width:100%;box-sizing:border-box;padding:7px;border-radius:8px;border:1px solid #2c3f56;background:#0f1824dd;color:#fff;font-size:13px}
 
 #s1{text-align:center;padding:12px 0 8px}
@@ -94,7 +94,7 @@ NB.forEach((n,i)=>n.i=i);
 // ---------- scene ----------
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9fc3e6);scene.fog=new THREE.Fog(0x9fc3e6,70,170);
 const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.3,300);
-const renderer=new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;
+const mobileRenderer=matchMedia('(max-width: 760px)').matches;const renderer=new THREE.WebGLRenderer({antialias:!mobileRenderer,logarithmicDepthBuffer:true,powerPreference:mobileRenderer?'low-power':'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileRenderer?1:2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;
 document.body.appendChild(renderer.domElement);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);fit();});
 scene.add(new THREE.HemisphereLight(0xffffff,0x8a8070,0.65));
@@ -582,12 +582,15 @@ function beginGenderSelection(gender){
 function renderAvatarChoices(){
   const el=document.getElementById('looks');if(!el)return;
   disposeAvatarCardPreviews();
-  el.innerHTML='<div class="avatar-choices" id="avatarChoices"></div>';
+  // Mobile GPUs often allow only a small number of simultaneous WebGL contexts. The game already
+  // owns its main renderer, so use lightweight labeled choices on phones instead of one renderer per card.
+  const mobileLowGpu=matchMedia('(max-width: 760px)').matches||((navigator.deviceMemory||4)<=4&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+  el.innerHTML='<div class="avatar-choices'+(mobileLowGpu?' avatar-choices-mobile':'')+'" id="avatarChoices"></div>';
   const grid=document.getElementById('avatarChoices');
   AVATAR_IDS.filter(id=>AVATAR_MODELS[id].gender===selectedGender).forEach((id,index)=>{
     const button=document.createElement('button');
     button.type='button';button.className='avatar-choice'+(id===selectedAvatarId?' sel':'');button.setAttribute('aria-label','Choose '+selectedGender.toLowerCase()+' character '+(index+1));button.setAttribute('aria-pressed',String(id===selectedAvatarId));button.dataset.avatarId=id;
-    button.innerHTML='<div class="avatar-preview-wrap"><canvas class="avatar-preview-canvas" aria-hidden="true"></canvas></div><span class="avatar-picked" aria-hidden="true">✓</span>';
+    button.innerHTML=(mobileLowGpu?'<div class="avatar-preview-wrap avatar-preview-fallback" aria-hidden="true">'+(index+1)+'</div>':'<div class="avatar-preview-wrap"><canvas class="avatar-preview-canvas" aria-hidden="true"></canvas></div>')+'<span class="avatar-choice-label">Character '+(index+1)+'</span><span class="avatar-picked" aria-hidden="true">✓</span>';
     button.onclick=()=>{
       selectedAvatarId=id;
       try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
@@ -596,7 +599,7 @@ function renderAvatarChoices(){
       statusAvatar('Loading character…');
     };
     grid.appendChild(button);
-    createAvatarCardPreview(id,button.querySelector('canvas'));
+    if(!mobileLowGpu)createAvatarCardPreview(id,button.querySelector('canvas'));
   });
 }
 
