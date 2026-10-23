@@ -5,7 +5,7 @@
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#101827;font-family:system-ui,Segoe UI,Arial,sans-serif;color:#fff}
 canvas{display:block}
-#join{position:fixed;inset:0;display:flex;align-items:center;padding:0 3vw;z-index:10;pointer-events:none;background:linear-gradient(90deg,rgba(8,15,28,.84) 0%,rgba(8,15,28,.36) 54%,rgba(8,15,28,.12) 100%),url('/assets/real-estate-world-sunset.jpg') center center/cover no-repeat}
+#join{position:fixed;inset:0;display:flex;align-items:center;padding:0 3vw;z-index:10;pointer-events:none;background:transparent}#join.welcome-bg{background:linear-gradient(90deg,rgba(8,15,28,.84) 0%,rgba(8,15,28,.36) 54%,rgba(8,15,28,.12) 100%),url('/assets/real-estate-world-sunset.jpg') center center/cover no-repeat}
 #card{pointer-events:auto;background:#16212fee;border:1px solid #2c3f56;border-radius:14px;padding:20px;width:min(480px,94vw);max-height:92vh;overflow:auto;box-shadow:0 10px 40px #0008}
 h1{margin:0 0 2px;font-size:21px}.sub{margin:0 0 12px;color:#9fb3c8;font-size:13px}
 label{font-size:12px;color:#9fb3c8;display:block;margin:8px 0 4px}
@@ -610,7 +610,7 @@ function updatePeds(){}
 
 // ---------- UI ----------
 const E=id=>document.getElementById(id);
-function show(id){['s0','s1','s1b','s2','s4'].forEach(s=>E(s).style.display=s===id?'block':'none');}
+function show(id){['s0','s1','s1b','s2','s4'].forEach(s=>E(s).style.display=s===id?'block':'none');E('join').classList.toggle('welcome-bg',id==='s0');}
 function renderFirms(){const el=E('firms');el.innerHTML='';[['Modern / Competitive',0],['Luxury',1]].forEach(([t,g])=>{const h=document.createElement('label');h.textContent=t;el.appendChild(h);const w=document.createElement('div');w.className='firms';
   FIRMS.forEach((f,i)=>{if(f.g!==g)return;const d=document.createElement('div');d.className='firm'+(i===selFirm?' sel':'');d.style.setProperty('--c',hex(f.c));d.innerHTML='<b style="color:'+hex(f.c)+'">'+f.n+'</b><span>'+f.t+'</span>';d.onclick=()=>{selFirm=i;renderFirms();setPreview();};w.appendChild(d);});el.appendChild(w);});}
 const socket=io();
