@@ -200,6 +200,32 @@ function addB(cx,cz,w,d,h,col,fx,fz,shop){
     const px=-w/2+(w*pi/pilasterCount);
     wbox(cx,cz,th,px,h/2,face,0.12,h-0.45,0.12,trim,false);
   }
+  // Distinct roof silhouettes and facade accents make each building style read at street level.
+  if(st==='brownstone'){
+    // Recessed-looking roof cap and paired cornice blocks.
+    wbox(cx,cz,th,0,h+0.48,0,w+0.72,0.16,d+0.72,0xe1d4c2,false);
+    for(const px of[-1,1])wbox(cx,cz,th,px*(w/2-0.3),h+0.24,d/2+0.22,0.32,0.34,0.32,0xc7b7a1,false);
+    // Window lintels and sills along the street-facing facade.
+    for(let f=0;f<n;f++)for(let i=0;i<Math.max(3,Math.round(w/2.3));i++){
+      const lx=-w/2+w*(i+0.5)/Math.max(3,Math.round(w/2.3));
+      if(f===0&&(shop||Math.abs(lx)<1.3))continue;
+      const wy=f===0?2.3:1.9+f*3.2;
+      wbox(cx,cz,th,lx,wy+1.18,d/2+0.16,1.7,0.11,0.14,0xe5d9c9,false);
+      wbox(cx,cz,th,lx,wy-1.18,d/2+0.16,1.7,0.13,0.16,0xe5d9c9,false);
+    }
+  }else if(st==='loft'){
+    // Continuous balcony rails with small posts on upper floors.
+    for(let f=1;f<n;f++){
+      const yy=f*3.2+0.72;
+      wbox(cx,cz,th,0,yy,d/2+0.72,w*0.52,0.09,0.09,0x6c777d,false);
+      for(let p=0;p<=4;p++)wbox(cx,cz,th,-w*0.26+w*0.52*p/4,yy-0.32,d/2+0.72,0.055,0.58,0.055,0x6c777d,false);
+    }
+    wbox(cx,cz,th,0,h+0.55,0,w+0.75,0.18,d+0.75,0x38302a,false);
+  }else if(st==='glass'){
+    // A stepped penthouse crown gives glass towers a distinct skyline.
+    wbox(cx,cz,th,0,h+0.5,0,w*0.76,0.8,d*0.76,0x526879,false);
+    wbox(cx,cz,th,0,h+0.94,0,w*0.62,0.08,d*0.62,0x9bb6c6,false);
+  }
   if(shop)wbox(cx,cz,th,0,2.2,d/2+0.06,w-1.2,2.8,0.12,0x7fb2c9,false);
 }
 for(const sx of[-1,1])for(const sz of[-1,1]){
