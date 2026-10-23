@@ -53,7 +53,7 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 @media(max-width:440px){#card{padding:14px}.avatar-preview-wrap{height:170px}.gender-choice{min-height:94px}}
 </style></head><body>
 <div id="join"><div id="card">
-<div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Begin</button></div>
+<div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Start a new game</button><button class="go" id="continueSaved" style="margin-top:8px;background:#26364b;display:none">Continue saved game</button></div>
 <div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
 <div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
@@ -788,14 +788,15 @@ function pick(i){const q=QZ[SEQ[si].i],fb=E('fb');if(fb.dataset.d)return;fb.data
 function adv(){si++;lesson();}
 function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Choose your firm to continue. Client and pedestrian characters are temporarily disabled while their GLB replacements are prepared.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok){G.badge=1;try{localStorage.setItem('rew-license-passed-v1','1');}catch(e){}}}
 function toFirm(){naomiPendingGreeting='';mentor(false);show('s4');}
-E('b0').onclick=()=>show('s1');
+E('b0').onclick=()=>{rewStartMode='new';show('s1');};
+E('continueSaved').onclick=()=>{if(!loadCareer()){E('continueSaved').style.display='none';return;}rewStartMode='continue';selFirm=G.fi;E('name').value=G.name||'Agent';renderFirms();show('s4');};
 E('chooseFemale').onclick=()=>beginGenderSelection('Female');
 E('chooseMale').onclick=()=>beginGenderSelection('Male');
 E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
-E('b1').onclick=()=>{disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}G.badge=0;show('s2');modes();};
+E('b1').onclick=()=>{rewStartMode='new';disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}G.badge=0;show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
-E('b4').onclick=()=>{const restored=loadCareer();const f=FIRMS[selFirm];G.fi=selFirm;if(!restored){G.name=E('name').value.trim()||'Agent';}else{G.badge=G.badge||0;}if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[G.nb].office=FIRMS[G.fi].n+' Office';buildWorld(NB[G.nb]);socket.emit('join',{name:G.name||E('name').value.trim()||'Agent',firm:FIRMS[G.fi].n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});E('join').style.display='none';};
-renderFirms();show('s0');
+E('b4').onclick=()=>{const restored=rewStartMode==='continue'&&loadCareer();const f=FIRMS[selFirm];G.fi=selFirm;if(!restored){G.name=E('name').value.trim()||G.name||'Agent';}else{G.badge=G.badge||0;}if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[G.nb].office=FIRMS[G.fi].n+' Office';buildWorld(NB[G.nb]);socket.emit('join',{name:G.name||E('name').value.trim()||'Agent',firm:FIRMS[G.fi].n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});E('join').style.display='none';};
+try{if(localStorage.getItem(REW_SAVE_KEY)){E('continueSaved').style.display='block';}}catch(e){}renderFirms();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
 socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
   me=d.players[myId];me.n=G.nb;me.x=me.px=me.x;me.z=me.pz=me.z;me.ry=0;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
@@ -811,7 +812,7 @@ const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,nea
 const REW_SAVE_KEY='rew-career-save-v1';
 function hasGameLicense(){try{return localStorage.getItem('rew-license-passed-v1')==='1';}catch(e){return false;}}
 function writeCareerSnapshot(){
-  try{const snapshot={version:1,savedAt:new Date().toISOString(),G:{...G,cur:null,curB:null,near:null,focus:null,showing:false},neighborhoodPros:NB.map(n=>n.pros),license:hasGameLicense()||!!G.badge,selectedAvatarId,look,selectedSkinTone,selectedOutfitColor,selectedHairColor};
+  try{const snapshot={version:1,savedAt:new Date().toISOString(),G:{...G,cur:null,curB:null,near:null,focus:null,showing:false},player:me?{x:me.x,z:me.z,ry:me.ry,n:me.n}:null,neighborhoodPros:NB.map(n=>n.pros),license:hasGameLicense()||!!G.badge,selectedAvatarId,look,selectedSkinTone,selectedOutfitColor,selectedHairColor};
     localStorage.setItem(REW_SAVE_KEY,JSON.stringify(snapshot));return true;
   }catch(e){console.warn('Automatic save failed',e);return false;}
 }
@@ -824,8 +825,10 @@ function autoSaveCareer(force=false){const now=Date.now();if(!force&&now-rewAuto
 window.addEventListener('beforeunload',()=>autoSaveCareer(true));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')autoSaveCareer(true);});
 setInterval(()=>{if(G.joined||G.xp||G.deals||G.badge)autoSaveCareer();},12000);
+let rewStartMode='new',rewPendingPlayerState=null;
 function loadCareer(){
   try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);if(!data||data.version!==1||!data.G)return false;
+    rewPendingPlayerState=data.player&&Number.isFinite(data.player.x)&&Number.isFinite(data.player.z)?data.player:null;
     Object.keys(data.G).forEach(k=>{if(k in G)G[k]=data.G[k];});G.cur=null;G.curB=null;G.near=null;G.focus=null;G.showing=false;
     if(Array.isArray(data.neighborhoodPros))data.neighborhoodPros.forEach((pros,i)=>{if(NB[i]&&Array.isArray(pros))NB[i].pros=pros;});
     if(data.license||G.badge){G.badge=1;localStorage.setItem('rew-license-passed-v1','1');}
@@ -836,7 +839,7 @@ function loadCareer(){
   }catch(e){console.error('Load failed',e);return false;}
 }
 function saveControls(){return `<div class=box style="display:flex;gap:8px;flex-wrap:wrap"><button class=b onclick="saveCareer()">💾 Save game</button><button class=b onclick="restoreCareerFromButton()">↩ Load saved game</button></div>`;}
-function restoreCareerFromButton(){if(!loadCareer()){G.msgs.push('No valid saved game was found on this device.');render();return;}if(world)buildWorld(NB[G.nb]);spawnNPCs();me.x=0;me.z=0;render();}
+function restoreCareerFromButton(){if(!loadCareer()){G.msgs.push('No valid saved game was found on this device.');render();return;}if(world)buildWorld(NB[G.nb]);if(me&&rewPendingPlayerState){me.x=me.px=rewPendingPlayerState.x;me.z=me.pz=rewPendingPlayerState.z;me.ry=rewPendingPlayerState.ry||0;const a=avatars[myId];if(a){a.g.position.set(me.x,0,me.z);a.g.rotation.y=me.ry;}}spawnNPCs();render();}
 
 const ENABLE_PROCEDURAL_NPCS=true; // Named characters and reusable walkers now use the supplied GLB assets.
 const f=n=>"$"+Math.round(n).toLocaleString("en-US"),fp=(n,r)=>r?"$"+n.toFixed(2):f(n),lvl=()=>1+Math.floor(Math.sqrt(G.xp/60)),$=id=>document.getElementById(id);
