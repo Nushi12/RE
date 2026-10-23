@@ -53,7 +53,7 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 @media(max-width:440px){#card{padding:14px}.avatar-preview-wrap{height:170px}.gender-choice{min-height:94px}}
 </style></head><body>
 <div id="join"><div id="card">
-<div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Start a new game</button><button class="go" id="continueSaved" style="margin-top:8px;background:#26364b;display:none">Continue saved game</button></div>
+<div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Start a New Game</button><button class="go" id="continueSaved" style="margin-top:8px;background:#26364b;display:none">Play Game</button></div>
 <div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
 <div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="e.g. Alex Rivera" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
@@ -810,14 +810,14 @@ function adv(){si++;lesson();}
 function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Choose your firm to continue. Client and pedestrian characters are temporarily disabled while their GLB replacements are prepared.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok){G.badge=1;try{localStorage.setItem('rew-license-passed-v1','1');}catch(e){}}}
 function toFirm(){naomiPendingGreeting='';mentor(false);show('s4');}
 E('b0').onclick=()=>{rewStartMode='new';show('s1');};
-E('continueSaved').onclick=()=>{if(!loadCareer()){E('continueSaved').style.display='none';return;}rewStartMode='continue';selFirm=G.fi;E('name').value=G.name||'Agent';renderFirms();show('s4');};
+E('continueSaved').onclick=()=>{if(!hasValidSavedCareer()||!loadCareer()){E('continueSaved').style.display='none';return;}rewStartMode='continue';selFirm=G.fi;E('name').value=G.name||'Agent';renderFirms();show('s4');};
 E('chooseFemale').onclick=()=>beginGenderSelection('Female');
 E('chooseMale').onclick=()=>beginGenderSelection('Male');
 E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
 E('b1').onclick=()=>{rewStartMode='new';disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}G.badge=0;show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
 E('b4').onclick=()=>{const restored=rewStartMode==='continue'&&loadCareer();const f=FIRMS[selFirm];G.fi=selFirm;if(!restored){G.name=E('name').value.trim()||G.name||'Agent';}else{G.badge=G.badge||0;}if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[G.nb].office=FIRMS[G.fi].n+' Office';buildWorld(NB[G.nb]);socket.emit('join',{name:G.name||E('name').value.trim()||'Agent',firm:FIRMS[G.fi].n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});E('join').style.display='none';};
-try{if(localStorage.getItem(REW_SAVE_KEY)){E('continueSaved').style.display='block';}}catch(e){}renderFirms();show('s0');
+updateSavedGameOption();renderFirms();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
 socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}Object.values(d.players).forEach(p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);});
   me=d.players[myId];me.n=G.nb;me.x=me.px=me.x;me.z=me.pz=me.z;me.ry=0;document.getElementById('hud').style.display='block';$('panel').style.display='block';$('chatbox').style.display='block';G.joined=1;cityEntered=true;PW=340;fit();render();spawnNPCs();document.getElementById('hint').style.display='block';updateHud();});
@@ -838,8 +838,12 @@ function writeCareerSnapshot(){
   }catch(e){console.warn('Automatic save failed',e);return false;}
 }
 function saveCareer(){
-  const ok=writeCareerSnapshot();G.msgs.push(ok?'💾 Game saved on this device.':'Save failed: this browser may not have enough storage.');render();return ok;
+  const ok=writeCareerSnapshot();if(ok)updateSavedGameOption();G.msgs.push(ok?'💾 Game saved on this device.':'Save failed: this browser may not have enough storage.');render();return ok;
 }
+function hasValidSavedCareer(){
+  try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);return !!(data&&data.version===1&&data.G&&typeof data.G==='object'&&typeof data.G.name==='string');}catch(e){return false;}
+}
+function updateSavedGameOption(){const b=E('continueSaved');if(b)b.style.display=hasValidSavedCareer()?'block':'none';}
 // Automatic local save protects progress on refresh/close; manual Save remains available.
 let rewAutoSaveLast=0;
 function autoSaveCareer(force=false){const now=Date.now();if(!force&&now-rewAutoSaveLast<12000)return;rewAutoSaveLast=now;writeCareerSnapshot();}
