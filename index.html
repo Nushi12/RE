@@ -170,6 +170,18 @@ function addB(cx,cz,w,d,h,col,fx,fz,shop){
   else{wbox(cx,cz,th,0,h+0.25,0.15,w+0.5,0.5,d+0.5,0xd9cfc0);wbox(cx,cz,th,0,0.5,0,w+0.2,1,d+0.2,0x6f6a62);const k=Math.max(3,Math.round(w/2.3));
     for(let f=0;f<n;f++)for(let i=0;i<k;i++){const lx=-w/2+w*(i+0.5)/k;if(f===0&&(shop||Math.abs(lx)<1.3))continue;winList.push([...wpos(cx,cz,th,lx,d/2+0.06),f===0?2.3:1.9+f*3.2,th,'b']);}
     if(!shop){wbox(cx,cz,th,0,1.6,d/2+0.07,1.3,2.4,0.1,0x2a1d17,false);wbox(cx,cz,th,0,0.3,d/2+0.7,2.4,0.6,1.4,0xcfc8bb);wbox(cx,cz,th,0,0.75,d/2+0.35,2.0,0.3,0.7,0xcfc8bb);}}
+  // Facade detailing only: trim bands and pilasters add architectural depth.
+  // Keep B footprints and all gameplay, character, rig and audio systems unchanged.
+  const trim=st==='glass'?0x45515d:(st==='loft'?0x59483d:0xd9cfc0);
+  const face=d/2+0.09;
+  wbox(cx,cz,th,0,h-0.22,face,w+0.24,0.16,0.14,trim,false);
+  wbox(cx,cz,th,0,0.95,face,w+0.16,0.12,0.12,trim,false);
+  wbox(cx,cz,th,0,h+0.18,0,w+0.55,0.22,d+0.55,trim,false);
+  const pilasterCount=Math.max(2,Math.floor(w/3.2));
+  for(let pi=0;pi<=pilasterCount;pi++){
+    const px=-w/2+(w*pi/pilasterCount);
+    wbox(cx,cz,th,px,h/2,face,0.12,h-0.45,0.12,trim,false);
+  }
   if(shop)wbox(cx,cz,th,0,2.2,d/2+0.06,w-1.2,2.8,0.12,0x7fb2c9,false);
 }
 for(const sx of[-1,1])for(const sz of[-1,1]){
