@@ -146,6 +146,28 @@ for(const sx of[-1,1])for(const sz of[-1,1])plane(45,45,sx*27.5,sz*27.5,0.04,cfg
 plane(28,28,30,30,0.06,0x5aa050); // park
 for(let i=8;i<=48;i+=6)for(const s of[-1,1]){plane(0.3,2.5,0,s*i,0.03,0xf2d35e);plane(2.5,0.3,s*i,0,0.031,0xf2d35e);}
 for(const s of[-1,1])for(let i=-4;i<=4;i+=1.2){plane(0.6,2.6,i,s*6.8,0.032,0xeeeeee);plane(2.6,0.6,s*6.8,i,0.033,0xeeeeee);}
+// Raised stone curbs and subtle sidewalk joint lines: decorative geometry only.
+function streetBox(x,z,sx,sy,sz,y,color){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));
+ m.position.set(x,y,z);m.receiveShadow=true;m.castShadow=true;world.add(m);return m;
+}
+for(const side of[-1,1]){
+ for(const [z,len] of[[-29.5,41], [29.5,41]]){
+  streetBox(side*5.08,z,0.24,0.28,len,0.14,0xc4bdb0);
+  streetBox(side*5.29,z,0.10,0.09,len,0.06,0xddd6c9);
+ }
+ for(const [x,len] of[[-29.5,41], [29.5,41]]){
+  streetBox(x,side*5.08,len,0.28,0.24,0.14,0xc4bdb0);
+  streetBox(x,side*5.29,len,0.09,0.10,0.06,0xddd6c9);
+ }
+}
+// Fine joints break up the large, uninterrupted sidewalk slabs.
+for(const sideX of[-1,1])for(const sideZ of[-1,1]){
+ for(let p=12;p<=46;p+=6){
+  plane(0.045,39,sideX*p,sideZ*27.5,0.052,0xb7b0a4);
+  plane(39,0.045,sideX*27.5,sideZ*p,0.053,0xb7b0a4);
+ }
+}
 function tree(x,z,s){
  s=s||1;
  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.16*s,0.3*s,3.1*s,10),mat(0x59402b));
