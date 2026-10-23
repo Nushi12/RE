@@ -1146,8 +1146,9 @@ function apartmentBox(w,h,d,x,y,z,color,rough=0.86){const m=new THREE.Mesh(new T
 function buildApartmentInterior(){
   // Rebuild per listing: the room plan is selected deterministically from the property, not reused blindly.
   while(apartmentInterior.children.length){const child=apartmentInterior.children.pop();apartmentInterior.remove(child);child.traverse?.(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});}
-  const property=G.curB||{};const layoutVariant=((Math.max(0,property.pi||0)*7+Math.max(0,property.bi||0)*3+(property.bd||1))%3);apartmentInterior.userData.layoutVariant=layoutVariant;apartmentInterior.userData.built=true;
-  const floorMat=new THREE.MeshStandardMaterial({color:0xb89a74,roughness:0.82});const floor=new THREE.Mesh(new THREE.BoxGeometry(12,0.18,10),floorMat);floor.position.set(0,-0.09,0);floor.receiveShadow=true;apartmentInterior.add(floor);
+  const property=G.curB||{};const neighborhood=NB[G.nb]||NB[0];const neighborhoodStyle=neighborhood.style||'brownstone';const bedrooms=Math.max(1,Math.min(3,Number(property.bd)||1));apartmentInterior.userData.bedrooms=bedrooms;apartmentInterior.userData.neighborhoodStyle=neighborhoodStyle;apartmentInterior.userData.built=true;
+  const floorColor=neighborhoodStyle==='glass'?0x777d83:(neighborhoodStyle==='loft'?0x8c6a4d:0xb89a74);
+  const floorMat=new THREE.MeshStandardMaterial({color:floorColor,roughness:0.82});const floor=new THREE.Mesh(new THREE.BoxGeometry(12,0.18,10),floorMat);floor.position.set(0,-0.09,0);floor.receiveShadow=true;apartmentInterior.add(floor);
   // Subtle timber floorboards and skirting make the room feel finished without changing its layout.
   const plankSeam=new THREE.MeshStandardMaterial({color:0x9e805f,roughness:0.92});
   for(let z=-4.65;z<=4.65;z+=0.52){
@@ -1172,31 +1173,63 @@ function buildApartmentInterior(){
   apartmentBox(1.25,1.1,0.08,2.1,2.1,-4.82,0x8a674f);apartmentBox(1.05,0.9,0.04,2.1,2.1,-4.75,0xd9c7a8);
   // Dining table and chairs.
   apartmentBox(1.65,0.12,1.05,2.5,0.82,0.4,0x8b603d);[-0.55,0.55].forEach(dx=>[-0.4,0.4].forEach(dz=>{apartmentBox(0.12,0.62,0.12,2.5+dx,0.31,0.4+dz,0x684a32);apartmentBox(0.48,0.12,0.46,2.5+dx,0.45,0.4+dz,0x54717a);}));
-  // Bedroom visible through a low divider, with bed, pillows and side tables.
-  apartmentBox(3.5,1.0,0.12,3.85,0.5,2.65,0xd7c6ae);apartmentBox(2.2,0.42,2.5,3.65,0.3,3.75,0xf0ece5);apartmentBox(2.22,0.18,1.0,3.65,0.55,4.2,0x9baec0);apartmentBox(0.65,0.48,0.55,2.25,0.24,3.85,0x8b603d);apartmentBox(0.65,0.48,0.55,5.0,0.24,3.85,0x8b603d);
   // Kitchen counter and cabinets.
   apartmentBox(2.8,0.95,0.65,-3.8,0.48,3.7,0xeee8df);apartmentBox(2.95,0.12,0.72,-3.8,1.02,3.7,0x575e63);apartmentBox(2.8,0.55,0.16,-3.8,1.45,4.0,0xf6f0e6);apartmentBox(0.75,0.04,0.48,-4.2,1.1,3.68,0x303b42);apartmentBox(0.52,0.06,0.38,-3.0,1.1,3.68,0x303b42);
-  // Distinct listing floor plans: different internal partitions and room zoning.
-  if(layoutVariant===1){
-    // Two-bedroom style: bedroom divider on the left and a more defined kitchen entry.
-    apartmentBox(0.14,2.15,3.0,-1.0,1.08,2.25,0xd9cbb8);
-    apartmentBox(2.0,0.12,0.14,-2.05,1.0,2.0,0xd9cbb8);
-    apartmentBox(0.14,2.15,2.0,1.25,1.08,-1.25,0xd9cbb8);
-    apartmentBox(1.0,0.08,1.4,0.5,0.05,0.8,0x8b9b78);
-    apartmentBox(1.7,0.42,0.85,3.8,0.28,-1.0,0x647c8a);
-  }else if(layoutVariant===2){
-    // Compact studio/loft: diagonal-feeling low divider, relocated bed and island counter.
-    apartmentBox(3.0,0.75,0.14,0.3,0.42,1.1,0xc7b49d);
-    apartmentBox(0.14,1.65,2.2,-0.8,0.83,-2.4,0xc7b49d);
-    apartmentBox(1.9,0.9,0.65,-3.8,0.45,0.2,0xd9d4ca);
-    apartmentBox(2.0,0.12,0.85,-1.8,0.92,3.5,0x6b7d87);
-    apartmentBox(2.0,0.18,0.16,1.6,1.2,-4.7,0x6f8e9e);
+  // The advertised bedroom count creates that many distinct enclosed bedrooms and beds.
+  // One bedroom gets a spacious suite; two get side-by-side rooms; three get three compact rooms.
+  const bedroomXs=bedrooms===1?[1.7]:(bedrooms===2?[-2.8,2.8]:[-3.95,0,3.95]);
+  const bedroomWidths=bedrooms===1?[4.4]:(bedrooms===2?[5.0,5.0]:[3.65,3.65,3.65]);
+  const roomBack=-4.55,roomFront=-0.45,roomDepth=roomFront-roomBack;
+  const wallColor=neighborhoodStyle==='glass'?0xd5dde2:(neighborhoodStyle==='loft'?0xb89a84:0xe8dfd0);
+  for(let k=0;k<bedrooms-1;k++){
+    const x=(bedroomXs[k]+bedroomXs[k+1])/2;
+    apartmentBox(0.12,2.55,roomDepth,x,1.275,(roomBack+roomFront)/2,wallColor);
+  }
+  for(let k=0;k<bedrooms;k++){
+    const x=bedroomXs[k],w=bedroomWidths[k],doorW=0.95,segment=(w-doorW)/2;
+    apartmentBox(segment,2.55,0.12,x-w/2+segment/2,1.275,roomFront,wallColor);
+    apartmentBox(segment,2.55,0.12,x+w/2-segment/2,1.275,roomFront,wallColor);
+    apartmentBox(doorW,0.12,0.12,x,2.52,roomFront,wallColor);
+    const bedW=bedrooms===3?1.75:2.05,bedZ=-2.65;
+    const cover=neighborhoodStyle==='glass'?[0x819cac,0x607d91,0x9db7c5][k%3]:(neighborhoodStyle==='loft'?[0x9d795b,0x68777a,0xb1a08a][k%3]:[0x9baec0,0x7f9b8b,0xb9a0a0][k%3]);
+    apartmentBox(bedW,0.32,1.75,x,0.25,bedZ,0xf0ece5);
+    apartmentBox(bedW+0.12,0.16,1.9,x,0.49,bedZ,cover);
+    apartmentBox(bedW,0.2,0.42,x,0.62,bedZ-0.68,0xf8f4ec);
+    apartmentBox(bedW+0.18,0.8,0.12,x,0.55,bedZ-1.02,neighborhoodStyle==='loft'?0x49382d:0x8b603d);
+    for(const side of[-1,1]){
+      apartmentBox(0.42,0.38,0.42,x+side*(bedW/2+0.3),0.19,bedZ-0.3,0x8b603d);
+      apartmentBox(0.34,0.035,0.34,x+side*(bedW/2+0.3),0.4,bedZ-0.3,0xc5a875);
+    }
+    apartmentBox(bedW+0.65,0.035,2.55,x,0.025,bedZ,neighborhoodStyle==='glass'?0x9daab0:(neighborhoodStyle==='loft'?0x6e5b4a:0xc8b9a2));
+  }
+  // Distinct neighborhood identities through architecture, materials and signature features.
+  if(neighborhoodStyle==='brownstone'){
+    const molding=0xd4c0a5;
+    apartmentBox(11.45,0.12,0.1,0,2.92,-4.78,molding);
+    apartmentBox(11.45,0.12,0.1,0,0.28,-4.78,molding);
+    for(const x of[-5.1,-1.7,1.7,5.1]){
+      apartmentBox(0.09,1.5,0.07,x,1.65,-4.72,molding);
+      apartmentBox(1.2,0.08,0.07,x,2.4,-4.72,molding);
+      apartmentBox(1.2,0.08,0.07,x,0.9,-4.72,molding);
+    }
+    apartmentBox(1.45,1.0,0.07,-1.7,2.0,0.1,0x68452f);
+    apartmentBox(1.25,0.8,0.04,-1.7,2.0,0.16,0xc4a77c);
+  }else if(neighborhoodStyle==='glass'){
+    apartmentBox(11.5,2.25,0.08,0,1.55,-4.68,0xd5dde2);
+    for(let x=-5.2;x<=5.2;x+=1.3)apartmentBox(0.035,2.05,0.035,x,1.55,-4.61,0x879ba8);
+    apartmentBox(2.9,1.55,0.07,0,1.65,-4.54,0x34424c);
+    apartmentBox(2.65,1.28,0.04,0,1.65,-4.49,0x91b5c9);
+    apartmentBox(3.2,0.16,0.38,0,0.7,-4.18,0x56636d);
+    for(const x of[-2.25,2.25]){
+      apartmentBox(0.035,0.85,0.035,x,2.55,0.1,0x515d66);
+      apartmentBox(0.42,0.06,0.12,x,2.12,0.1,0xf2dfae);
+    }
   }else{
-    // One-bedroom plan: a clearly separated sleeping nook and entry-side storage.
-    apartmentBox(3.0,1.65,0.14,1.75,0.83,1.35,0xd9cbb8);
-    apartmentBox(0.14,1.65,2.4,0.25,0.83,2.45,0xd9cbb8);
-    apartmentBox(1.2,1.7,0.45,-4.7,0.85,1.6,0xb7a38c);
-    apartmentBox(1.6,0.12,0.8,-1.8,0.5,1.2,0x8d9b7c);
+    apartmentBox(11.5,2.35,0.08,0,1.6,-4.68,0x9b6b50);
+    for(let x=-5.25;x<=5.25;x+=0.48)apartmentBox(0.035,2.25,0.035,x,1.6,-4.6,0x774d3b);
+    for(let x=-5;x<=5;x+=2.5)apartmentBox(0.16,0.18,9.2,x,3.02,0,0x49382d);
+    apartmentBox(2.25,1.75,0.12,-4.55,1.15,-4.45,0x272b2e);
+    for(let y=0.55;y<=2.0;y+=0.48)apartmentBox(2.2,0.07,0.35,-4.55,y,-4.2,0x6d777a);
   }
   // Warm ceiling lights represented as visible fixtures and real point lights.
   [-2.5,2.5].forEach(x=>{const fixture=new THREE.Mesh(new THREE.SphereGeometry(0.16,12,8),new THREE.MeshStandardMaterial({color:0xffe3a6,emissive:0x6c4a19,emissiveIntensity:0.7}));fixture.position.set(x,3.0,0);apartmentInterior.add(fixture);const light=new THREE.PointLight(0xffdba1,0.55,8);light.position.set(x,2.8,0);apartmentInterior.add(light);});
