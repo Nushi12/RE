@@ -832,7 +832,7 @@ function updateCoopRoomUI(room){
   panel.style.display=G.joined?'block':'none';
   const r=activeCoopRoom||{id:'public-city',name:'Public City',isPublic:true};
   const meta=document.getElementById('coopRoomName');
-  if(meta)meta.textContent=r.isPublic?'Public City · Agents can meet in the public world':(r.name+' · Code: '+r.id+' · '+(r.members||1)+'/8 agents · Commission '+((r.commission&&r.commission.shares)?r.commission.shares.join('/')+'%':'50/50'));
+  if(meta)meta.textContent=r.isPublic?'Public City · Agents can meet in the public world':(r.name+' · Code: '+r.id+' · '+(r.members||1)+'/8 agents · Commission '+((r.commission&&r.commission.shares)?r.commission.shares.join('/')+'%':'50/50')+(r.teamGoals?' · Team deals: '+(r.teamDealsClosed||0):''));
   const host=document.getElementById('coopHostSettings');if(host)host.style.display=(!r.isPublic&&r.hostId===myId)?'flex':'none';
   const sel=document.getElementById('coopCommission');if(sel&&r.commission)sel.value=r.commission.type||'equal';
   const goals=document.getElementById('coopTeamGoals');if(goals)goals.checked=!!r.teamGoals;
@@ -849,6 +849,12 @@ socket.on('init',d=>{myId=d.id;if(preview){scene.remove(preview);avatarActors.de
 socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud();});
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
 socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;avatars[id].tx=st[id].x;avatars[id].tz=st[id].z;avatars[id].try=st[id].ry;avatars[id].n=st[id].n||0;avatars[id].g.visible=avatars[id].n===G.nb;}});
+socket.on('team:deal:closed',result=>{
+  if(!result||result.closerId===myId)return;
+  const payout=Number(result.payouts&&result.payouts[myId])||0;
+  G.cash+=payout;G.deals++;G.msgs.push("🤝 Teammate "+result.closerName+" closed "+result.listing+". Your team share: "+f(payout)+". Team deals closed: "+result.dealsClosed+".");
+  autoSaveCareer(true);render();
+});
 
 NB[0].pros.push({n:"Leo",modelFile:"Leo.glb",rent:1,sq:700,bd:1,bel:1.12,why:"is a landlord with a vacant one-bedroom",goal:"wants a reliable tenant quickly",x:7.4,z:-18.5,ry:-Math.PI/2,look:{b:1,s:1,h:3,hc:2,j:2,p:1,o:1}});
 NB[1].pros.push({n:"Nora",modelFile:"olivettinpc2.glb",rent:1,sq:800,bd:1,bel:0.9,why:"is renting out her condo while she travels",goal:"wants steady income and a careful tenant",x:-7.4,z:12,ry:Math.PI/2,look:{b:0,s:2,h:2,hc:3,j:5,p:0,o:2}});
@@ -1150,13 +1156,32 @@ function showL(){
 function invite(id){const P=curP();socket.emit("relay",{to:id,type:"cobroke",data:{k:P.k,txt:P.p.n+"'s listing at "+f(P.price)+(P.p.rent?"/mo":"")}});G.msgs.push("Invitation sent to "+avatars[id].name+".");render();}
 function acc(i){const o=G.offers.splice(i,1)[0];socket.emit("relay",{to:o.from,type:"cob-ok",data:{k:o.d.k}});G.xp+=20;G.msgs.push("You joined "+o.name+"'s deal. Chat with them to help. You earn 40% if it closes. (+20 XP)");render();}
 function dec(i){G.offers.splice(i,1);render();}
-function closeDeal(){const P=curP(),p=P.p,R=p.rent,truth=P.tp*p.sq,r=P.price/truth,good=P.inc.every((x,i)=>x===(P.c[i].bad?0:1));const oldLevel=lvl();let xp,days,msg;
+function closeDeal(){
+  const P=curP(),p=P.p,R=!!p.rent,truth=P.tp*P.sq,r=P.price/truth,good=P.inc.every((x,i)=>x===(P.c[i].bad?0:1));
+  if(P.done||P.st===5)return;
+  const oldLevel=lvl();let xp,days,msg;
   if(r>1.04){days=R?60:150;xp=60;msg="You had to cut the price to find a taker, so it took much longer.";}
   else if(r<0.96){days=R?10:25;xp=80;msg=p.n+" got a fast "+(R?"lease":"sale")+" but left about "+f(truth-P.price)+(R?" a month":"")+" on the table.";}
   else{days=R?30:75;xp=150;msg="Priced right. A market-supported "+(R?"rent":"price")+" attracted a qualified "+(R?"tenant":"buyer")+".";}
-  if(good)xp+=30;xp+=P.trust*5;const fin=P.price,q=P.rate/100,gross=R?fin*12*q:fin*q,side=R?gross:gross*0.5,net0=side*0.7,net=P.partner?net0*0.6:net0;
+  if(good)xp+=30;xp+=P.trust*5;
+  const fin=P.price,q=P.rate/100,gross=R?fin*12*q:fin*q,side=R?gross:gross*0.5,net0=side*0.7;
+  const finish=(net,teamResult=null)=>{
+    P.res={fin,days,xp,msg,net,good,truth,L0:lvl(),team:!!teamResult};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;
+    if(teamResult)G.msgs.push("🤝 Team deal closed: "+p.n+". Team commission pool "+f(teamResult.pool)+", your share "+f(net)+".");
+    autoSaveCareer(true);if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();try{saveCareer();}catch(e){}
+  };
+  if(!activeCoopRoom.isPublic&&(activeCoopRoom.members||1)>1){
+    const dealId=String(G.nb)+":"+String(P.pi)+":"+String(p.n);
+    socket.emit("team:deal:close",{dealId,listing:p.n,price:fin,rate:P.rate,rent:R},result=>{
+      if(!result||!result.ok){G.msgs.push((result&&result.message)||"Team settlement failed; the deal was not closed. Try again.");render();return;}
+      finish(Number(result.payout)||0,result);
+    });
+    G.msgs.push("⏳ Confirming the shared team deal…");render();return;
+  }
+  const net=P.partner?net0*0.6:net0;
   if(P.partner)socket.emit("relay",{to:P.partner.id,type:"cob-pay",data:{amt:Math.round(net0*0.4),xp:60}});
-  P.res={fin,days,xp,msg,net,good,truth,L0:lvl()};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;autoSaveCareer(true);if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();try{saveCareer();}catch(e){}}
+  finish(net);
+}
 function go(i){if(lvl()<NB[i].lvl||i===G.nb)return;const prev=G.nb;G.nb=i;G.cur=null;G.curB=null;G.focus=null;G.msgs=[];Object.keys(G.P).forEach(k=>{if(G.P[k].lost&&G.P[k].ni===i)delete G.P[k];});
   buildWorld(NB[i]);spawnNPCs();me.x=0;me.z=((i+1)%3===prev)?-41:41;for(const id in avatars)if(id!==myId)avatars[id].g.visible=(avatars[id].n||0)===G.nb;render();}
 function updateNear(){if(G.focus)return;let b=null,bd=4.2;NPCS.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;
