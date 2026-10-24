@@ -974,7 +974,7 @@ function spawnNPCs(){
     const file=p.modelFile||NPC_MODEL_BY_NAME[p.n]||'';
     const n=mkNpc(p.look,p.n,p.rent?'Landlord':'Client','#ffd54a',p.x,p.z,file,{marker:'!'});n.t={k:'s',pi:i};n.name=p.n;NPCS.push(n);
   });
-  Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.st!==3)return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const file=WALKER_MODELS[(P.pi+bi)%WALKER_MODELS.length];const n=mkNpc(b.look,b.n,P.p.rent?'Tenant?':'Buyer?','#7fd0ff',b.x,b.z,file,{marker:'?'});n.t={k:'b',pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});
+  Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||![3,4].includes(P.st))return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const file=WALKER_MODELS[(P.pi+bi)%WALKER_MODELS.length];const n=mkNpc(b.look,b.n,P.p.rent?'Tenant?':'Buyer?','#7fd0ff',b.x,b.z,file,{marker:'?'});n.t={k:'b',pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});
   // Reuse the four supplied walker models as persistent neighborhood residents.
   if(!G.walkerStates)G.walkerStates={};
   WALKER_MODELS.forEach((file,i)=>{
@@ -1003,6 +1003,22 @@ function mk(p,ni,pi){let s=(ni+1)*97+(pi+1)*31;const r=()=>{s=(s*16807)%21474836
   C.splice(Math.floor(r()*4),0,{a:ad(),sq,m:fc?4:16,pr:Math.round(sq*pp/u)*u,note:fc?(p.rent?"Short-term sublet":"Foreclosure (distressed)"):(p.rent?"Old lease, stale rents":"Old sale, stale market"),bad:1});return{C,tp};}
 function PP(ni,pi){const k=ni+"-"+pi;if(!G.P[k]){const p=NB[ni].pros[pi],m=mk(p,ni,pi);G.P[k]={k,ni,pi,p,c:m.C,tp:m.tp,trust:3,sc:0,react:null,inc:m.C.map(()=>1),st:0,price:0,rate:p.rent?12.5:5,done:0,lost:0,fb:[],buyers:[],mb:-1,partner:null};}return G.P[k];}
 const curP=()=>G.cur?PP(G.cur.ni,G.cur.pi):null;
+function syncTeamListing(P){
+  if(!P||!P.p||!Array.isArray(P.buyers))return;
+  socket.emit('team:listing:sync',{ni:P.ni,pi:P.pi,profile:P.p,price:P.price,rate:P.rate,st:P.st,buyers:P.buyers,fb:P.fb||[],mb:P.mb,done:!!P.done,lost:!!P.lost});
+}
+socket.on('team:listing:sync',d=>{
+  if(!d||!Number.isInteger(d.ni)||!Number.isInteger(d.pi)||!NB[d.ni]||!d.profile||!Array.isArray(d.buyers))return;
+  const pros=NB[d.ni].pros;
+  while(pros.length<=d.pi)pros.push(d.profile);
+  pros[d.pi]=d.profile;
+  const P=PP(d.ni,d.pi);
+  P.p=d.profile;P.price=Number(d.price)||0;P.rate=Number(d.rate)||P.rate;
+  P.st=Number(d.st)||3;P.buyers=d.buyers;P.fb=Array.isArray(d.fb)?d.fb:[];P.mb=Number.isInteger(d.mb)?d.mb:-1;
+  P.done=!!d.done;P.lost=!!d.lost;
+  if(d.ni===G.nb){spawnNPCs();render();}
+});
+
 function est(P){const a=P.c.filter((c,i)=>P.inc[i]);if(!a.length)return null;const u=P.p.rent?10:1000,pp=a.reduce((s,c)=>s+c.pr/c.sq,0)/a.length;return{a,pp,v:Math.round(pp*P.p.sq/u)*u};}
 const GENERATED_CLIENT_NAMES=[
   "Alex Morgan","Jordan Ellis","Taylor Brooks","Morgan Reed","Casey Bennett","Riley Parker","Jamie Rivera","Avery Collins","Quinn Bailey","Cameron Hayes",
@@ -1116,8 +1132,8 @@ function tg(i){const P=curP();if(P.st===1){P.inc[i]^=1;render();}}
 function toStage(s){const P=curP();if(s===2){const e=est(P);if(!e)return;P.price=e.v;}P.st=s;render();}
 function pr(d){const P=curP();P.price=Math.max(P.p.rent?500:100000,P.price+d);render();}
 function rt(d){const P=curP(),r=P.p.rent;P.rate=Math.min(r?15:6,Math.max(r?10:4,P.rate+d));render();}
-function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);G.msgs.push("✍ Listing signed at "+f(P.price)+(P.p.rent?"/mo":"")+". Walk the city and find a "+(P.p.rent?"tenant":"buyer")+" (blue ?). Then return to "+P.p.n+" to close.");leave();}
-function reduce(){const P=curP(),u=P.p.rent?10:1000;P.price=Math.round(P.price*0.95/u)*u;P.buyers.forEach(b=>{b.declined=0;b.res=null;});G.msgs.push("Price reduced to "+f(P.price)+". People who passed may reconsider.");spawnNPCs();render();}
+function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);syncTeamListing(P);G.msgs.push("✍ Listing signed at "+f(P.price)+(P.p.rent?"/mo":"")+". Your team can now approach the shared buyers. Return to "+P.p.n+" to close.");leave();}
+function reduce(){const P=curP(),u=P.p.rent?10:1000;P.price=Math.round(P.price*0.95/u)*u;P.buyers.forEach(b=>{b.declined=0;b.res=null;});syncTeamListing(P);G.msgs.push("Price reduced to "+f(P.price)+". People who passed may reconsider.");spawnNPCs();render();}
 function askB(i){
   if(!G.curB)return;
   const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],R=!!P.p.rent;
@@ -1142,6 +1158,7 @@ function askB(i){
   b.ask[i]=1;
   speakGameLine(agentLines[i],'agent');
   b.lastReply=clientLines[i];
+  syncTeamListing(P);
   setTimeout(()=>{if(G.curB&&G.curB.pi===P.pi&&G.curB.bi===P.buyers.indexOf(b))speakGameLine(clientLines[i],'client');},Math.max(900,agentLines[i].length*35));
   render();
 }
@@ -1151,6 +1168,7 @@ function showL(){
   speakGameLine(line,'client');
   if(!v){P.st=4;P.mb=G.curB.bi;b.res=`✔ ${b.n}: “This feels like a good fit. Let’s talk about making an offer.”`;G.msgs.push(`🎉 ${b.n} is interested in making an offer. Return to ${P.p.n} to close the deal.`);}
   else{b.declined=1;b.res=`✘ ${b.n}: “${v}”`;P.fb.push(`${b.n}: ${v}`);}
+  syncTeamListing(P);
   render();
 }
 function invite(id){const P=curP();socket.emit("relay",{to:id,type:"cobroke",data:{k:P.k,txt:P.p.n+"'s listing at "+f(P.price)+(P.p.rent?"/mo":"")}});G.msgs.push("Invitation sent to "+avatars[id].name+".");render();}
