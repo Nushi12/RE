@@ -31,7 +31,7 @@ const PUBLIC_ROOM = 'public-city';
 function cleanRoomCode(value) { return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); }
 function makeRoomCode() { let code; do { code = Math.random().toString(36).slice(2, 8).toUpperCase(); } while (rooms.has(code)); return code; }
 function roomPlayers(roomId) { const out = {}; for (const id in players) if (players[id].roomId === roomId) out[id] = players[id]; return out; }
-function roomSummary(room) { return { id: room.id, name: room.name, hostId: room.hostId, members: Object.keys(roomPlayers(room.id)).length, commission: room.commission || { type: 'equal', shares: [50, 50] }, teamGoals: !!room.teamGoals }; }
+function roomSummary(room) { return { id: room.id, name: room.name, hostId: room.hostId, members: Object.keys(roomPlayers(room.id)).length, commission: room.commission || { type: 'equal', shares: [50, 50] }, teamGoals: !!room.teamGoals, teamDealsClosed: room.teamDealsClosed || 0 }; }
 function leavePrivateRoom(playerId) { const p = players[playerId]; if (!p || !rooms.has(p.roomId)) return; const old = rooms.get(p.roomId); old.members.delete(playerId); if (!old.members.size) rooms.delete(old.id); else { if (old.hostId === playerId) old.hostId = old.members.values().next().value; io.to(old.id).emit('room:updated', roomSummary(old)); } }
 function sendRoomState(roomId) { const state = {}; for (const id in players) if (players[id].roomId === roomId) state[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry, n: players[id].n }; io.to(roomId).emit('state', state); }
 function movePlayerToRoom(socket, roomId) { const p = players[socket.id]; if (!p) return; const oldRoom = p.roomId; if (oldRoom) { socket.leave(oldRoom); socket.to(oldRoom).emit('left', socket.id); } p.roomId = roomId; socket.join(roomId); socket.emit('init', { id: socket.id, players: roomPlayers(roomId), room: roomId === PUBLIC_ROOM ? { id: PUBLIC_ROOM, name: 'Public City', isPublic: true } : roomSummary(rooms.get(roomId)) }); socket.to(roomId).emit('joined', p); }
@@ -55,7 +55,7 @@ io.on('connection', (socket) => {
     const p = players[socket.id]; if (!p) return;
     const name = String(d.name || 'Team Room').trim().slice(0, 32) || 'Team Room';
     leavePrivateRoom(socket.id);
-    const room = { id: makeRoomCode(), name, hostId: socket.id, commission: { type: 'equal', shares: [50, 50] }, teamGoals: !!d.teamGoals, members: new Set([socket.id]), createdAt: Date.now() };
+    const room = { id: makeRoomCode(), name, hostId: socket.id, commission: { type: 'equal', shares: [50, 50] }, teamGoals: !!d.teamGoals, teamDealsClosed: 0, deals: new Set(), members: new Set([socket.id]), createdAt: Date.now() };
     rooms.set(room.id, room); p.teamId = room.id; movePlayerToRoom(socket, room.id);
     socket.emit('room:created', roomSummary(room));
   });
@@ -77,6 +77,39 @@ io.on('connection', (socket) => {
     else if (type === 'custom' && Number.isFinite(Number(d.leadShare)) && Number(d.leadShare) >= 1 && Number(d.leadShare) <= 99) room.commission = { type: 'custom', shares: [Number(d.leadShare), 100 - Number(d.leadShare)] };
     else return;
     room.teamGoals = !!d.teamGoals; io.to(room.id).emit('room:updated', roomSummary(room));
+  });
+  // Shared deal settlement: the server accepts each team listing close only once.
+  socket.on('team:deal:close', (d = {}, ack = () => {}) => {
+    const p = players[socket.id], room = p && rooms.get(p.roomId);
+    if (!p || !room || !room.members.has(socket.id)) return ack({ ok: false, message: 'Join a private team room first.' });
+    const members = [...room.members].filter(id => players[id] && players[id].roomId === room.id);
+    if (members.length < 2) return ack({ ok: false, message: 'A teammate must be in the room to close a shared deal.' });
+    const dealId = String(d.dealId || '').slice(0, 120);
+    const price = Number(d.price), rate = Number(d.rate), rent = !!d.rent;
+    const listing = String(d.listing || 'Property').slice(0, 100);
+    if (!dealId || !Number.isFinite(price) || price <= 0 || price > 1000000000 ||
+        !Number.isFinite(rate) || rate < 0 || rate > 20) {
+      return ack({ ok: false, message: 'The deal details were invalid; nothing was closed.' });
+    }
+    if (!room.deals) room.deals = new Set();
+    if (room.deals.has(dealId)) return ack({ ok: false, message: 'This team listing has already been closed.' });
+    const gross = rent ? price * 12 * rate / 100 : price * rate / 100 * 0.5;
+    const pool = Math.round(gross * 0.7);
+    const shares = room.commission && Array.isArray(room.commission.shares) ? room.commission.shares : [50, 50];
+    const hostShare = Math.max(1, Math.min(99, Number(shares[0]) || 50)) / 100;
+    const payouts = {};
+    const nonHostIds = members.filter(id => id !== room.hostId);
+    payouts[room.hostId] = Math.round(pool * hostShare);
+    const teammatePool = pool - payouts[room.hostId];
+    const each = nonHostIds.length ? Math.floor(teammatePool / nonHostIds.length) : 0;
+    let assigned = payouts[room.hostId];
+    nonHostIds.forEach((id, index) => { payouts[id] = index === nonHostIds.length - 1 ? pool - assigned : each; assigned += payouts[id]; });
+    room.deals.add(dealId);
+    room.teamDealsClosed = (room.teamDealsClosed || 0) + 1;
+    const result = { dealId, listing, price, rent, pool, payouts, closerId: socket.id,
+      closerName: p.name, dealsClosed: room.teamDealsClosed, teamGoals: !!room.teamGoals };
+    io.to(room.id).emit('team:deal:closed', result);
+    ack({ ok: true, ...result, payout: payouts[socket.id] || 0 });
   });
   socket.on('move', (m = {}) => {
     const p = players[socket.id];
