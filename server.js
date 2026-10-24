@@ -55,7 +55,7 @@ io.on('connection', (socket) => {
     const p = players[socket.id]; if (!p) return;
     const name = String(d.name || 'Team Room').trim().slice(0, 32) || 'Team Room';
     leavePrivateRoom(socket.id);
-    const room = { id: makeRoomCode(), name, hostId: socket.id, commission: { type: 'equal', shares: [50, 50] }, teamGoals: !!d.teamGoals, teamDealsClosed: 0, deals: new Set(), members: new Set([socket.id]), createdAt: Date.now() };
+    const room = { id: makeRoomCode(), name, hostId: socket.id, commission: { type: 'equal', shares: [50, 50] }, teamGoals: !!d.teamGoals, teamDealsClosed: 0, deals: new Set(), listings: new Map(), members: new Set([socket.id]), createdAt: Date.now() };
     rooms.set(room.id, room); p.teamId = room.id; movePlayerToRoom(socket, room.id);
     socket.emit('room:created', roomSummary(room));
   });
@@ -66,6 +66,7 @@ io.on('connection', (socket) => {
     if (Object.keys(roomPlayers(code)).length >= 8 && !roomPlayers(code)[socket.id]) { socket.emit('room:error', { message: 'This room is full (8 agents maximum).' }); return; }
     if (p.roomId !== code) { leavePrivateRoom(socket.id); p.teamId = code; room.members.add(socket.id); movePlayerToRoom(socket, code); }
     io.to(code).emit('room:updated', roomSummary(room));
+    if (room.listings) for (const listing of room.listings.values()) socket.emit('team:listing:sync', listing);
   });
   socket.on('room:public', () => { const p = players[socket.id]; if (!p) return; leavePrivateRoom(socket.id); p.teamId = null; movePlayerToRoom(socket, PUBLIC_ROOM); });
   // Share a team's active listing and buyer progress with every teammate in the same private room.
@@ -87,7 +88,9 @@ io.on('connection', (socket) => {
         !Number.isFinite(payload.rate) || payload.rate < 0 || payload.rate > 20 ||
         ![0, 1, 2, 3, 4, 5].includes(payload.st)) return;
     try { if (JSON.stringify(payload).length > 24000) return; } catch (_) { return; }
-    io.to(room.id).except(socket.id).emit('team:listing:sync', payload);
+    if (!room.listings) room.listings = new Map();
+    room.listings.set(ni + '-' + pi, payload);
+    socket.to(room.id).emit('team:listing:sync', payload);
   });
   socket.on('room:settings', (d = {}) => {
     const p = players[socket.id], room = p && rooms.get(p.roomId);
