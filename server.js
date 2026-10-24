@@ -68,6 +68,27 @@ io.on('connection', (socket) => {
     io.to(code).emit('room:updated', roomSummary(room));
   });
   socket.on('room:public', () => { const p = players[socket.id]; if (!p) return; leavePrivateRoom(socket.id); p.teamId = null; movePlayerToRoom(socket, PUBLIC_ROOM); });
+  // Share a team's active listing and buyer progress with every teammate in the same private room.
+  socket.on('team:listing:sync', (d = {}) => {
+    const p = players[socket.id], room = p && rooms.get(p.roomId);
+    if (!p || !room || !room.members.has(socket.id) || !d || typeof d !== 'object') return;
+    const ni = Number(d.ni), pi = Number(d.pi);
+    if (!Number.isInteger(ni) || ni < 0 || ni > 20 || !Number.isInteger(pi) || pi < 0 || pi > 200) return;
+    const payload = {
+      ni, pi,
+      profile: d.profile && typeof d.profile === 'object' ? d.profile : null,
+      price: Number(d.price), rate: Number(d.rate),
+      st: Number(d.st), buyers: Array.isArray(d.buyers) ? d.buyers.slice(0, 12) : [],
+      fb: Array.isArray(d.fb) ? d.fb.slice(0, 20).map(x => String(x).slice(0, 300)) : [],
+      mb: Number.isInteger(Number(d.mb)) ? Number(d.mb) : -1,
+      done: !!d.done, lost: !!d.lost
+    };
+    if (!payload.profile || !Number.isFinite(payload.price) || payload.price < 0 ||
+        !Number.isFinite(payload.rate) || payload.rate < 0 || payload.rate > 20 ||
+        ![0, 1, 2, 3, 4, 5].includes(payload.st)) return;
+    try { if (JSON.stringify(payload).length > 24000) return; } catch (_) { return; }
+    io.to(room.id).except(socket.id).emit('team:listing:sync', payload);
+  });
   socket.on('room:settings', (d = {}) => {
     const p = players[socket.id], room = p && rooms.get(p.roomId);
     if (!p || !room || room.hostId !== socket.id) return;
