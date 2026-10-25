@@ -440,7 +440,7 @@ function loadSelectedModelInto(target,requestedId){
     const mixer=new THREE.AnimationMixer(model);
     const animations=gltf.animations||[];
     const idleClip=chooseClip(animations,[/^idle(?:$|[_\s])/i,/idle/i,/stand.*chat/i,/stand/i])||null;
-    const walkClip=chooseClip(animations,[/^walking_2_inplace$/i,/walking_woman/i,/walking.*inplace/i,/^walking$/i,/walking_2/i,/^walk(?:ing)?/i]);
+    const walkClip=chooseClip(animations,[/^walking_2_inplace$/i,/walking_woman/i,/walking.*inplace/i,/^walking$/i,/walking_2/i,/^walk(?:ing)?/i,/run|locomotion|step|move/i])||animations.find(a=>a!==idleClip&&!/idle|stand|sit|talk|chat|breath/i.test(a.name||''))||null;
     const sitClip=chooseClip(animations,[/sit/i]);
     const actions={};
     if(idleClip)actions.idle=mixer.clipAction(idleClip);
@@ -852,7 +852,7 @@ socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;a
 socket.on('team:deal:closed',result=>{
   if(!result||result.closerId===myId)return;
   const payout=Number(result.payouts&&result.payouts[myId])||0;
-  G.cash+=payout;G.deals++;G.msgs.push("🤝 Teammate "+result.closerName+" closed "+result.listing+". Your team share: "+f(payout)+". Team deals closed: "+result.dealsClosed+".");
+  const teamXp=Math.max(0,Math.min(1000,Math.floor(Number(result.xp)||100)));G.cash+=payout;G.xp+=teamXp;G.deals++;G.msgs.push("🤝 Teammate "+result.closerName+" closed "+result.listing+". Your team share: "+f(payout)+" and +"+teamXp+" closing XP. Team deals closed: "+result.dealsClosed+".");
   autoSaveCareer(true);render();
 });
 
@@ -1001,11 +1001,11 @@ function mk(p,ni,pi){let s=(ni+1)*97+(pi+1)*31;const r=()=>{s=(s*16807)%21474836
   const C=[0,1,2].map(()=>{const sq=Math.round(p.sq*(0.88+0.24*r())/10)*10,pp=tp*(0.96+0.08*r());return{a:ad(),sq,m:1+Math.floor(r()*5),pr:Math.round(sq*pp/u)*u,note:p.rent?"Normal lease":"Normal sale",bad:0};});
   const fc=r()<0.5,sq=Math.round(p.sq*(0.95+0.1*r())/10)*10,pp=tp*(fc?0.7:0.86);
   C.splice(Math.floor(r()*4),0,{a:ad(),sq,m:fc?4:16,pr:Math.round(sq*pp/u)*u,note:fc?(p.rent?"Short-term sublet":"Foreclosure (distressed)"):(p.rent?"Old lease, stale rents":"Old sale, stale market"),bad:1});return{C,tp};}
-function PP(ni,pi){const k=ni+"-"+pi;if(!G.P[k]){const p=NB[ni].pros[pi],m=mk(p,ni,pi);G.P[k]={k,ni,pi,p,c:m.C,tp:m.tp,trust:3,sc:0,react:null,inc:m.C.map(()=>1),st:0,price:0,rate:p.rent?12.5:5,done:0,lost:0,fb:[],buyers:[],mb:-1,partner:null};}return G.P[k];}
+function PP(ni,pi){const k=ni+"-"+pi;if(!G.P[k]){const p=NB[ni].pros[pi],m=mk(p,ni,pi);G.P[k]={k,ni,pi,p,c:m.C,tp:m.tp,trust:3,sc:0,react:null,inc:m.C.map(()=>1),st:0,price:0,rate:p.rent?12.5:5,done:0,lost:0,fb:[],buyers:[],mb:-1,partner:null,listingXpAwarded:false,buyerXpAwarded:false};}return G.P[k];}
 const curP=()=>G.cur?PP(G.cur.ni,G.cur.pi):null;
 function syncTeamListing(P){
   if(!P||!P.p||!Array.isArray(P.buyers))return;
-  socket.emit('team:listing:sync',{ni:P.ni,pi:P.pi,profile:P.p,price:P.price,rate:P.rate,st:P.st,buyers:P.buyers,fb:P.fb||[],mb:P.mb,done:!!P.done,lost:!!P.lost});
+  socket.emit('team:listing:sync',{ni:P.ni,pi:P.pi,profile:P.p,price:P.price,rate:P.rate,st:P.st,buyers:P.buyers,fb:P.fb||[],mb:P.mb,done:!!P.done,lost:!!P.lost,listingXpAwarded:!!P.listingXpAwarded,buyerXpAwarded:!!P.buyerXpAwarded});
 }
 socket.on('team:listing:sync',d=>{
   if(!d||!Number.isInteger(d.ni)||!Number.isInteger(d.pi)||!NB[d.ni]||!d.profile||!Array.isArray(d.buyers))return;
@@ -1015,7 +1015,7 @@ socket.on('team:listing:sync',d=>{
   const P=PP(d.ni,d.pi);
   P.p=d.profile;P.price=Number(d.price)||0;P.rate=Number(d.rate)||P.rate;
   P.st=Number(d.st)||3;P.buyers=d.buyers;P.fb=Array.isArray(d.fb)?d.fb:[];P.mb=Number.isInteger(d.mb)?d.mb:-1;
-  P.done=!!d.done;P.lost=!!d.lost;
+  P.done=!!d.done;P.lost=!!d.lost;P.listingXpAwarded=!!d.listingXpAwarded;P.buyerXpAwarded=!!d.buyerXpAwarded;
   if(d.ni===G.nb){spawnNPCs();render();}
 });
 
@@ -1132,7 +1132,7 @@ function tg(i){const P=curP();if(P.st===1){P.inc[i]^=1;render();}}
 function toStage(s){const P=curP();if(s===2){const e=est(P);if(!e)return;P.price=e.v;}P.st=s;render();}
 function pr(d){const P=curP();P.price=Math.max(P.p.rent?500:100000,P.price+d);render();}
 function rt(d){const P=curP(),r=P.p.rent;P.rate=Math.min(r?15:6,Math.max(r?10:4,P.rate+d));render();}
-function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);syncTeamListing(P);G.msgs.push("✍ Listing signed at "+f(P.price)+(P.p.rent?"/mo":"")+". Your team can now approach the shared buyers. Return to "+P.p.n+" to close.");leave();}
+function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);if(!P.listingXpAwarded){G.xp+=50;P.listingXpAwarded=true;G.msgs.push("✍ Listing signed. +50 XP for securing the client.");}syncTeamListing(P);G.msgs.push("Your team can now approach the shared buyers. Return to "+P.p.n+" to close.");leave();}
 function reduce(){const P=curP(),u=P.p.rent?10:1000;P.price=Math.round(P.price*0.95/u)*u;P.buyers.forEach(b=>{b.declined=0;b.res=null;});syncTeamListing(P);G.msgs.push("Price reduced to "+f(P.price)+". People who passed may reconsider.");spawnNPCs();render();}
 function askB(i){
   if(!G.curB)return;
@@ -1166,7 +1166,7 @@ function showL(){
   const P=PP(G.nb,G.curB.pi),b=P.buyers[G.curB.bi],v=verdict(P,b);
   const line=v?`${b.n}: “I’m not sure this one works for me. ${v} I’d rather keep looking than force it.”`:`${b.n}: “I can picture myself here. It seems to fit what I’m looking for—what would the next step be?”`;
   speakGameLine(line,'client');
-  if(!v){P.st=4;P.mb=G.curB.bi;b.res=`✔ ${b.n}: “This feels like a good fit. Let’s talk about making an offer.”`;G.msgs.push(`🎉 ${b.n} is interested in making an offer. Return to ${P.p.n} to close the deal.`);}
+  if(!v){P.st=4;P.mb=G.curB.bi;b.res=`✔ ${b.n}: “This feels like a good fit. Let’s talk about making an offer.”`;if(!P.buyerXpAwarded){G.xp+=50;P.buyerXpAwarded=true;G.msgs.push("🎯 Qualified buyer found. +50 XP.");}G.msgs.push(`🎉 ${b.n} is interested in making an offer. Return to ${P.p.n} to close the deal.`);}
   else{b.declined=1;b.res=`✘ ${b.n}: “${v}”`;P.fb.push(`${b.n}: ${v}`);}
   syncTeamListing(P);
   render();
@@ -1184,8 +1184,8 @@ function closeDeal(){
   if(good)xp+=30;xp+=P.trust*5;
   const fin=P.price,q=P.rate/100,gross=R?fin*12*q:fin*q,side=R?gross:gross*0.5,net0=side*0.7;
   const finish=(net,teamResult=null)=>{
-    P.res={fin,days,xp,msg,net,good,truth,L0:lvl(),team:!!teamResult};G.cash+=net;G.xp+=xp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;
-    if(teamResult)G.msgs.push("🤝 Team deal closed: "+p.n+". Team commission pool "+f(teamResult.pool)+", your share "+f(net)+".");
+    const rewardXp=teamResult?Math.max(0,Number(teamResult.xp)||100):xp;P.res={fin,days,xp:rewardXp,msg,net,good,truth,L0:lvl(),team:!!teamResult};G.cash+=net;G.xp+=rewardXp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;
+    if(teamResult)G.msgs.push("🤝 Team deal closed: "+p.n+". +"+rewardXp+" closing XP. Team commission pool "+f(teamResult.pool)+", your share "+f(net)+".");
     autoSaveCareer(true);if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();try{saveCareer();}catch(e){}
   };
   if(!activeCoopRoom.isPublic&&(activeCoopRoom.members||1)>1){
