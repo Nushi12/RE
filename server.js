@@ -65,7 +65,8 @@ io.on('connection', (socket) => {
     const p = players[socket.id]; if (!p) return;
     const code = cleanRoomCode(d.code), room = rooms.get(code);
     if (!room) { socket.emit('room:error', { message: 'That private room could not be found.' }); return; }
-    if (Object.keys(roomPlayers(code)).length >= 8 && !roomPlayers(code)[socket.id]) { socket.emit('room:error', { message: 'This room is full (8 agents maximum).' }); return; }
+    const teamMemberCount = [...room.members].filter(id => players[id] && players[id].teamId === code).length;
+    if (teamMemberCount >= 8 && p.teamId !== code) { socket.emit('room:error', { message: 'This team is full (8 agents maximum).' }); return; }
     if (p.teamId !== code) { leavePrivateRoom(socket.id); p.teamId = code; room.members.add(socket.id); }
     if (p.roomId !== code) movePlayerToRoom(socket, code);
     io.to(code).emit('room:updated', roomSummary(room));
