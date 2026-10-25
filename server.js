@@ -49,8 +49,35 @@ io.on('connection', (socket) => {
     const firm = FIRMS.includes(d.firm) ? d.firm : FIRMS[0];
     const existing = players[socket.id];
     players[socket.id] = { ...(existing || {}), id: socket.id, name, firm, look: cleanLook(d.look), avatar: cleanAvatar(d.avatar), skinTone: 'original', outfitColor: 'original', hairColor: 'original', x: existing?.x ?? (Math.random() - 0.5) * 6, z: existing?.z ?? 3 + Math.random() * 2, ry: existing?.ry ?? 0, n: 0, roomId: PUBLIC_ROOM, teamId: existing?.teamId || null };
-    // Re-entering after character setup must not silently destroy an existing team membership.
-    movePlayerToRoom(socket, players[socket.id].teamId && rooms.has(players[socket.id].teamId) ? players[socket.id].teamId : PUBLIC_ROOM);
+    const p = players[socket.id];
+    let targetRoomId = p.teamId && rooms.has(p.teamId) ? p.teamId : PUBLIC_ROOM;
+    let createdRoom = null, joinedRoom = null;
+    const requestedTeamName = String(d.createTeamName || '').trim().slice(0, 32);
+    const requestedCode = cleanRoomCode(d.teamCode);
+    if (requestedTeamName) {
+      leavePrivateRoom(socket.id);
+      createdRoom = { id: makeRoomCode(), name: requestedTeamName || 'My Team', hostId: socket.id, commission: { type: 'equal', shares: [50, 50] }, teamGoals: false, teamDealsClosed: 0, deals: new Set(), listings: new Map(), members: new Set([socket.id]), createdAt: Date.now() };
+      rooms.set(createdRoom.id, createdRoom); p.teamId = createdRoom.id; targetRoomId = createdRoom.id;
+    } else if (requestedCode) {
+      const requestedRoom = rooms.get(requestedCode);
+      if (!requestedRoom) {
+        socket.emit('room:error', { message: 'That private team code could not be found.' });
+      } else {
+        const memberCount = [...requestedRoom.members].filter(id => players[id] && players[id].teamId === requestedCode).length;
+        if (memberCount >= 8 && p.teamId !== requestedCode) {
+          socket.emit('room:error', { message: 'This team is full (8 agents maximum).' });
+        } else {
+          if (p.teamId !== requestedCode) leavePrivateRoom(socket.id);
+          p.teamId = requestedCode; requestedRoom.members.add(socket.id); joinedRoom = requestedRoom; targetRoomId = requestedCode;
+        }
+      }
+    }
+    // If a code was supplied but invalid/full, keep a still-valid existing team or use Public City.
+    if (p.teamId && rooms.has(p.teamId) && !createdRoom && !joinedRoom) targetRoomId = p.teamId;
+    else if (!p.teamId || !rooms.has(p.teamId)) targetRoomId = PUBLIC_ROOM;
+    movePlayerToRoom(socket, targetRoomId);
+    if (createdRoom) socket.emit('room:created', roomSummary(createdRoom));
+    if (joinedRoom) { io.to(joinedRoom.id).emit('room:updated', roomSummary(joinedRoom)); if (joinedRoom.listings) for (const listing of joinedRoom.listings.values()) socket.emit('team:listing:sync', listing); }
     io.emit('agents:online', Object.keys(players).length);
   });
   socket.on('room:create', (d = {}) => {
