@@ -31,8 +31,8 @@ const PUBLIC_ROOM = 'public-city';
 function cleanRoomCode(value) { return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); }
 function makeRoomCode() { let code; do { code = Math.random().toString(36).slice(2, 8).toUpperCase(); } while (rooms.has(code)); return code; }
 function roomPlayers(roomId) { const out = {}; for (const id in players) if (players[id].roomId === roomId) out[id] = players[id]; return out; }
-function roomSummary(room) { const online = roomPlayers(room.id); return { id: room.id, name: room.name, hostId: room.hostId, members: Object.keys(online).length, agents: Object.values(online).map(p => p.name), commission: room.commission || { type: 'equal', shares: [50, 50] }, teamGoals: !!room.teamGoals, teamDealsClosed: room.teamDealsClosed || 0 }; }
-function leavePrivateRoom(playerId) { const p = players[playerId]; if (!p || !rooms.has(p.roomId)) return; const old = rooms.get(p.roomId); old.members.delete(playerId); if (!old.members.size) rooms.delete(old.id); else { if (old.hostId === playerId) old.hostId = old.members.values().next().value; io.to(old.id).emit('room:updated', roomSummary(old)); } }
+function roomSummary(room) { const members = [...room.members].map(id => players[id]).filter(p => p && p.teamId === room.id); return { id: room.id, name: room.name, hostId: room.hostId, members: members.length, agents: members.map(p => p.name), commission: room.commission || { type: 'equal', shares: [50, 50] }, teamGoals: !!room.teamGoals, teamDealsClosed: room.teamDealsClosed || 0 }; }
+function leavePrivateRoom(playerId) { const p = players[playerId]; const teamId = p && p.teamId; if (!p || !teamId || !rooms.has(teamId)) return; const old = rooms.get(teamId); old.members.delete(playerId); p.teamId = null; if (!old.members.size) rooms.delete(old.id); else { if (old.hostId === playerId) old.hostId = old.members.values().next().value; io.to(old.id).emit('room:updated', roomSummary(old)); } }
 function sendRoomState(roomId) { const state = {}; for (const id in players) if (players[id].roomId === roomId) state[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry, n: players[id].n }; io.to(roomId).emit('state', state); }
 function movePlayerToRoom(socket, roomId) { const p = players[socket.id]; if (!p) return; const oldRoom = p.roomId; if (oldRoom) { socket.leave(oldRoom); socket.to(oldRoom).emit('left', socket.id); } p.roomId = roomId; socket.join(roomId); socket.emit('init', { id: socket.id, players: roomPlayers(roomId), room: roomId === PUBLIC_ROOM ? { id: PUBLIC_ROOM, name: 'Public City', isPublic: true } : roomSummary(rooms.get(roomId)) }); socket.to(roomId).emit('joined', p); }
 
@@ -65,11 +65,11 @@ io.on('connection', (socket) => {
     const code = cleanRoomCode(d.code), room = rooms.get(code);
     if (!room) { socket.emit('room:error', { message: 'That private room could not be found.' }); return; }
     if (Object.keys(roomPlayers(code)).length >= 8 && !roomPlayers(code)[socket.id]) { socket.emit('room:error', { message: 'This room is full (8 agents maximum).' }); return; }
-    if (p.roomId !== code) { leavePrivateRoom(socket.id); p.teamId = code; room.members.add(socket.id); movePlayerToRoom(socket, code); }
+    if (p.roomId !== code) { if (p.teamId !== code) leavePrivateRoom(socket.id); p.teamId = code; room.members.add(socket.id); movePlayerToRoom(socket, code); }
     io.to(code).emit('room:updated', roomSummary(room));
     if (room.listings) for (const listing of room.listings.values()) socket.emit('team:listing:sync', listing);
   });
-  socket.on('room:public', () => { const p = players[socket.id]; if (!p) return; leavePrivateRoom(socket.id); p.teamId = null; movePlayerToRoom(socket, PUBLIC_ROOM); });
+  socket.on('room:public', () => { const p = players[socket.id]; if (!p) return; movePlayerToRoom(socket, PUBLIC_ROOM); });
   // Share a team's active listing and buyer progress with every teammate in the same private room.
   socket.on('team:listing:sync', (d = {}) => {
     const p = players[socket.id], room = p && rooms.get(p.roomId);
@@ -158,7 +158,7 @@ io.on('connection', (socket) => {
   });
   socket.on('disconnect', () => {
     const p = players[socket.id];
-    if (p) { const roomId = p.roomId || PUBLIC_ROOM; if (rooms.has(roomId)) { const room = rooms.get(roomId); room.members.delete(socket.id); if (!room.members.size) rooms.delete(roomId); else { if (room.hostId === socket.id) room.hostId = room.members.values().next().value; io.to(roomId).emit('room:updated', roomSummary(room)); } } delete players[socket.id]; io.to(roomId).emit('left', socket.id); io.emit('agents:online', Object.keys(players).length); }
+    if (p) { const roomId = p.roomId || PUBLIC_ROOM; leavePrivateRoom(socket.id); delete players[socket.id]; io.to(roomId).emit('left', socket.id); io.emit('agents:online', Object.keys(players).length); }
   });
 });
 
