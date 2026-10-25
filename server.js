@@ -130,7 +130,7 @@ io.on('connection', (socket) => {
     nonHostIds.forEach((id, index) => { payouts[id] = index === nonHostIds.length - 1 ? pool - assigned : each; assigned += payouts[id]; });
     room.deals.add(dealId);
     room.teamDealsClosed = (room.teamDealsClosed || 0) + 1;
-    const result = { dealId, listing, price, rent, pool, payouts, closerId: socket.id,
+    const result = { dealId, listing, price, rent, pool, payouts, closerId: socket.id, xp: 100,
       closerName: p.name, dealsClosed: room.teamDealsClosed, teamGoals: !!room.teamGoals };
     io.to(room.id).emit('team:deal:closed', result);
     ack({ ok: true, ...result, payout: payouts[socket.id] || 0 });
