@@ -6,7 +6,7 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const BUILD_ID = 'REW-AUDIO-INTEGRATION-2026-10-22';
+const BUILD_ID = 'REW-TEAM-PUBLIC-CITY-FIX-2026-10-25';
 
 // Keep model assets inside public/assets and make the requested /assets/<file> URLs work.
 app.get('/version', (_req, res) => res.type('text/plain').send(BUILD_ID));
@@ -25,7 +25,7 @@ const AVATAR_IDS = new Set(['female1', 'female2', 'female3', 'female4', 'male1',
 function cleanAvatar(id) { return AVATAR_IDS.has(String(id || '')) ? String(id) : 'female1'; }
 const RANGES = { b: 3, s: 6, h: 6, hc: 6, j: 6, p: 4, o: 3 };
 const players = {};
-// Session rooms are kept server-side; the existing public city remains the default.
+// Session rooms are kept server-side. Team membership is separate from the player's current scene.
 const rooms = new Map();
 const PUBLIC_ROOM = 'public-city';
 function cleanRoomCode(value) { return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); }
@@ -34,7 +34,7 @@ function roomPlayers(roomId) { const out = {}; for (const id in players) if (pla
 function roomSummary(room) { const online = roomPlayers(room.id); return { id: room.id, name: room.name, hostId: room.hostId, members: Object.keys(online).length, agents: Object.values(online).map(p => p.name), commission: room.commission || { type: 'equal', shares: [50, 50] }, teamGoals: !!room.teamGoals, teamDealsClosed: room.teamDealsClosed || 0 }; }
 function leavePrivateRoom(playerId) { const p = players[playerId]; if (!p || !rooms.has(p.roomId)) return; const old = rooms.get(p.roomId); old.members.delete(playerId); if (!old.members.size) rooms.delete(old.id); else { if (old.hostId === playerId) old.hostId = old.members.values().next().value; io.to(old.id).emit('room:updated', roomSummary(old)); } }
 function sendRoomState(roomId) { const state = {}; for (const id in players) if (players[id].roomId === roomId) state[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry, n: players[id].n }; io.to(roomId).emit('state', state); }
-function movePlayerToRoom(socket, roomId) { const p = players[socket.id]; if (!p) return; const oldRoom = p.roomId; if (oldRoom) { socket.leave(oldRoom); socket.to(oldRoom).emit('left', socket.id); } p.roomId = roomId; socket.join(roomId); socket.emit('init', { id: socket.id, players: roomPlayers(roomId), room: roomId === PUBLIC_ROOM ? { id: PUBLIC_ROOM, name: 'Public City', isPublic: true } : roomSummary(rooms.get(roomId)) }); socket.to(roomId).emit('joined', p); }
+function movePlayerToRoom(socket, roomId) { const p = players[socket.id]; if (!p) return; const oldRoom = p.roomId; if (oldRoom) { socket.leave(oldRoom); socket.to(oldRoom).emit('left', socket.id); } p.roomId = roomId; socket.join(roomId); const room = roomId === PUBLIC_ROOM ? { id: PUBLIC_ROOM, name: 'Public City', isPublic: true } : roomSummary(rooms.get(roomId)); socket.emit('init', { id: socket.id, players: roomPlayers(roomId), room, team: p.teamId && rooms.has(p.teamId) ? roomSummary(rooms.get(p.teamId)) : null }); socket.to(roomId).emit('joined', p); }
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function cleanLook(l = {}) {
@@ -48,8 +48,9 @@ io.on('connection', (socket) => {
     const name = String(d.name || 'Agent').trim().slice(0, 16) || 'Agent';
     const firm = FIRMS.includes(d.firm) ? d.firm : FIRMS[0];
     const existing = players[socket.id];
-    players[socket.id] = { ...(existing || {}), id: socket.id, name, firm, look: cleanLook(d.look), avatar: cleanAvatar(d.avatar), skinTone: 'original', outfitColor: 'original', hairColor: 'original', x: existing?.x ?? (Math.random() - 0.5) * 6, z: existing?.z ?? 3 + Math.random() * 2, ry: existing?.ry ?? 0, n: 0, roomId: PUBLIC_ROOM };
-    movePlayerToRoom(socket, PUBLIC_ROOM);
+    players[socket.id] = { ...(existing || {}), id: socket.id, name, firm, look: cleanLook(d.look), avatar: cleanAvatar(d.avatar), skinTone: 'original', outfitColor: 'original', hairColor: 'original', x: existing?.x ?? (Math.random() - 0.5) * 6, z: existing?.z ?? 3 + Math.random() * 2, ry: existing?.ry ?? 0, n: 0, roomId: PUBLIC_ROOM, teamId: existing?.teamId || null };
+    // Re-entering after character setup must not silently destroy an existing team membership.
+    movePlayerToRoom(socket, players[socket.id].teamId && rooms.has(players[socket.id].teamId) ? players[socket.id].teamId : PUBLIC_ROOM);
     io.emit('agents:online', Object.keys(players).length);
   });
   socket.on('room:create', (d = {}) => {
@@ -69,10 +70,13 @@ io.on('connection', (socket) => {
     io.to(code).emit('room:updated', roomSummary(room));
     if (room.listings) for (const listing of room.listings.values()) socket.emit('team:listing:sync', listing);
   });
-  socket.on('room:public', () => { const p = players[socket.id]; if (!p) return; leavePrivateRoom(socket.id); p.teamId = null; movePlayerToRoom(socket, PUBLIC_ROOM); });
+  // Travel to Public City without removing the player from their private team.
+  socket.on('room:public', () => { const p = players[socket.id]; if (!p) return; movePlayerToRoom(socket, PUBLIC_ROOM); socket.emit('room:updated', p.teamId && rooms.has(p.teamId) ? roomSummary(rooms.get(p.teamId)) : { id: PUBLIC_ROOM, name: 'Public City', isPublic: true }); });
+  // Team departure is a distinct, explicit action.
+  socket.on('room:leave', () => { const p = players[socket.id]; if (!p) return; leavePrivateRoom(socket.id); p.teamId = null; movePlayerToRoom(socket, PUBLIC_ROOM); socket.emit('room:updated', { id: PUBLIC_ROOM, name: 'Public City', isPublic: true }); });
   // Share a team's active listing and buyer progress with every teammate in the same private room.
   socket.on('team:listing:sync', (d = {}) => {
-    const p = players[socket.id], room = p && rooms.get(p.roomId);
+    const p = players[socket.id], room = p && rooms.get(p.teamId);
     if (!p || !room || !room.members.has(socket.id) || !d || typeof d !== 'object') return;
     const ni = Number(d.ni), pi = Number(d.pi);
     if (!Number.isInteger(ni) || ni < 0 || ni > 20 || !Number.isInteger(pi) || pi < 0 || pi > 200) return;
@@ -94,8 +98,8 @@ io.on('connection', (socket) => {
     socket.to(room.id).emit('team:listing:sync', payload);
   });
   socket.on('room:settings', (d = {}) => {
-    const p = players[socket.id], room = p && rooms.get(p.roomId);
-    if (!p || !room || room.hostId !== socket.id) return;
+    const p = players[socket.id], room = p && rooms.get(p.teamId);
+    if (!p || !room || p.teamId !== room.id || room.hostId !== socket.id) return;
     const type = String(d.commissionType || 'equal');
     if (type === 'equal') room.commission = { type: 'equal', shares: [50, 50] };
     else if (type === 'lead') room.commission = { type: 'lead', shares: [60, 40] };
@@ -105,9 +109,9 @@ io.on('connection', (socket) => {
   });
   // Shared deal settlement: the server accepts each team listing close only once.
   socket.on('team:deal:close', (d = {}, ack = () => {}) => {
-    const p = players[socket.id], room = p && rooms.get(p.roomId);
+    const p = players[socket.id], room = p && rooms.get(p.teamId);
     if (!p || !room || !room.members.has(socket.id)) return ack({ ok: false, message: 'Join a private team room first.' });
-    const members = [...room.members].filter(id => players[id] && players[id].roomId === room.id);
+    const members = [...room.members].filter(id => players[id] && players[id].teamId === room.id);
     if (members.length < 2) return ack({ ok: false, message: 'A teammate must be in the room to close a shared deal.' });
     const dealId = String(d.dealId || '').slice(0, 120);
     const price = Number(d.price), rate = Number(d.rate), rent = !!d.rent;
