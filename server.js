@@ -50,6 +50,7 @@ io.on('connection', (socket) => {
     const existing = players[socket.id];
     players[socket.id] = { ...(existing || {}), id: socket.id, name, firm, look: cleanLook(d.look), avatar: cleanAvatar(d.avatar), skinTone: 'original', outfitColor: 'original', hairColor: 'original', x: existing?.x ?? (Math.random() - 0.5) * 6, z: existing?.z ?? 3 + Math.random() * 2, ry: existing?.ry ?? 0, n: 0, roomId: PUBLIC_ROOM };
     movePlayerToRoom(socket, PUBLIC_ROOM);
+    io.emit('agents:online', Object.keys(players).length);
   });
   socket.on('room:create', (d = {}) => {
     const p = players[socket.id]; if (!p) return;
@@ -157,7 +158,7 @@ io.on('connection', (socket) => {
   });
   socket.on('disconnect', () => {
     const p = players[socket.id];
-    if (p) { const roomId = p.roomId || PUBLIC_ROOM; if (rooms.has(roomId)) { const room = rooms.get(roomId); room.members.delete(socket.id); if (!room.members.size) rooms.delete(roomId); else { if (room.hostId === socket.id) room.hostId = room.members.values().next().value; io.to(roomId).emit('room:updated', roomSummary(room)); } } delete players[socket.id]; io.to(roomId).emit('left', socket.id); }
+    if (p) { const roomId = p.roomId || PUBLIC_ROOM; if (rooms.has(roomId)) { const room = rooms.get(roomId); room.members.delete(socket.id); if (!room.members.size) rooms.delete(roomId); else { if (room.hostId === socket.id) room.hostId = room.members.values().next().value; io.to(roomId).emit('room:updated', roomSummary(room)); } } delete players[socket.id]; io.to(roomId).emit('left', socket.id); io.emit('agents:online', Object.keys(players).length); }
   });
 });
 
