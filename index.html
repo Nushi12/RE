@@ -851,10 +851,17 @@ socket.on('joined',p=>{if(!avatars[p.id])avatars[p.id]=makeAvatar(p);updateHud()
 socket.on('left',id=>{if(avatars[id]){scene.remove(avatars[id].g);delete avatars[id];updateHud();}});
 socket.on('state',st=>{for(const id in st){if(id===myId||!avatars[id])continue;avatars[id].tx=st[id].x;avatars[id].tz=st[id].z;avatars[id].try=st[id].ry;avatars[id].n=st[id].n||0;avatars[id].g.visible=avatars[id].n===G.nb;}});
 socket.on('team:deal:closed',result=>{
-  if(!result||result.closerId===myId)return;
-  const payout=Number(result.payouts&&result.payouts[myId])||0;
-  const teamXp=Math.max(0,Math.min(1000,Math.floor(Number(result.xp)||100)));G.cash+=payout;G.xp+=teamXp;G.deals++;G.msgs.push("🤝 Teammate "+result.closerName+" closed "+result.listing+". Your team share: "+f(payout)+" and +"+teamXp+" closing XP. Team deals closed: "+result.dealsClosed+".");
-  autoSaveCareer(true);render();
+  if(!result)return;
+  if(result.closerId!==myId){
+    const payout=Number(result.payouts&&result.payouts[myId])||0;
+    const parts=String(result.dealId||'').split(':'),ni=Number(parts[0]),pi=Number(parts[1]);
+    if(Number.isInteger(ni)&&Number.isInteger(pi)&&NB[ni]&&NB[ni].pros[pi]){
+      const P=PP(ni,pi);P.done=1;P.st=5;P.teamSettlementPending=false;
+      if(ni===G.nb)spawnNPCs();
+    }
+    const teamXp=Math.max(0,Math.min(1000,Math.floor(Number(result.xp)||100)));G.cash+=payout;G.xp+=teamXp;G.deals++;G.msgs.push("🤝 Teammate "+result.closerName+" closed "+result.listing+". Your team share: "+f(payout)+" and +"+teamXp+" closing XP. Team deals closed: "+result.dealsClosed+".");
+    autoSaveCareer(true);render();
+  }
 });
 
 NB[0].pros.push({n:"Leo",modelFile:"Leo.glb",rent:1,sq:700,bd:1,bel:1.12,why:"is a landlord with a vacant one-bedroom",goal:"wants a reliable tenant quickly",x:7.4,z:-18.5,ry:-Math.PI/2,look:{b:1,s:1,h:3,hc:2,j:2,p:1,o:1}});
