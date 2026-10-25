@@ -485,7 +485,7 @@ function walkAnim(g,dist,dt){
   }
 }
 
-const avatars={};let me=null,myId=null,preview=null;
+const avatars={};let me=null,myId=null,preview=null,globalAgentsOnline=null;
 function makeAvatar(p){
   const f=FIRMS.find(x=>x.n===p.firm)||FIRMS[0];
   const root=new THREE.Group();
@@ -822,7 +822,8 @@ E('b1').onclick=()=>{rewStartMode='new';disposeAvatarCardPreviews();if(preview){
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
 E('b4').onclick=()=>{const restored=rewStartMode==='continue'&&loadCareer();const f=FIRMS[selFirm];G.fi=selFirm;if(!restored){G.name=E('name').value.trim()||G.name||'Agent';}else{G.badge=G.badge||0;}if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[G.nb].office=FIRMS[G.fi].n+' Office';buildWorld(NB[G.nb]);socket.emit('join',{name:G.name||E('name').value.trim()||'Agent',firm:FIRMS[G.fi].n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});E('join').style.display='none';};
 updateSavedGameOption();renderFirms();show('s0');
-function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+Object.keys(avatars).length;}
+function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+(globalAgentsOnline===null?Object.keys(avatars).length:globalAgentsOnline);}
+socket.on('agents:online',count=>{globalAgentsOnline=Math.max(0,Math.floor(Number(count)||0));updateHud();});
 
 // Co-op room controls: these extend the existing Socket.IO session without changing character or save systems.
 let activeCoopRoom={id:'public-city',name:'Public City',isPublic:true,hostId:null,commission:{type:'equal',shares:[50,50]},teamGoals:false};
