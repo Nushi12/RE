@@ -33,7 +33,7 @@ function makeRoomCode() { let code; do { code = Math.random().toString(36).slice
 function roomPlayers(roomId) { const out = {}; for (const id in players) if (players[id].roomId === roomId) out[id] = players[id]; return out; }
 function roomSummary(room) { const members = [...room.members].map(id => players[id]).filter(p => p && p.teamId === room.id); return { id: room.id, name: room.name, hostId: room.hostId, members: members.length, agents: members.map(p => p.name), commission: room.commission || { type: 'equal', shares: [50, 50] }, teamGoals: !!room.teamGoals, teamDealsClosed: room.teamDealsClosed || 0 }; }
 function leavePrivateRoom(playerId) { const p = players[playerId]; const teamId = p && p.teamId; if (!p || !teamId || !rooms.has(teamId)) return; const old = rooms.get(teamId); old.members.delete(playerId); p.teamId = null; if (!old.members.size) rooms.delete(old.id); else { if (old.hostId === playerId) old.hostId = old.members.values().next().value; io.to(old.id).emit('room:updated', roomSummary(old)); } }
-function sendRoomState(roomId) { const state = {}; for (const id in players) if (players[id].roomId === roomId) state[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry, n: players[id].n }; io.to(roomId).emit('state', state); }
+function sendRoomState(roomId) { const state = {}; for (const id in players) if (players[id].roomId === roomId) state[id] = { x: players[id].x, z: players[id].z, ry: players[id].ry, n: players[id].n, place: players[id].place || 'outdoor' }; io.to(roomId).emit('state', state); }
 function movePlayerToRoom(socket, roomId) { const p = players[socket.id]; if (!p) return; const oldRoom = p.roomId; if (oldRoom) { socket.leave(oldRoom); socket.to(oldRoom).emit('left', socket.id); } p.roomId = roomId; socket.join(roomId); socket.emit('init', { id: socket.id, players: roomPlayers(roomId), room: roomId === PUBLIC_ROOM ? { id: PUBLIC_ROOM, name: 'Public City', isPublic: true } : roomSummary(rooms.get(roomId)) }); socket.to(roomId).emit('joined', p); }
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -143,6 +143,7 @@ io.on('connection', (socket) => {
     p.z = clamp(Number(m.z) || 0, -LIMIT, LIMIT);
     p.ry = Number(m.ry) || 0;
     p.n = clamp(parseInt(m.n) || 0, 0, 2);
+    p.place = ['outdoor', 'cafe', 'lobby'].includes(m.place) ? m.place : 'outdoor';
   });
   socket.on('chat', (t) => {
     const p = players[socket.id];
