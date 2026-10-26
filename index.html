@@ -844,13 +844,7 @@ E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
 E('b1').onclick=()=>{rewStartMode='new';disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}G.badge=0;show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
 E('b4').onclick=()=>{G.fi=selFirm;G.name=E('name').value.trim()||G.name||'Agent';enterCareerWorld();};
-updateSavedGameOption();renderFirms();
-// Resume an existing local career on refresh instead of dropping the player into new-game setup.
-if(hasValidSavedCareer()&&loadCareer()){
-  enterCareerWorld();
-}else{
-  show('s0');
-}
+updateSavedGameOption();renderFirms();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+(globalAgentsOnline===null?Object.keys(avatars).length:globalAgentsOnline);}
 socket.on('agents:online',count=>{globalAgentsOnline=Math.max(0,Math.floor(Number(count)||0));updateHud();});
 
@@ -911,7 +905,7 @@ function saveCareer(){
 function hasValidSavedCareer(){
   try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);return !!(data&&data.version===1&&data.G&&typeof data.G==='object'&&typeof data.G.name==='string'&&data.G.name.trim().length>0);}catch(e){return false;}
 }
-function updateSavedGameOption(){const b=E('continueSaved'),status=E('savedGameStatus');if(b)b.style.display='block';if(status)status.textContent=hasValidSavedCareer()?'A saved career is available on this device.':'No saved career found in this browser yet. Saved games are browser-specific; use Save Game while playing to create one.';}
+function updateSavedGameOption(){const b=E('continueSaved'),status=E('savedGameStatus'),available=hasValidSavedCareer();if(b){b.style.display='block';b.textContent=available?'Resume Current Game':'Continue Saved Game';b.disabled=!available;b.style.opacity=available?'1':'0.55';}if(status)status.textContent=available?'Your saved career is ready to resume on this device.':'No saved career found in this browser yet. Start a game in this browser and use Save Game to create one.';}
 // Automatic local save protects progress on refresh/close; manual Save remains available.
 let rewAutoSaveLast=0;
 function autoSaveCareer(force=false){const now=Date.now();if(!force&&now-rewAutoSaveLast<12000)return;rewAutoSaveLast=now;writeCareerSnapshot();}
