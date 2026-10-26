@@ -857,6 +857,9 @@ socket.on('team:deal:closed',result=>{
     const parts=String(result.dealId||'').split(':'),ni=Number(parts[0]),pi=Number(parts[1]);
     if(Number.isInteger(ni)&&Number.isInteger(pi)&&NB[ni]&&NB[ni].pros[pi]){
       const P=PP(ni,pi);P.done=1;P.st=5;P.teamSettlementPending=false;
+      if(G.curB&&G.curB.pi===pi)G.curB=null;
+      if(G.cur&&G.cur.ni===ni&&G.cur.pi===pi)G.cur=null;
+      syncTeamListing(P);
       if(ni===G.nb)spawnNPCs();
     }
     const teamXp=Math.max(0,Math.min(1000,Math.floor(Number(result.xp)||100)));G.cash+=payout;G.xp+=teamXp;G.deals++;G.msgs.push("🤝 Teammate "+result.closerName+" closed "+result.listing+". Your team share: "+f(payout)+" and +"+teamXp+" closing XP. Team deals closed: "+result.dealsClosed+".");
@@ -982,7 +985,7 @@ function spawnNPCs(){
     const file=p.modelFile||NPC_MODEL_BY_NAME[p.n]||'';
     const n=mkNpc(p.look,p.n,p.rent?'Landlord':'Client','#ffd54a',p.x,p.z,file,{marker:'!'});n.t={k:'s',pi:i};n.name=p.n;NPCS.push(n);
   });
-  Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||![3,4].includes(P.st))return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const file=WALKER_MODELS[(P.pi+bi)%WALKER_MODELS.length];const n=mkNpc(b.look,b.n,P.p.rent?'Tenant?':'Buyer?','#7fd0ff',b.x,b.z,file,{marker:'?'});n.t={k:'b',pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});
+  Object.values(G.P).forEach(P=>{if(P.ni!==G.nb||P.done||P.lost||![3,4].includes(P.st))return;P.buyers.forEach((b,bi)=>{if(b.declined)return;const file=WALKER_MODELS[(P.pi+bi)%WALKER_MODELS.length];const n=mkNpc(b.look,b.n,P.p.rent?'Tenant?':'Buyer?','#7fd0ff',b.x,b.z,file,{marker:'?'});n.t={k:'b',pi:P.pi,bi};n.name=b.n;NPCS.push(n);});});
   // Reuse the four supplied walker models as persistent neighborhood residents.
   if(!G.walkerStates)G.walkerStates={};
   WALKER_MODELS.forEach((file,i)=>{
@@ -1192,7 +1195,7 @@ function closeDeal(){
   if(good)xp+=30;xp+=P.trust*5;
   const fin=P.price,q=P.rate/100,gross=R?fin*12*q:fin*q,side=R?gross:gross*0.5,net0=side*0.7;
   const finish=(net,teamResult=null)=>{
-    const rewardXp=teamResult?Math.max(0,Number(teamResult.xp)||100):xp;P.res={fin,days,xp:rewardXp,msg,net,good,truth,L0:lvl(),team:!!teamResult};G.cash+=net;G.xp+=rewardXp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;
+    const rewardXp=teamResult?Math.max(0,Number(teamResult.xp)||100):xp;P.res={fin,days,xp:rewardXp,msg,net,good,truth,L0:lvl(),team:!!teamResult};G.cash+=net;G.xp+=rewardXp;G.deals++;G.rep+=P.trust;P.done=1;P.st=5;syncTeamListing(P);
     if(teamResult)G.msgs.push("🤝 Team deal closed: "+p.n+". +"+rewardXp+" closing XP. Team commission pool "+f(teamResult.pool)+", your share "+f(net)+".");
     autoSaveCareer(true);if(lvl()>=5&&oldLevel<5)NPCS.filter(n=>n.isWalker).forEach(updateWalkerLabel);render();try{saveCareer();}catch(e){}
   };
