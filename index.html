@@ -1230,7 +1230,7 @@ function buildCareerInterior(place){
 }
 function enterCareerInterior(place){if(G.place!=='outdoor'||G.showing)return;if(lvl()<7){G.msgs=['Build your career to Level 7 to access client opportunities inside '+(place==='cafe'?'cafés':'apartment lobbies')+'.'];render();return;}
   buildingReturn={x:me.x,z:me.z,ry:me.ry,world:world?world.visible:true,platform:platform.visible,npcs:NPCS.filter(n=>!n.isBuildingClient).map(n=>({n,visible:n.g.visible})),avatars:Object.entries(avatars).map(([id,a])=>({id,visible:a.g.visible}))};
-  NPCS.filter(n=>!n.isBuildingClient).forEach(n=>n.g.visible=false);Object.values(avatars).forEach(a=>a.g.visible=false);if(world)world.visible=false;platform.visible=false;
+  NPCS.filter(n=>!n.isBuildingClient).forEach(n=>n.g.visible=false);Object.values(avatars).forEach(a=>a.g.visible=false);const selfAvatar=avatars[myId];if(selfAvatar)selfAvatar.g.visible=true;if(world)world.visible=false;platform.visible=false;
   G.place=place;buildCareerInterior(place);buildingInterior.visible=true;me.x=0;me.z=2.6;me.ry=Math.PI;G.near=null;G.focus=null;buildingClients.forEach(n=>{n.g.visible=true;});render();
 }
 function exitCareerInterior(){if(G.place==='outdoor'||G.showing)return;if(buildingInterior)buildingInterior.visible=false;buildingClients.forEach(n=>{scene.remove(n.g);const i=NPCS.indexOf(n);if(i>=0)NPCS.splice(i,1);});buildingClients=[];G.place='outdoor';
