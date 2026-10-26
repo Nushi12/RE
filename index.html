@@ -823,13 +823,27 @@ function adv(){si++;lesson();}
 function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Choose your firm to continue. Client and pedestrian characters are temporarily disabled while their GLB replacements are prepared.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok){G.badge=1;try{localStorage.setItem('rew-license-passed-v1','1');}catch(e){}}}
 function toFirm(){naomiPendingGreeting='';mentor(false);show('s4');}
 E('b0').onclick=()=>{rewStartMode='new';show('s1');};
-E('continueSaved').onclick=()=>{if(!hasValidSavedCareer()||!loadCareer()){const status=E('savedGameStatus');if(status)status.textContent='No saved career was found in this browser. Start a game in the same browser and use Save Game; saves do not transfer between browsers automatically.';return;}rewStartMode='continue';selFirm=G.fi;E('name').value=G.name||'Agent';renderFirms();show('s4');};
+function enterCareerWorld(){
+  // Start from the already-restored career; do not load it a second time or send the player through new-game setup.
+  G.joined=0;G.place='outdoor';G.cur=null;G.curB=null;G.near=null;G.focus=null;G.showing=false;
+  selFirm=Number.isInteger(G.fi)&&FIRMS[G.fi]?G.fi:0;G.fi=selFirm;
+  if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
+  studio(false);NB[G.nb].office=FIRMS[G.fi].n+' Office';buildWorld(NB[G.nb]);
+  socket.emit('join',{name:G.name||'Agent',firm:FIRMS[G.fi].n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});
+  E('join').style.display='none';
+}
+E('continueSaved').onclick=()=>{
+  if(!hasValidSavedCareer()||!loadCareer()){
+    const status=E('savedGameStatus');if(status)status.textContent='No readable saved career was found in this browser. Start a game in this same browser and use Save Game; saves do not transfer between browsers automatically.';return;
+  }
+  rewStartMode='new';enterCareerWorld();
+};
 E('chooseFemale').onclick=()=>beginGenderSelection('Female');
 E('chooseMale').onclick=()=>beginGenderSelection('Male');
 E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
 E('b1').onclick=()=>{rewStartMode='new';disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}G.badge=0;show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
-E('b4').onclick=()=>{const restored=rewStartMode==='continue'&&loadCareer();const f=FIRMS[selFirm];G.fi=selFirm;if(!restored){G.name=E('name').value.trim()||G.name||'Agent';}else{G.badge=G.badge||0;G.place='outdoor';}if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}studio(false);NB[G.nb].office=FIRMS[G.fi].n+' Office';buildWorld(NB[G.nb]);socket.emit('join',{name:G.name||E('name').value.trim()||'Agent',firm:FIRMS[G.fi].n,look,avatar:selectedAvatarId,skinTone:selectedSkinTone,outfitColor:selectedOutfitColor,hairColor:selectedHairColor});E('join').style.display='none';};
+E('b4').onclick=()=>{G.fi=selFirm;G.name=E('name').value.trim()||G.name||'Agent';enterCareerWorld();};
 updateSavedGameOption();renderFirms();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+(globalAgentsOnline===null?Object.keys(avatars).length:globalAgentsOnline);}
 socket.on('agents:online',count=>{globalAgentsOnline=Math.max(0,Math.floor(Number(count)||0));updateHud();});
