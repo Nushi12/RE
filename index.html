@@ -199,7 +199,9 @@ const BRICK=cfg.brick;
 const pickC=()=>BRICK[Math.floor(rnd()*BRICK.length)],pickH=()=>cfg.h[Math.floor(rnd()*cfg.h.length)];
 function addB(cx,cz,w,d,h,col,fx,fz,shop){
   const th=Math.atan2(fx,fz),sw=Math.abs(fx)>0.5,st=cfg.style,n=Math.floor(h/3.2);
-  B.push({x:cx,z:cz,w:sw?d:w,d:sw?w:d});
+  if(!shop)B.push({x:cx,z:cz,w:sw?d:w,d:sw?w:d});
+  // Shop interiors are entered through a proximity trigger. Do not let the solid
+  // exterior collision footprint trap the player outside before that trigger fires.
   wbox(cx,cz,th,0,h/2,0,w,h,d,col);
   if(st==='glass'){wbox(cx,cz,th,0,h+2,0,w*0.7,4,d*0.7,col);wbox(cx,cz,th,0,0.9,d/2+0.05,w-0.4,1.8,0.1,0x1b2027,false);
     const k=Math.max(3,Math.round(w/1.7));for(let f=1;f<n;f++)for(let i=0;i<k;i++)winList.push([...wpos(cx,cz,th,-w/2+w*(i+0.5)/k,d/2+0.06),f*3.2+1.5,th,'g']);}
@@ -1261,8 +1263,11 @@ function exitCareerInterior(){if(G.place==='outdoor'||G.showing)return;if(buildi
 }
 function updateNear(){if(G.focus)return;
   if(G.place!=='outdoor'){let b=null,bd=2.8;buildingClients.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:{k:'buildingExit'};const hint=b?'Press F to talk to '+b.name:'Press F to exit building';if($("hint").textContent!==hint)$("hint").textContent=hint;return;}
-  let b=null,bd=4.2;NPCS.forEach(n=>{if(n.isBuildingClient)return;const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});
-  if(!b&&lvl()>=7){const dc=Math.hypot(me.x+12,me.z-12),dl=Math.hypot(me.x-12,me.z+12);if(dc<4.2){G.near={k:'buildingEnter',place:'cafe'};if($("hint").textContent!=='Press F to enter café · meet potential clients')$("hint").textContent='Press F to enter café · meet potential clients';return;}if(dl<4.2){G.near={k:'buildingEnter',place:'lobby'};if($("hint").textContent!=='Press F to enter apartment lobby · meet potential clients')$("hint").textContent='Press F to enter apartment lobby · meet potential clients';return;}}G.near=b?b.t:null;NPCS.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;
+  const dc=Math.hypot(me.x+12,me.z-12),dl=Math.hypot(me.x-12,me.z+12);
+  // Entrance triggers take priority over nearby pedestrians so the building can always be entered.
+  if(dc<4.2){G.near={k:'buildingEnter',place:'cafe'};const hint=lvl()>=7?'Press F to enter café · meet potential clients':'Café client access unlocks at Level 7';if($("hint").textContent!==hint)$("hint").textContent=hint;return;}
+  if(dl<4.2){G.near={k:'buildingEnter',place:'lobby'};const hint=lvl()>=7?'Press F to enter apartment lobby · meet potential clients':'Apartment lobby client access unlocks at Level 7';if($("hint").textContent!==hint)$("hint").textContent=hint;return;}
+  let b=null,bd=4.2;NPCS.forEach(n=>{if(n.isBuildingClient)return;const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;NPCS.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;
   let t=b?"Press F to talk to "+b.name:"WASD move · drag rotate · Enter chat · F talk";
   for(const g of GATES){if(Math.abs(me.x)<5.5&&Math.abs(me.z-g.z)<2.5){if(lvl()>=NB[g.to].lvl){go(g.to);return;}t="🔒 "+NB[g.to].name+" unlocks at level "+NB[g.to].lvl;}}
   if($("hint").textContent!==t)$("hint").textContent=t;}
