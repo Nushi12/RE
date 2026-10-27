@@ -894,19 +894,27 @@ NB[1].pros.push({n:"Nora",modelFile:"olivettinpc2.glb",rent:1,sq:800,bd:1,bel:0.
 NB[2].pros.push({n:"Theo",modelFile:"theo.glb",rent:1,sq:900,bd:2,bel:1.1,why:"owns a loft and wants it rented this month",goal:"wants top rent from a good tenant",x:7.4,z:-26,ry:-Math.PI/2,look:{b:2,s:3,h:0,hc:1,j:3,p:2,o:0}});
 // ---------- career, deals, chat ----------
 const G={xp:0,nb:0,deals:0,cash:0,rep:0,fi:0,name:"Agent",cur:null,curB:null,near:null,focus:null,place:"outdoor",P:{},offers:[],msgs:[],chat:[],walkerStates:{}},NPCS=[];
-const REW_SAVE_KEY='rew-career-save-v1';
+const REW_SAVE_KEY='rew-career-save-v1',REW_SAVE_BACKUP_KEY='rew-career-save-backup-v1',REW_SAVE_SESSION_KEY='rew-career-save-session-v1';
+function readCareerSnapshot(){
+  for(const key of [REW_SAVE_KEY,REW_SAVE_BACKUP_KEY,REW_SAVE_SESSION_KEY]){
+    try{const raw=(key===REW_SAVE_SESSION_KEY?sessionStorage:localStorage).getItem(key);if(!raw)continue;const data=JSON.parse(raw);if(data&&data.version===1&&data.G&&typeof data.G==='object'&&typeof data.G.name==='string'&&data.G.name.trim())return {data,key,raw};}catch(e){}
+  }
+  return null;
+}
 function hasGameLicense(){try{return localStorage.getItem('rew-license-passed-v1')==='1';}catch(e){return false;}}
 function writeCareerSnapshot(){
-  try{const snapshot={version:1,savedAt:new Date().toISOString(),G:{...G,cur:null,curB:null,near:null,focus:null,showing:false},player:me?{x:me.x,z:me.z,ry:me.ry,n:me.n}:null,neighborhoodPros:NB.map(n=>n.pros),license:hasGameLicense()||!!G.badge,selectedAvatarId,look,selectedSkinTone,selectedOutfitColor,selectedHairColor};
-    localStorage.setItem(REW_SAVE_KEY,JSON.stringify(snapshot));return true;
-  }catch(e){console.warn('Automatic save failed',e);return false;}
+  try{
+    const snapshot={version:1,savedAt:new Date().toISOString(),G:{...G,cur:null,curB:null,near:null,focus:null,showing:false},player:me?{x:me.x,z:me.z,ry:me.ry,n:me.n}:null,neighborhoodPros:NB.map(n=>n.pros),license:hasGameLicense()||!!G.badge,selectedAvatarId,look,selectedSkinTone,selectedOutfitColor,selectedHairColor};
+    const raw=JSON.stringify(snapshot);let saved=false;
+    try{localStorage.setItem(REW_SAVE_BACKUP_KEY,raw);localStorage.setItem(REW_SAVE_KEY,raw);saved=true;}catch(e){console.warn('Persistent career save failed',e);}
+    try{sessionStorage.setItem(REW_SAVE_SESSION_KEY,raw);saved=true;}catch(e){console.warn('Session career save failed',e);}
+    return saved;
+  }catch(e){console.warn('Career snapshot failed',e);return false;}
 }
 function saveCareer(){
   const ok=writeCareerSnapshot();if(ok)updateSavedGameOption();G.msgs.push(ok?'💾 Game saved on this device.':'Save failed: this browser may not have enough storage.');render();return ok;
 }
-function hasValidSavedCareer(){
-  try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);return !!(data&&data.version===1&&data.G&&typeof data.G==='object'&&typeof data.G.name==='string'&&data.G.name.trim().length>0);}catch(e){return false;}
-}
+function hasValidSavedCareer(){return !!readCareerSnapshot();}
 function updateSavedGameOption(){const b=E('continueSaved'),status=E('savedGameStatus'),available=hasValidSavedCareer();if(b){b.style.display='block';b.textContent=available?'Resume Current Game':'Continue Saved Game';b.disabled=!available;b.style.opacity=available?'1':'0.55';}if(status)status.textContent=available?'Your saved career is ready to resume on this device.':'No saved career found in this browser yet. Start a game in this browser and use Save Game to create one.';}
 // Automatic local save protects progress on refresh/close; manual Save remains available.
 let rewAutoSaveLast=0;
@@ -916,7 +924,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 setInterval(()=>{if(G.joined||G.xp||G.deals||G.badge)autoSaveCareer();},12000);
 let rewStartMode='new',rewPendingPlayerState=null;
 function loadCareer(){
-  try{const raw=localStorage.getItem(REW_SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);if(!data||data.version!==1||!data.G)return false;
+  try{const found=readCareerSnapshot();if(!found)return false;const data=found.data;if(found.key!==REW_SAVE_KEY){try{localStorage.setItem(REW_SAVE_KEY,found.raw);localStorage.setItem(REW_SAVE_BACKUP_KEY,found.raw);}catch(e){}try{sessionStorage.setItem(REW_SAVE_SESSION_KEY,found.raw);}catch(e){}}
     rewPendingPlayerState=data.player&&Number.isFinite(data.player.x)&&Number.isFinite(data.player.z)?data.player:null;
     Object.keys(data.G).forEach(k=>{if(k in G)G[k]=data.G[k];});G.cur=null;G.curB=null;G.near=null;G.focus=null;G.showing=false;
     if(Array.isArray(data.neighborhoodPros))data.neighborhoodPros.forEach((pros,i)=>{if(NB[i]&&Array.isArray(pros))NB[i].pros=pros;});
