@@ -336,12 +336,12 @@ function human(L,fc){
 const AVATAR_MODELS={
   female1:{label:'Female Agent 1',gender:'Female',file:'Female-rigged-agent.glb',aliases:['Female-rigged-agent.glb','female-rigged-agent.glb','Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
   female2:{label:'Female Agent 2',gender:'Female',file:'Female-rigged-agent1.glb',aliases:['Female-rigged-agent1.glb','female-rigged-agent1.glb','Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
-  female3:{label:'Female Agent 3',gender:'Female',file:'female-rigged-agent2.glb',aliases:['female-rigged-agent2.glb','female-rigged-agent2(2).glb','Female-rigged-agent2.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
-  female4:{label:'Female Agent 4',gender:'Female',file:'female-agent-3.glb',aliases:['female-agent-3.glb','female-agent-3(2).glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
+  female3:{label:'Female Agent 3',gender:'Female',file:'female-rigged-agent2.glb',aliases:['female-rigged-agent2.glb','','Female-rigged-agent2.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
+  female4:{label:'Female Agent 4',gender:'Female',file:'female-agent-3.glb',aliases:['female-agent-3.glb',''],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
   male1:{label:'Male Agent 1',gender:'Male',file:'Male-rigged-agent1.glb',aliases:['Male-rigged-agent1.glb','male-rigged-agent1.glb','Male_rigged_agent1.glb','male_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
   male2:{label:'Male Agent 2',gender:'Male',file:'Male-rigged-agent.glb',aliases:['Male-rigged-agent.glb','male-rigged-agent.glb','Male_rigged_agent.glb','male-rigged-agent.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
-  male3:{label:'Male Agent 3',gender:'Male',file:'male-rigged-agent2.glb',aliases:['male-rigged-agent2.glb','male-rigged-agent2(2).glb','Male-rigged-agent2.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
-  male4:{label:'Male Agent 4',gender:'Male',file:'male-rigged-agent3.glb',aliases:['male-rigged-agent3.glb','male-rigged-agent3(2).glb','Male-rigged-agent3.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true}
+  male3:{label:'Male Agent 3',gender:'Male',file:'male-rigged-agent2.glb',aliases:['male-rigged-agent2.glb','','Male-rigged-agent2.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
+  male4:{label:'Male Agent 4',gender:'Male',file:'male-rigged-agent3.glb',aliases:['male-rigged-agent3.glb','','Male-rigged-agent3.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true}
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
