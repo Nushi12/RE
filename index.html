@@ -5,6 +5,7 @@
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#101827;font-family:system-ui,Segoe UI,Arial,sans-serif;color:#fff}
 canvas{display:block}
+#s0{display:block}#s1,#s1b,#s2,#s4{display:none}
 #join{position:fixed;inset:0;display:flex;align-items:center;padding:0 3vw;z-index:10;pointer-events:none;background:transparent}#join.welcome-bg{background:linear-gradient(90deg,rgba(8,15,28,.84) 0%,rgba(8,15,28,.36) 54%,rgba(8,15,28,.12) 100%),url('/assets/real-estate-world-sunset.jpg') center center/cover no-repeat}
 #card{pointer-events:auto;background:#16212fee;border:1px solid #2c3f56;border-radius:14px;padding:20px;width:min(480px,94vw);max-height:92vh;overflow:auto;box-shadow:0 10px 40px #0008}
 h1{margin:0 0 2px;font-size:21px}.sub{margin:0 0 12px;color:#9fb3c8;font-size:13px}
@@ -52,8 +53,8 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 
 @media(max-width:440px){#card{padding:14px}.avatar-preview-wrap{height:170px}.gender-choice{min-height:94px}}
 </style></head><body>
-<div id="join"><div id="card">
-<div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Start a New Game</button><button class="go" id="continueSaved" style="margin-top:8px;background:#26364b">Continue Saved Game</button><p id="savedGameStatus" class="sub" style="margin:8px 0 0">Saved games are stored in this browser on this device.</p></div>
+<div id="join" class="welcome-bg"><div id="card">
+<div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Start a New Game</button><button class="go" id="continueSaved" style="margin-top:8px;background:#26364b">Continue Saved Game</button><p id="savedGameStatus" class="sub" style="display:none;margin:8px 0 0">Your saved career is ready to resume on this device.</p></div>
 <div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
 <div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="Full Name" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
@@ -335,12 +336,12 @@ function human(L,fc){
 const AVATAR_MODELS={
   female1:{label:'Female Agent 1',gender:'Female',file:'Female-rigged-agent.glb',aliases:['Female-rigged-agent.glb','female-rigged-agent.glb','Female_rigged_agent.glb','female_rigged_agent.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
   female2:{label:'Female Agent 2',gender:'Female',file:'Female-rigged-agent1.glb',aliases:['Female-rigged-agent1.glb','female-rigged-agent1.glb','Female_rigged_agent1.glb','female_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
-  female3:{label:'Female Agent 3',gender:'Female',file:'female-rigged-agent2.glb',aliases:['female-rigged-agent2.glb','female-rigged-agent2(2).glb','Female-rigged-agent2.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
-  female4:{label:'Female Agent 4',gender:'Female',file:'female-agent-3.glb',aliases:['female-agent-3.glb','female-agent-3(2).glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
+  female3:{label:'Female Agent 3',gender:'Female',file:'female-rigged-agent2.glb',aliases:['female-rigged-agent2.glb','Female-rigged-agent2.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
+  female4:{label:'Female Agent 4',gender:'Female',file:'female-agent-3.glb',aliases:['female-agent-3.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
   male1:{label:'Male Agent 1',gender:'Male',file:'Male-rigged-agent1.glb',aliases:['Male-rigged-agent1.glb','male-rigged-agent1.glb','Male_rigged_agent1.glb','male_rigged_agent1.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
   male2:{label:'Male Agent 2',gender:'Male',file:'Male-rigged-agent.glb',aliases:['Male-rigged-agent.glb','male-rigged-agent.glb','Male_rigged_agent.glb','male-rigged-agent.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2},
-  male3:{label:'Male Agent 3',gender:'Male',file:'male-rigged-agent2.glb',aliases:['male-rigged-agent2.glb','male-rigged-agent2(2).glb','Male-rigged-agent2.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
-  male4:{label:'Male Agent 4',gender:'Male',file:'male-rigged-agent3.glb',aliases:['male-rigged-agent3.glb','male-rigged-agent3(2).glb','Male-rigged-agent3.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true}
+  male3:{label:'Male Agent 3',gender:'Male',file:'male-rigged-agent2.glb',aliases:['male-rigged-agent2.glb','Male-rigged-agent2.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true},
+  male4:{label:'Male Agent 4',gender:'Male',file:'male-rigged-agent3.glb',aliases:['male-rigged-agent3.glb','Male-rigged-agent3.glb'],description:'Complete textured character',cardZoom:1.0,previewCameraZ:10.2,preserveRigScale:true}
 };
 const AVATAR_IDS=Object.keys(AVATAR_MODELS);
 function validAvatarId(id){return Object.prototype.hasOwnProperty.call(AVATAR_MODELS,id)?id:'female1';}
@@ -915,7 +916,7 @@ function saveCareer(){
   const ok=writeCareerSnapshot();if(ok)updateSavedGameOption();G.msgs.push(ok?'💾 Game saved on this device.':'Save failed: this browser may not have enough storage.');render();return ok;
 }
 function hasValidSavedCareer(){return !!readCareerSnapshot();}
-function updateSavedGameOption(){const b=E('continueSaved'),status=E('savedGameStatus'),available=hasValidSavedCareer();if(b){b.style.display='block';b.textContent=available?'Resume Current Game':'Continue Saved Game';b.disabled=!available;b.style.opacity=available?'1':'0.55';}if(status)status.textContent=available?'Your saved career is ready to resume on this device.':'No saved career found in this browser yet. Start a game in this browser and use Save Game to create one.';}
+function updateSavedGameOption(){const b=E('continueSaved'),status=E('savedGameStatus'),available=hasValidSavedCareer();if(b){b.style.display='block';b.textContent=available?'Resume Current Game':'Continue Saved Game';b.disabled=!available;b.style.opacity=available?'1':'0.55';}if(status){status.textContent='Your saved career is ready to resume on this device.';status.style.display=available?'block':'none';}}
 // Automatic local save protects progress on refresh/close; manual Save remains available.
 let rewAutoSaveLast=0;
 function autoSaveCareer(force=false){const now=Date.now();if(!force&&now-rewAutoSaveLast<12000)return;rewAutoSaveLast=now;writeCareerSnapshot();}
@@ -1085,8 +1086,11 @@ function generatedClientNamePool(P){
 }
 function genBuyers(P){const p=P.p;let s=(P.ni+3)*131+P.pi*17;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};
   const truth=P.tp*p.sq,R=p.rent,fit=R?truth*40*1.06:truth*1.045,low=R?truth*40*0.74:truth*0.78;
-  const spots=[[7.4,18.5],[-7.4,-18.5],[7.4,31],[-7.4,-31],[7.4,6.5],[-7.4,-6.5]].filter(a=>Math.hypot(a[0]-p.x,a[1]-p.z)>6).sort(()=>r()-0.5);
-  const kinds=[{bd:p.bd,m:fit,why:R?"wants to move within 30 days":"is ready to buy this season"},{bd:p.bd>1?p.bd-1:p.bd+1,m:fit,why:R?"is flexible on move-in date":"is relocating next year"},{bd:p.bd,m:low,why:R?"is a student sharing costs":"is a first-time buyer"}].sort(()=>r()-0.5);
+  const allSpots=[[7.4,18.5],[-7.4,-18.5],[7.4,31],[-7.4,-31],[7.4,6.5],[-7.4,-6.5]];
+  let spots=allSpots.filter(a=>Math.hypot(a[0]-p.x,a[1]-p.z)>6).sort(()=>r()-0.5);
+  const count=lvl()>=10?5:lvl()>=9?4:3;
+  if(spots.length<count)spots=allSpots.slice().sort(()=>r()-0.5);
+  const kinds=[{bd:p.bd,m:fit,why:R?"wants to move within 30 days":"is ready to buy this season"},{bd:p.bd>1?p.bd-1:p.bd+1,m:fit,why:R?"is flexible on move-in date":"is relocating next year"},{bd:p.bd,m:low,why:R?"is a student sharing costs":"is a first-time buyer"},{bd:p.bd,m:fit*0.94,why:R?"needs to move soon":"is pre-approved and ready to tour"},{bd:p.bd>1?p.bd-1:p.bd+1,m:low*1.08,why:R?"is comparing a few rentals":"is looking for value in the neighborhood"}].slice(0,count).sort(()=>r()-0.5);
   const available=generatedClientNamePool(P);
   // Deterministic shuffle avoids repeat names within this property's generated client list.
   for(let i=available.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[available[i],available[j]]=[available[j],available[i]];}
@@ -1261,7 +1265,7 @@ function buildCareerInterior(place){
   const looks=[{b:1,s:2,h:1,hc:2,j:1,p:1,o:0},{b:2,s:3,h:0,hc:1,j:3,p:2,o:0}],names=cafe?['Jordan Lee','Maya Brooks']:['Taylor Morgan','Alex Rivera'];
   names.forEach((name,i)=>{const n=mkNpc(looks[i],name,'Potential client','#ffe08a',i===0?-2.1:2.1,0.2,'',{marker:'!'});n.t={k:'buildingClient',place,idx:i};n.isBuildingClient=true;buildingClients.push(n);NPCS.push(n);});buildingInterior.visible=false;
 }
-function enterCareerInterior(place){if(G.place!=='outdoor'||G.showing)return;if(lvl()<7){G.msgs=['Build your career to Level 7 to access client opportunities inside '+(place==='cafe'?'cafés':'apartment lobbies')+'.'];render();return;}
+function enterCareerInterior(place){if(G.place!=='outdoor'||G.showing)return;if(lvl()<6){G.msgs=['Build your career to Level 6 to access client opportunities inside '+(place==='cafe'?'cafés':'apartment lobbies')+'.'];render();return;}
   buildingReturn={x:me.x,z:me.z,ry:me.ry,world:world?world.visible:true,platform:platform.visible,npcs:NPCS.filter(n=>!n.isBuildingClient).map(n=>({n,visible:n.g.visible})),avatars:Object.entries(avatars).map(([id,a])=>({id,visible:a.g.visible}))};
   NPCS.filter(n=>!n.isBuildingClient).forEach(n=>n.g.visible=false);Object.values(avatars).forEach(a=>a.g.visible=false);const selfAvatar=avatars[myId];if(selfAvatar)selfAvatar.g.visible=true;if(world)world.visible=false;platform.visible=false;
   G.place=place;buildCareerInterior(place);buildingInterior.visible=true;me.x=0;me.z=2.6;me.ry=Math.PI;G.near=null;G.focus=null;buildingClients.forEach(n=>{n.g.visible=true;});render();
@@ -1273,8 +1277,8 @@ function updateNear(){if(G.focus)return;
   if(G.place!=='outdoor'){let b=null,bd=2.8;buildingClients.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:{k:'buildingExit'};const hint=b?'Press F to talk to '+b.name:'Press F to exit building';if($("hint").textContent!==hint)$("hint").textContent=hint;return;}
   const dc=Math.hypot(me.x+12,me.z-12),dl=Math.hypot(me.x-12,me.z+12);
   // Entrance triggers take priority over nearby pedestrians so the building can always be entered.
-  if(dc<4.2){G.near={k:'buildingEnter',place:'cafe'};const hint=lvl()>=7?'Press F to enter café · meet potential clients':'Café client access unlocks at Level 7';if($("hint").textContent!==hint)$("hint").textContent=hint;return;}
-  if(dl<4.2){G.near={k:'buildingEnter',place:'lobby'};const hint=lvl()>=7?'Press F to enter apartment lobby · meet potential clients':'Apartment lobby client access unlocks at Level 7';if($("hint").textContent!==hint)$("hint").textContent=hint;return;}
+  if(dc<4.2){G.near={k:'buildingEnter',place:'cafe'};const hint=lvl()>=6?'Press F to enter café · meet potential clients':'Café client access unlocks at Level 6';if($("hint").textContent!==hint)$("hint").textContent=hint;return;}
+  if(dl<4.2){G.near={k:'buildingEnter',place:'lobby'};const hint=lvl()>=6?'Press F to enter apartment lobby · meet potential clients':'Apartment lobby client access unlocks at Level 6';if($("hint").textContent!==hint)$("hint").textContent=hint;return;}
   let b=null,bd=4.2;NPCS.forEach(n=>{if(n.isBuildingClient)return;const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;NPCS.forEach(n=>{const d=Math.hypot(me.x-n.x,me.z-n.z);if(d<bd){bd=d;b=n;}});G.near=b?b.t:null;
   let t=b?"Press F to talk to "+b.name:"WASD move · drag rotate · Enter chat · F talk";
   for(const g of GATES){if(Math.abs(me.x)<5.5&&Math.abs(me.z-g.z)<2.5){if(lvl()>=NB[g.to].lvl){go(g.to);return;}t="🔒 "+NB[g.to].name+" unlocks at level "+NB[g.to].lvl;}}
