@@ -1086,8 +1086,10 @@ function generatedClientNamePool(P){
 }
 function genBuyers(P){const p=P.p;let s=(P.ni+3)*131+P.pi*17;const r=()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};
   const truth=P.tp*p.sq,R=p.rent,fit=R?truth*40*1.06:truth*1.045,low=R?truth*40*0.74:truth*0.78;
-  const spots=[[7.4,18.5],[-7.4,-18.5],[7.4,31],[-7.4,-31],[7.4,6.5],[-7.4,-6.5]].filter(a=>Math.hypot(a[0]-p.x,a[1]-p.z)>6).sort(()=>r()-0.5);
+  const allSpots=[[7.4,18.5],[-7.4,-18.5],[7.4,31],[-7.4,-31],[7.4,6.5],[-7.4,-6.5]];
+  let spots=allSpots.filter(a=>Math.hypot(a[0]-p.x,a[1]-p.z)>6).sort(()=>r()-0.5);
   const count=lvl()>=10?5:lvl()>=9?4:3;
+  if(spots.length<count)spots=allSpots.slice().sort(()=>r()-0.5);
   const kinds=[{bd:p.bd,m:fit,why:R?"wants to move within 30 days":"is ready to buy this season"},{bd:p.bd>1?p.bd-1:p.bd+1,m:fit,why:R?"is flexible on move-in date":"is relocating next year"},{bd:p.bd,m:low,why:R?"is a student sharing costs":"is a first-time buyer"},{bd:p.bd,m:fit*0.94,why:R?"needs to move soon":"is pre-approved and ready to tour"},{bd:p.bd>1?p.bd-1:p.bd+1,m:low*1.08,why:R?"is comparing a few rentals":"is looking for value in the neighborhood"}].slice(0,count).sort(()=>r()-0.5);
   const available=generatedClientNamePool(P);
   // Deterministic shuffle avoids repeat names within this property's generated client list.
