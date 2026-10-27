@@ -847,7 +847,7 @@ E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
 E('b1').onclick=()=>{rewStartMode='new';disposeAvatarCardPreviews();if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}G.badge=0;show('s2');modes();};
 E('name').addEventListener('keydown',e=>{if(e.key==='Enter'&&!E('b1').disabled)E('b1').click();});
 E('b4').onclick=()=>{G.fi=selFirm;G.name=E('name').value.trim()||G.name||'Agent';enterCareerWorld();};
-updateSavedGameOption();renderFirms();show('s0');
+renderFirms();show('s0');
 function updateHud(){document.getElementById('hud').innerHTML='<b>'+(me?me.name:'')+'</b> &middot; '+(me?me.firm:'')+'<br>Agents online: '+(globalAgentsOnline===null?Object.keys(avatars).length:globalAgentsOnline);}
 socket.on('agents:online',count=>{globalAgentsOnline=Math.max(0,Math.floor(Number(count)||0));updateHud();});
 
@@ -917,6 +917,8 @@ function saveCareer(){
 }
 function hasValidSavedCareer(){return !!readCareerSnapshot();}
 function updateSavedGameOption(){const b=E('continueSaved'),status=E('savedGameStatus'),available=hasValidSavedCareer();if(b){b.style.display='block';b.textContent=available?'Resume Current Game':'Continue Saved Game';b.disabled=!available;b.style.opacity=available?'1':'0.55';}if(status){status.textContent='Your saved career is ready to resume on this device.';status.style.display=available?'block':'none';}}
+// Run only after the save-key constants and helpers have initialized.
+updateSavedGameOption();
 // Automatic local save protects progress on refresh/close; manual Save remains available.
 let rewAutoSaveLast=0;
 function autoSaveCareer(force=false){const now=Date.now();if(!force&&now-rewAutoSaveLast<12000)return;rewAutoSaveLast=now;writeCareerSnapshot();}
