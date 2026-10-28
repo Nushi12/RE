@@ -522,11 +522,11 @@ function setPreview(){
   const ua=navigator.userAgent;
   const mobileSafari=/iPhone|iPad|iPod/i.test(ua)&&/Safari/i.test(ua)&&!/CriOS|FxiOS|EdgiOS/i.test(ua);
   if(mobileSafari){
-    // Keep the lightweight numbered cards on iPhone, but load only the currently
-    // selected avatar into the existing main scene (never create extra WebGL contexts).
-    if(b)b.disabled=true;
-    statusAvatar('Loading selected character…');
-    loadSelectedModelInto(target,selectedAvatarId).catch(()=>{});
+    // Do not load or animate a GLB while the iPhone is on character selection:
+    // this was causing Safari to reload the page. Keep the selected ID, then let
+    // the existing gameplay character loader create the real avatar after entry.
+    if(b)b.disabled=false;
+    statusAvatar('Selected '+(AVATAR_MODELS[selectedAvatarId]?.label||'character')+'. Continue to licensing.');
     return;
   }
   if(b)b.disabled=true;
