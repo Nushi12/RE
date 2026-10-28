@@ -1181,7 +1181,7 @@ function tg(i){const P=curP();if(P.st===1){P.inc[i]^=1;render();}}
 function toStage(s){const P=curP();if(s===2){const e=est(P);if(!e)return;P.price=e.v;}P.st=s;render();}
 function pr(d){const P=curP();P.price=Math.max(P.p.rent?500:100000,P.price+d);render();}
 function rt(d){const P=curP(),r=P.p.rent;P.rate=Math.min(r?15:6,Math.max(r?10:4,P.rate+d));render();}
-function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);if(!P.listingXpAwarded){G.xp+=50;P.listingXpAwarded=true;G.msgs.push("✍ Listing signed. +50 XP for securing the client.");}syncTeamListing(P);G.msgs.push("Your team can now approach the shared buyers. Return to "+P.p.n+" to close.");leave();}
+function sign(){const P=curP();P.st=3;P.fb=[];P.buyers=genBuyers(P);if((G.stagingCredit||0)>0){P.buyers.forEach(b=>{b.m=Math.round(b.m*1.08);});G.stagingCredit--;G.msgs.push('📸 Dmitri’s staging boosted buyer interest for this listing.');}if(!P.listingXpAwarded){G.xp+=50;P.listingXpAwarded=true;G.msgs.push("✍ Listing signed. +50 XP for securing the client.");}syncTeamListing(P);G.msgs.push("Your team can now approach the shared buyers. Return to "+P.p.n+" to close.");leave();}
 function reduce(){const P=curP(),u=P.p.rent?10:1000;P.price=Math.round(P.price*0.95/u)*u;P.buyers.forEach(b=>{b.declined=0;b.res=null;});syncTeamListing(P);G.msgs.push("Price reduced to "+f(P.price)+". People who passed may reconsider.");spawnNPCs();render();}
 function askB(i){
   if(!G.curB)return;
