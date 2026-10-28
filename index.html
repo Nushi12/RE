@@ -5,7 +5,7 @@
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#101827;font-family:system-ui,Segoe UI,Arial,sans-serif;color:#fff}
 canvas{display:block}
-#s0{display:block}#s1,#s1b,#s2,#s4{display:none}
+#s0{display:block}#s1,#s1b,#s2,#s4,#groupInstructionsPage{display:none}.group-instructions-page{color:#fff;line-height:1.55}.group-instructions-page h1,.group-instructions-page p,.group-instructions-page li,.group-instructions-page b{color:#fff}.group-instructions-page ol{padding-left:22px}.group-instructions-page li{margin:10px 0}.group-instructions-note{margin-top:14px;padding:10px;border:1px solid #3b82f6;border-radius:9px;background:#0f1824;color:#fff;font-size:13px}
 #join{position:fixed;inset:0;display:flex;align-items:center;padding:0 3vw;z-index:10;pointer-events:none;background:transparent}#join.welcome-bg{background:linear-gradient(90deg,rgba(8,15,28,.84) 0%,rgba(8,15,28,.36) 54%,rgba(8,15,28,.12) 100%),url('/assets/real-estate-world-sunset.jpg') center center/cover no-repeat}
 #card{pointer-events:auto;background:#16212fee;border:1px solid #2c3f56;border-radius:14px;padding:20px;width:min(480px,94vw);max-height:92vh;overflow:auto;box-shadow:0 10px 40px #0008}
 h1{margin:0 0 2px;font-size:21px}.sub{margin:0 0 12px;color:#9fb3c8;font-size:13px}
@@ -57,7 +57,8 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 .prototype-finish{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(8,13,24,.72);backdrop-filter:blur(5px);animation:finishFade .35s ease-out}.prototype-card{width:min(700px,calc(100vw - 36px));padding:38px 34px;text-align:center;border:1px solid #d7a947;border-radius:22px;background:linear-gradient(145deg,rgba(13,24,39,.98),rgba(7,14,24,.98));color:#fff;box-shadow:0 24px 80px rgba(0,0,0,.5);animation:finishSlide .55s cubic-bezier(.2,.8,.2,1)}.prototype-card .eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#e6c77c}.prototype-card h1{font-size:clamp(34px,5vw,58px);letter-spacing:.04em;margin:13px 0 4px;color:#f6d17b}.prototype-card .subtitle{font-size:15px;letter-spacing:.28em;text-transform:uppercase;color:#e6eaf1;margin-bottom:24px}.prototype-card .level-number{display:inline-flex;align-items:center;justify-content:center;width:130px;height:130px;margin:0 auto 22px;border:1px solid #e2bd65;border-radius:18px;color:#ffdc88;font-size:76px;font-weight:800}.prototype-card p{max-width:560px;margin:0 auto 25px;color:#d5dce7;font-size:16px;line-height:1.65}.prototype-card button{border:1px solid #e4c06a;border-radius:9px;padding:12px 24px;font-weight:700;cursor:pointer;background:#f1c879;color:#172033}.prototype-note{position:fixed;right:18px;bottom:14px;z-index:10000;color:#f0d9a2;background:rgba(12,18,30,.88);border:1px solid rgba(215,169,71,.65);border-radius:8px;padding:9px 12px;font-size:13px}@keyframes finishSlide{from{opacity:0;transform:translateY(42px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes finishFade{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.prototype-finish,.prototype-card{animation:none}}
 </style></head><body>
 <div id="join" class="welcome-bg"><div id="card">
-<div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Start a New Game</button><button class="go" id="continueSaved" style="margin-top:8px;background:#26364b">Continue Saved Game</button><p id="savedGameStatus" class="sub" style="display:none;margin:8px 0 0">Your saved career is ready to resume on this device.</p></div>
+<div id="s0"><h1>Welcome to the Real Estate World</h1><p class="sub">Your career here is shaped by <b>knowledge</b>, <b>relationships</b>, <b>reputation</b> and <b>decisions</b>. Create your agent, earn your license, join a firm, and walk into a shared, living city.</p><button class="go" id="b0">Start a New Game</button><button class="go" id="continueSaved" style="margin-top:8px;background:#26364b">Continue Saved Game</button><p id="savedGameStatus" class="sub" style="display:none;margin:8px 0 0">Your saved career is ready to resume on this device.</p><button type="button" id="groupInstructionsTab" class="go" style="margin-top:8px;background:#26364b;color:#fff">Group Instructions →</button></div>
+<div id="groupInstructionsPage" class="group-instructions-page"><button type="button" id="groupInstructionsBack" class="back-gender" style="color:#fff">← Back to Welcome</button><h1 style="margin-top:16px;color:#fff">Group Instructions</h1><p class="sub" style="color:#fff">Play with friends in the same real estate world.</p><ol><li>Click <b>Start a New Game</b> and finish setting up your agent.</li><li>Once inside the city, find the <b>Team / Group</b> panel near the top-left.</li><li>Click <b>Create a team</b>. Your team code will appear in the panel.</li><li>Send Code to your friends outside the game or through the "Public City" chat.</li><li>Your friends open the same game link, create their agents, enter the code, and click <b>Join team</b>.</li></ol><div class="group-instructions-note">Everyone must enter the same team code and click <b>Join team</b>. Creating a team does not automatically add your friends.</div><button type="button" id="groupInstructionsBackBottom" class="go" style="margin-top:14px;background:#26364b;color:#fff">← Back to Welcome</button></div>
 <div id="s1"><h1>Choose your character</h1><div class="gender-choices"><button type="button" class="gender-choice" id="chooseFemale">FEMALE</button><button type="button" class="gender-choice" id="chooseMale">MALE</button></div></div>
 <div id="s1b" style="display:none"><div class="selection-head"><button type="button" class="back-gender" id="backGender" aria-label="Back to gender selection">← Back</button><h1>Choose your character</h1></div><label>Agent name</label><input id="name" maxlength="16" placeholder="Full Name" autocomplete="off"><div id="looks"></div><p id="avatarAssetStatus" class="sub" role="status" aria-live="polite">Loading character previews…</p><button class="go" id="b1" disabled>Continue to licensing</button></div>
 <div id="s2"><h1>Rookie Agent training</h1><div id="lesson"></div></div>
@@ -625,7 +626,10 @@ function updatePeds(){}
 
 // ---------- UI ----------
 const E=id=>document.getElementById(id);
-function show(id){['s0','s1','s1b','s2','s4'].forEach(s=>E(s).style.display=s===id?'block':'none');E('join').classList.toggle('welcome-bg',id==='s0');}
+function show(id){['s0','s1','s1b','s2','s4','groupInstructionsPage'].forEach(s=>E(s).style.display=s===id?'block':'none');E('join').classList.toggle('welcome-bg',id==='s0'||id==='groupInstructionsPage');}
+E('groupInstructionsTab').addEventListener('click',()=>show('groupInstructionsPage'));
+E('groupInstructionsBack').addEventListener('click',()=>show('s0'));
+E('groupInstructionsBackBottom').addEventListener('click',()=>show('s0'));
 function renderFirms(){const el=E('firms');el.innerHTML='';[['Modern / Competitive',0],['Luxury',1]].forEach(([t,g])=>{const h=document.createElement('label');h.textContent=t;el.appendChild(h);const w=document.createElement('div');w.className='firms';
   FIRMS.forEach((f,i)=>{if(f.g!==g)return;const d=document.createElement('div');d.className='firm'+(i===selFirm?' sel':'');d.style.setProperty('--c',hex(f.c));d.innerHTML='<b style="color:'+hex(f.c)+'">'+f.n+'</b><span>'+f.t+'</span>';d.onclick=()=>{selFirm=i;renderFirms();setPreview();};w.appendChild(d);});el.appendChild(w);});}
 const socket=io();
@@ -1469,7 +1473,23 @@ function render(){const L=lvl(),nx=60*L*L,pv=60*(L-1)*(L-1),fm=FIRMS[G.fi];
   G.msgs.slice(-2).forEach(m=>h+=`<div class=toast>${m}</div>`);
   h+=`<h3>Locations</h3><div class=locs>`+NB.map((n,i)=>L>=n.lvl?`<div class="loc ${i===G.nb?"on":""}" onclick="go(${i})"><b>${i===G.nb?"📍 ":"➜ "}${n.name}</b><br><small>${BR[i].d}</small></div>`:`<div class="loc lock"><b>🔒 ${n.name}</b><br><small>Unlocks at level ${n.lvl}</small></div>`).join("")+`</div>`;
   h+=saveControls();h+=audioControls();h+=G.showing?apartmentPanel():G.cur?bench():G.curB?benchB():quest();$("panel").innerHTML=h;
-if(L>=10){if(!prototypeFinishDismissed&&!document.getElementById("prototypeFinish")){const finish=document.createElement("div");finish.id="prototypeFinish";finish.className="prototype-finish";finish.innerHTML='<div class="prototype-card"><div class="eyebrow">Career milestone</div><h1>LEVEL UP</h1><div class="subtitle">In your career</div><div class="level-number">10</div><p>You’ve reached Level 10! You’ve built your real estate career, met clients and buyers, completed deals, and grown your business across the city.</p><button onclick="prototypeFinishDismissed=true;document.getElementById(\'prototypeFinish\')?.remove()">Continue</button></div>';document.body.appendChild(finish);}if(!document.getElementById("prototypeNote")){const note=document.createElement("div");note.id="prototypeNote";note.className="prototype-note";note.textContent="Prototype complete... To be continued.";document.body.appendChild(note);}}
+if(L>=10){
+  if(!prototypeFinishDismissed&&!document.getElementById("prototypeFinish")){
+    const finish=document.createElement("div");
+    finish.id="prototypeFinish";
+    finish.className="prototype-finish";
+    finish.innerHTML='<div class="prototype-card"><div class="eyebrow">Career milestone</div><h1>LEVEL UP</h1><div class="subtitle">In your career</div><div class="level-number">10</div><p>You have reached Level 10! You have built your real estate career, met clients and buyers, completed deals, and grown your business across the city.</p><button type="button" id="prototypeFinishContinue">Continue</button></div>';
+    document.body.appendChild(finish);
+    document.getElementById("prototypeFinishContinue").addEventListener("click",function(){prototypeFinishDismissed=true;finish.remove();});
+  }
+  if(!document.getElementById("prototypeNote")){
+    const note=document.createElement("div");
+    note.id="prototypeNote";
+    note.className="prototype-note";
+    note.textContent="Prototype complete... To be continued.";
+    document.body.appendChild(note);
+  }
+}
 studio(true);
 
 // ---------- input + loop ----------
