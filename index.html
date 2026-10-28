@@ -516,7 +516,17 @@ function makeAvatar(p){
 function setPreview(){
   if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
   const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;target.userData.skinTone=selectedSkinTone;target.userData.outfitColor=selectedOutfitColor;target.userData.hairColor=selectedHairColor;preview=target;scene.add(target);
-  const b=document.getElementById('b1');if(b)b.disabled=true;
+  const b=document.getElementById('b1');
+  // iOS Safari may terminate the page while an extra animated GLB is loaded
+  // during selection. Mobile choices are numbered, so skip this optional preview.
+  const ua=navigator.userAgent;
+  const mobileSafari=/iPhone|iPad|iPod/i.test(ua)&&/Safari/i.test(ua)&&!/CriOS|FxiOS|EdgiOS/i.test(ua);
+  if(mobileSafari){
+    if(b)b.disabled=false;
+    statusAvatar('Character selected. Continue to start the game.');
+    return;
+  }
+  if(b)b.disabled=true;
   statusAvatar('Loading character…');
   loadSelectedModelInto(target,selectedAvatarId).catch(()=>{});
 }
