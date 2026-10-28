@@ -522,8 +522,11 @@ function setPreview(){
   const ua=navigator.userAgent;
   const mobileSafari=/iPhone|iPad|iPod/i.test(ua)&&/Safari/i.test(ua)&&!/CriOS|FxiOS|EdgiOS/i.test(ua);
   if(mobileSafari){
-    if(b)b.disabled=false;
-    statusAvatar('Character selected. Continue to start the game.');
+    // Keep the lightweight numbered cards on iPhone, but load only the currently
+    // selected avatar into the existing main scene (never create extra WebGL contexts).
+    if(b)b.disabled=true;
+    statusAvatar('Loading selected character…');
+    loadSelectedModelInto(target,selectedAvatarId).catch(()=>{});
     return;
   }
   if(b)b.disabled=true;
