@@ -798,11 +798,20 @@ function mentor(on){
   const token=naomiLoadToken;
   if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}
   if(!on){stopNaomiSpeech();return;}
-  naomiAssetState='loading';
-  setNaomiModelStatus('Loading Naomi’s 3D model…',false,'loading');
   mentorG=new THREE.Group();mentorBody=new THREE.Group();mentorG.add(mentorBody);
   const t=label('Naomi · Senior Agent','#9be7a8',2.6);t.position.y=2.48;mentorG.add(t);
   mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);
+  const ua=navigator.userAgent;
+  const mobileSafari=/iPhone|iPad|iPod/i.test(ua)&&/Safari/i.test(ua)&&!/CriOS|FxiOS|EdgiOS/i.test(ua);
+  if(mobileSafari){
+    // Avoid loading the large mentor GLB on iPhone Safari. Keep the training
+    // interaction available with Naomi's nameplate while preserving desktop behavior.
+    naomiAssetState='loaded';
+    setNaomiModelStatus('iPhone mode: 3D mentor preview is off for stability. Training is available.',false,'loaded');
+    return;
+  }
+  naomiAssetState='loading';
+  setNaomiModelStatus('Loading Naomi’s 3D model…',false,'loading');
   loadNaomiModel().then(gltf=>{
     if(token!==naomiLoadToken||!mentorG||!mentorBody||mentorG.parent!==scene)return;
     const model=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(gltf.scene):gltf.scene.clone(true);
