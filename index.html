@@ -608,16 +608,15 @@ function beginGenderSelection(gender){
   try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
   renderAvatarChoices();
   renderColorControls();
-  // On phones, do not start loading a large GLB at the same moment the avatar
-  // screen opens. Let the player choose first; tapping a character then loads
-  // its real 3D model. This isolates the Safari reset from initial screen entry.
+  // On phones, do not load a GLB while opening the selection screen. Safari can
+  // reset during that transition if model decoding starts immediately. The tap handler
+  // calls setPreview() for the chosen real rigged model, so only one model loads on demand.
   const mobileChoice=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(mobileChoice){
-    // Load only one real rigged model in the main renderer; avoid four concurrent
-    // thumbnail renderers on Safari, which can reset the whole page at selection.
-    setPreview();
-  }else{
-    setPreview();
+  if(!mobileChoice)setPreview();
+  else{
+    if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
+    const next=document.getElementById('b1');if(next)next.disabled=false;
+    statusAvatar('Choose a character, then tap it to load its real 3D preview.');
   }
   show('s1b');
 }
