@@ -613,8 +613,9 @@ function beginGenderSelection(gender){
   // its real 3D model. This isolates the Safari reset from initial screen entry.
   const mobileChoice=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
   if(mobileChoice){
-    const next=document.getElementById('b1');if(next)next.disabled=false;
-    statusAvatar('Choose a character. Tap a character to load its 3D preview, then continue.');
+    // Load only one real rigged model in the main renderer; avoid four concurrent
+    // thumbnail renderers on Safari, which can reset the whole page at selection.
+    setPreview();
   }else{
     setPreview();
   }
@@ -623,10 +624,10 @@ function beginGenderSelection(gender){
 function renderAvatarChoices(){
   const el=document.getElementById('looks');if(!el)return;
   disposeAvatarCardPreviews();
-  // Render real GLB previews on phones too. Keep each thumbnail renderer deliberately
-  // low-cost; do not replace the character previews with labeled placeholders.
-  const mobileLowGpu=false;
-  const mobilePreviewMode=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // Safari can reset the page when several thumbnail WebGL contexts and GLBs load
+  // together. On mobile, use the main game renderer for one real selected-GLB preview.
+  const mobileLowGpu=matchMedia('(max-width: 760px)').matches||((navigator.deviceMemory||4)<=4&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+  const mobilePreviewMode=mobileLowGpu||/iPhone|iPad|iPod/i.test(navigator.userAgent);
   const choices=AVATAR_IDS.filter(id=>AVATAR_MODELS[id]&&AVATAR_MODELS[id].gender===selectedGender);
   el.innerHTML='<div class="avatar-choices'+(mobileLowGpu?' avatar-choices-mobile':'')+'" id="avatarChoices"></div>';
   const grid=document.getElementById('avatarChoices');
@@ -654,7 +655,7 @@ function renderAvatarChoices(){
   });
   if(mobilePreviewMode){
     const next=document.getElementById('b1');if(next)next.disabled=false;
-    statusAvatar('Choose a character. Real 3D previews are loading below.');
+    statusAvatar('Choose a character. The selected rigged 3D model is shown in the main preview.');
   }
 }
 
