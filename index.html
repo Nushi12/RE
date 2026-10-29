@@ -3,39 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/180.png">
-<script>
-/* Temporary mobile Safari diagnostics. View with ?debug=1; no game state is changed. */
-(function(){
-  var enabled=false, entries=[];
-  try{enabled=new URLSearchParams(location.search).get('debug')==='1';}catch(e){}
-  function record(message){
-    var item=new Date().toISOString().slice(11,19)+' '+String(message);
-    entries.push(item); if(entries.length>18)entries.shift();
-    try{sessionStorage.setItem('rew-mobile-debug-log',JSON.stringify(entries));}catch(e){}
-    if(enabled)render();
-  }
-  try{var saved=JSON.parse(sessionStorage.getItem('rew-mobile-debug-log')||'[]');if(Array.isArray(saved))entries=saved.slice(-18);}catch(e){}
-  var panel;
-  function render(){
-    if(!enabled)return;
-    if(!panel){
-      panel=document.createElement('pre');
-      panel.id='rew-mobile-debug-panel';
-      panel.style.cssText='position:fixed;z-index:2147483647;left:4px;right:4px;bottom:4px;max-height:36vh;overflow:auto;margin:0;padding:8px;background:#111;color:#b7ffb7;border:2px solid #e7c66b;border-radius:6px;font:11px/1.35 monospace;white-space:pre-wrap;pointer-events:auto';
-      if(document.body)document.body.appendChild(panel);else{document.addEventListener('DOMContentLoaded',render,{once:true});return;}
-    }
-    panel.textContent='MOBILE DEBUG (?debug=1)\n'+entries.join('\n');
-  }
-  window.rewMobileDebug=record;
-  record('script start; '+navigator.userAgent);
-  window.addEventListener('error',function(e){record('JS ERROR: '+(e.message||'unknown')+' @ '+(e.filename||'')+':'+(e.lineno||0)+':'+(e.colno||0));});
-  window.addEventListener('unhandledrejection',function(e){var r=e.reason;record('PROMISE REJECTION: '+(r&&(r.stack||r.message)||String(r)));});
-  window.addEventListener('pageshow',function(e){record('PAGESHOW persisted='+!!e.persisted+' url='+location.pathname+location.search);});
-  window.addEventListener('pagehide',function(e){record('PAGEHIDE persisted='+!!e.persisted);});
-  document.addEventListener('visibilitychange',function(){record('VISIBILITY '+document.visibilityState);});
-  if(enabled){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();}
-})();
-</script>
+
 <title>RealEstate World – Upper East Side</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#101827;font-family:system-ui,Segoe UI,Arial,sans-serif;color:#fff}
@@ -75,6 +43,7 @@ input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px 
 .avatar-choice.sel{border-color:#60a5fa;background:#20344d;box-shadow:0 0 0 1px #60a5fa inset}
 .avatar-preview-wrap{height:205px;width:100%;overflow:hidden;border-radius:7px;background:radial-gradient(ellipse at 50% 40%,#35455a 0,#1b293a 55%,#101824 100%)}
 .avatar-preview-canvas{display:block;width:100%;height:100%;outline:none}
+.avatar-choices-mobile .avatar-preview-wrap{height:104px}.avatar-choices-mobile .avatar-preview-2d{width:100%;height:100%;}
 .avatar-picked{position:absolute;top:10px;right:10px;width:25px;height:25px;border-radius:50%;display:none;align-items:center;justify-content:center;background:#3b82f6;color:#fff;font-size:17px;font-weight:800;box-shadow:0 2px 8px #0008}
 .avatar-choice.sel .avatar-picked{display:flex}
 #b1:disabled{opacity:.48;cursor:wait}
@@ -672,6 +641,25 @@ function beginGenderSelection(gender){
   }
   show('s1b');
 }
+function drawMobileAvatarPortrait(canvas,id,index,gender){
+  if(!canvas)return;
+  canvas.width=240;canvas.height=170;
+  const c=canvas.getContext('2d');if(!c)return;
+  const n=Math.max(0,index||0),skins=['#f1c7a5','#c98f69','#8b5b43','#e0ad86','#6e4535'],hairs=['#30251f','#1c1b20','#6b4229','#b98a4d','#3b2b35'],jackets=['#245b82','#743b52','#2d665c','#54467e','#343d4d'];
+  const skin=skins[n%skins.length],hair=hairs[n%hairs.length],jacket=jackets[n%jackets.length];
+  const bg=c.createLinearGradient(0,0,240,170);bg.addColorStop(0,['#354b63','#493c5b','#31514f','#5b4650'][n%4]);bg.addColorStop(1,'#101824');c.fillStyle=bg;c.fillRect(0,0,240,170);
+  c.fillStyle='#ffffff10';c.beginPath();c.arc(120,72,61,0,Math.PI*2);c.fill();
+  c.fillStyle=jacket;c.beginPath();c.moveTo(43,170);c.quadraticCurveTo(45,117,86,112);c.lineTo(154,112);c.quadraticCurveTo(197,117,199,170);c.closePath();c.fill();
+  c.fillStyle='#f2f4f7';c.beginPath();c.moveTo(94,113);c.lineTo(120,143);c.lineTo(146,113);c.lineTo(137,170);c.lineTo(103,170);c.closePath();c.fill();
+  c.fillStyle=['#d4aa34','#78a8d8','#c76f6f','#d4aa34','#82c5a2'][n%5];c.beginPath();c.moveTo(115,137);c.lineTo(125,137);c.lineTo(131,170);c.lineTo(109,170);c.closePath();c.fill();
+  c.fillStyle=skin;c.fillRect(108,94,24,28);c.beginPath();c.ellipse(82,69,9,13,0,0,Math.PI*2);c.ellipse(158,69,9,13,0,0,Math.PI*2);c.ellipse(120,66,39,48,0,0,Math.PI*2);c.fill();
+  c.fillStyle=hair;c.beginPath();c.moveTo(81,68);c.quadraticCurveTo(73,18,116,17);c.quadraticCurveTo(160,13,160,62);c.lineTo(149,48);c.quadraticCurveTo(122,33,96,49);c.lineTo(88,77);c.closePath();c.fill();
+  if(gender==='Female'&&n%2===1){c.beginPath();c.ellipse(84,76,12,33,-.15,0,Math.PI*2);c.ellipse(156,76,12,33,.15,0,Math.PI*2);c.fill();}
+  c.strokeStyle='#49332b';c.lineWidth=3;c.beginPath();c.moveTo(99,58);c.lineTo(110,56);c.moveTo(130,56);c.lineTo(141,58);c.stroke();
+  c.fillStyle='#28272b';c.beginPath();c.ellipse(105,66,3,4,0,0,Math.PI*2);c.ellipse(135,66,3,4,0,0,Math.PI*2);c.fill();
+  c.strokeStyle='#9a5548';c.lineWidth=2;c.beginPath();c.moveTo(120,68);c.lineTo(117,80);c.lineTo(123,81);c.stroke();c.beginPath();c.arc(120,83,10,.15,Math.PI-.15);c.stroke();
+  c.fillStyle='#ffffffaa';c.font='bold 10px system-ui';c.textAlign='center';c.fillText('AGENT '+(n+1),120,160);
+}
 function renderAvatarChoices(){
   const el=document.getElementById('looks');if(!el)return;
   disposeAvatarCardPreviews();
@@ -691,9 +679,7 @@ function renderAvatarChoices(){
   choices.forEach((id,index)=>{
     const button=document.createElement('button');
     button.type='button';button.className='avatar-choice'+(id===selectedAvatarId?' sel':'');button.setAttribute('aria-label','Choose '+selectedGender.toLowerCase()+' character '+(index+1));button.setAttribute('aria-pressed',String(id===selectedAvatarId));button.dataset.avatarId=id;
-    button.innerHTML=(mobileLowGpu
-      ?'<div class="avatar-preview-wrap avatar-preview-fallback" aria-hidden="true"><span style="display:block;font-size:22px;font-weight:800">AGENT '+(index+1)+'</span><span style="display:block;font-size:11px;margin-top:5px">Tap to select</span></div>'
-      :'<div class="avatar-preview-wrap"><canvas class="avatar-preview-canvas" aria-hidden="true"></canvas></div>')+'<span class="avatar-choice-label">'+(AVATAR_MODELS[id].label||('Character '+(index+1)))+'</span><span class="avatar-picked" aria-hidden="true">✓</span>';
+    button.innerHTML='<div class="avatar-preview-wrap"><canvas class="avatar-preview-canvas'+(mobileLowGpu?' avatar-preview-2d':'')+'" aria-hidden="true"></canvas></div><span class="avatar-choice-label">'+(AVATAR_MODELS[id].label||('Character '+(index+1)))+'</span><span class="avatar-picked" aria-hidden="true">✓</span>';
     button.onclick=()=>{
       selectedAvatarId=id;
       try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
@@ -711,7 +697,7 @@ function renderAvatarChoices(){
       }
     };
     grid.appendChild(button);
-    if(!mobileLowGpu)createAvatarCardPreview(id,button.querySelector('canvas'));
+    if(mobileLowGpu)drawMobileAvatarPortrait(button.querySelector('canvas'),id,index,selectedGender);else createAvatarCardPreview(id,button.querySelector('canvas'));
   });
   if(mobilePreviewMode){
     const next=document.getElementById('b1');if(next)next.disabled=false;
