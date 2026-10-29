@@ -1,0 +1,17 @@
+{
+  "name": "Real Estate World",
+  "short_name": "Real Estate World",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1422",
+  "theme_color": "#0b1422",
+  "description": "Play Real Estate Word with friends on your phone or computer.",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "games"
+  ]
+}
