@@ -517,16 +517,19 @@ function setPreview(){
   if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
   const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;target.userData.skinTone=selectedSkinTone;target.userData.outfitColor=selectedOutfitColor;target.userData.hairColor=selectedHairColor;preview=target;scene.add(target);
   const b=document.getElementById('b1');
-  // Keep the real selected GLB preview on phones. Mobile GPU cost is reduced by
-  // the main renderer settings; this reuses the existing renderer instead of
-  // creating another WebGL context for the preview.
-  if(b)b.disabled=true;
+  // Keep the real selected GLB preview on phones, but do not make the Continue
+  // button depend on a network/model load completing. A slow or stalled GLB must
+  // never trap the player on this screen. Desktop keeps its original loading gate.
+  const mobileChoice=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(b)b.disabled=!mobileChoice;
   statusAvatar('Loading character…');
   loadSelectedModelInto(target,selectedAvatarId).then(()=>{
+    if(preview!==target||target.userData.avatarId!==selectedAvatarId)return;
     if(b)b.disabled=false;
     statusAvatar('3D character ready. Continue to licensing.');
   }).catch(error=>{
     console.warn('Selected 3D character failed to load:',error);
+    if(preview!==target)return;
     if(b)b.disabled=false;
     statusAvatar('Character preview could not load. You can still continue.');
   });
