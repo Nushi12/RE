@@ -663,8 +663,17 @@ function renderAvatarChoices(){
       selectedAvatarId=id;
       try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
       grid.querySelectorAll('.avatar-choice').forEach(card=>{const isSelected=card.dataset.avatarId===id;card.classList.toggle('sel',isSelected);card.setAttribute('aria-pressed',String(isSelected));});
-      setPreview();
-      statusAvatar('Loading real 3D character preview…');
+      const phoneCartoonTest=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if(phoneCartoonTest){
+        // Do not create any additional 3D preview in the phone's main WebGL scene.
+        // The phone's in-world avatar uses the cartoon test body in makeAvatar().
+        if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
+        const next=document.getElementById('b1');if(next)next.disabled=false;
+        statusAvatar('Character selected. Continue to licensing. Phone test uses the cartoon avatar; rigged GLB files are unchanged.');
+      }else{
+        setPreview();
+        statusAvatar('Loading real 3D character preview…');
+      }
     };
     grid.appendChild(button);
     if(!mobileLowGpu)createAvatarCardPreview(id,button.querySelector('canvas'));
