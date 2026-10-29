@@ -607,7 +607,16 @@ function beginGenderSelection(gender){
   try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
   renderAvatarChoices();
   renderColorControls();
-  setPreview();
+  // On phones, do not start loading a large GLB at the same moment the avatar
+  // screen opens. Let the player choose first; tapping a character then loads
+  // its real 3D model. This isolates the Safari reset from initial screen entry.
+  const mobileChoice=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(mobileChoice){
+    const next=document.getElementById('b1');if(next)next.disabled=false;
+    statusAvatar('Choose a character. Tap a character to load its 3D preview, then continue.');
+  }else{
+    setPreview();
+  }
   show('s1b');
 }
 function renderAvatarChoices(){
