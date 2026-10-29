@@ -3,6 +3,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/180.png">
+<script>
+/* Temporary mobile Safari diagnostics. View with ?debug=1; no game state is changed. */
+(function(){
+  var enabled=false, entries=[];
+  try{enabled=new URLSearchParams(location.search).get('debug')==='1';}catch(e){}
+  function record(message){
+    var item=new Date().toISOString().slice(11,19)+' '+String(message);
+    entries.push(item); if(entries.length>18)entries.shift();
+    try{sessionStorage.setItem('rew-mobile-debug-log',JSON.stringify(entries));}catch(e){}
+    if(enabled)render();
+  }
+  try{var saved=JSON.parse(sessionStorage.getItem('rew-mobile-debug-log')||'[]');if(Array.isArray(saved))entries=saved.slice(-18);}catch(e){}
+  var panel;
+  function render(){
+    if(!enabled)return;
+    if(!panel){
+      panel=document.createElement('pre');
+      panel.id='rew-mobile-debug-panel';
+      panel.style.cssText='position:fixed;z-index:2147483647;left:4px;right:4px;bottom:4px;max-height:36vh;overflow:auto;margin:0;padding:8px;background:#111;color:#b7ffb7;border:2px solid #e7c66b;border-radius:6px;font:11px/1.35 monospace;white-space:pre-wrap;pointer-events:auto';
+      if(document.body)document.body.appendChild(panel);else{document.addEventListener('DOMContentLoaded',render,{once:true});return;}
+    }
+    panel.textContent='MOBILE DEBUG (?debug=1)\n'+entries.join('\n');
+  }
+  window.rewMobileDebug=record;
+  record('script start; '+navigator.userAgent);
+  window.addEventListener('error',function(e){record('JS ERROR: '+(e.message||'unknown')+' @ '+(e.filename||'')+':'+(e.lineno||0)+':'+(e.colno||0));});
+  window.addEventListener('unhandledrejection',function(e){var r=e.reason;record('PROMISE REJECTION: '+(r&&(r.stack||r.message)||String(r)));});
+  window.addEventListener('pageshow',function(e){record('PAGESHOW persisted='+!!e.persisted+' url='+location.pathname+location.search);});
+  window.addEventListener('pagehide',function(e){record('PAGEHIDE persisted='+!!e.persisted);});
+  document.addEventListener('visibilitychange',function(){record('VISIBILITY '+document.visibilityState);});
+  if(enabled){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();}
+})();
+</script>
 <title>RealEstate World – Upper East Side</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#101827;font-family:system-ui,Segoe UI,Arial,sans-serif;color:#fff}
@@ -693,6 +726,7 @@ function updatePeds(){}
 // ---------- UI ----------
 const E=id=>document.getElementById(id);
 function show(id){
+  if(window.rewMobileDebug)window.rewMobileDebug('SCREEN show('+id+')');
   ['s0','s1','s1b','s2','s4','groupInstructionsPage'].forEach(s=>E(s).style.display=s===id?'block':'none');
   const join=E('join');
   join.classList.toggle('welcome-bg',id==='s0'||id==='groupInstructionsPage');
@@ -838,6 +872,7 @@ function fitNaomiModel(model){
   model.updateMatrixWorld(true);
 }
 function mentor(on){
+  if(window.rewMobileDebug)window.rewMobileDebug('mentor('+on+') token start; Naomi URL='+NAOMI_MODEL_URL);
   // Never substitute the cartoon mentor: the exam unlocks only after the real Naomi GLB loads.
   naomiLoadToken++;
   const token=naomiLoadToken;
@@ -888,6 +923,7 @@ function mentor(on){
 }
 function retryNaomiLoad(){modes();}
 function modes(){
+  if(window.rewMobileDebug)window.rewMobileDebug('modes(): showing Easy/Hard; Naomi state before mentor='+naomiAssetState);
   const greeting="Welcome, rookie. I will teach you what you need to know to earn your license. How do you want to learn?";
   naomiPendingGreeting=greeting;
   E('lesson').innerHTML=voiceButton()+'<div class=bubble><b>Naomi</b> · Senior Agent<br>'+greeting+'</div><button class="go" data-naomi-start disabled onclick="start(\'g\')">⚡ Guided (easier)<br><small>One fact, then its question right away</small></button><button class="go" data-naomi-start disabled onclick="start(\'c\')">🎯 Challenge (harder)<br><small>Five facts first, then the questions</small></button>';
@@ -926,6 +962,7 @@ E('chooseFemale').onclick=()=>beginGenderSelection('Female');
 E('chooseMale').onclick=()=>beginGenderSelection('Male');
 E('backGender').onclick=()=>{disposeAvatarCardPreviews();show('s1');};
 E('b1').onclick=()=>{
+  if(window.rewMobileDebug)window.rewMobileDebug('TAP Continue; selectedAvatarId='+selectedAvatarId);
   rewStartMode='new';
   disposeAvatarCardPreviews();
   const mobileChoice=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
