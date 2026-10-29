@@ -544,8 +544,9 @@ function disposeAvatarCardPreviews(){
 function createAvatarCardPreview(id,canvas){
   let renderer;
   try{
-    renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
-    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
+    const isMobilePreview=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
+    renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:!isMobilePreview,powerPreference:'low-power'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,isMobilePreview?0.5:1.5));
     renderer.setSize(Math.max(1,canvas.clientWidth),Math.max(1,canvas.clientHeight),false);
     renderer.setClearColor(0x000000,0);
     if('outputEncoding' in renderer)renderer.outputEncoding=THREE.sRGBEncoding;
@@ -622,10 +623,10 @@ function beginGenderSelection(gender){
 function renderAvatarChoices(){
   const el=document.getElementById('looks');if(!el)return;
   disposeAvatarCardPreviews();
-  // Keep the main game renderer as the only renderer on mobile. The selected rigged GLB
-  // is shown in the large main-scene preview via setPreview(); card choices stay lightweight
-  // so we do not create extra WebGL contexts for each thumbnail.
-  const mobileLowGpu=matchMedia('(max-width: 760px)').matches||((navigator.deviceMemory||4)<=4&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+  // Render real GLB previews on phones too. Keep each thumbnail renderer deliberately
+  // low-cost; do not replace the character previews with labeled placeholders.
+  const mobileLowGpu=false;
+  const mobilePreviewMode=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
   const choices=AVATAR_IDS.filter(id=>AVATAR_MODELS[id]&&AVATAR_MODELS[id].gender===selectedGender);
   el.innerHTML='<div class="avatar-choices'+(mobileLowGpu?' avatar-choices-mobile':'')+'" id="avatarChoices"></div>';
   const grid=document.getElementById('avatarChoices');
@@ -646,15 +647,14 @@ function renderAvatarChoices(){
       try{localStorage.setItem('rew-selected-rigged-avatar-v1',selectedAvatarId);}catch(e){}
       grid.querySelectorAll('.avatar-choice').forEach(card=>{const isSelected=card.dataset.avatarId===id;card.classList.toggle('sel',isSelected);card.setAttribute('aria-pressed',String(isSelected));});
       setPreview();
-      if(mobileLowGpu)statusAvatar('Selected '+(AVATAR_MODELS[id].label||('Character '+(index+1)))+'. Tap Continue to licensing.');
-      else statusAvatar('Loading character…');
+      statusAvatar('Loading real 3D character preview…');
     };
     grid.appendChild(button);
     if(!mobileLowGpu)createAvatarCardPreview(id,button.querySelector('canvas'));
   });
-  if(mobileLowGpu){
+  if(mobilePreviewMode){
     const next=document.getElementById('b1');if(next)next.disabled=false;
-    statusAvatar('Choose a character below. The selected real 3D character appears in the main preview.');
+    statusAvatar('Choose a character. Real 3D previews are loading below.');
   }
 }
 
