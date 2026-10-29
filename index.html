@@ -938,7 +938,24 @@ function pick(i){const q=QZ[SEQ[si].i],fb=E('fb');if(fb.dataset.d)return;fb.data
   const feedback=(i===q.a?'Correct. ':'Not quite. ')+q.w;fb.innerHTML='<div class=bubble><b>Naomi</b><br>'+(i===q.a?'✔ Correct. ':'✘ Not quite. ')+q.w+'</div><button class="go" onclick="adv()">Next</button>';speakNaomi(feedback);}
 function adv(){si++;lesson();}
 function finish(){const ok=score>=8;const result=ok?'You scored '+score+' out of 10. You are licensed to practice in the game. Choose your firm to continue. Client and pedestrian characters are temporarily disabled while their GLB replacements are prepared.':'You scored '+score+' out of 10. You need 8 to pass. Let us go over it again.';E('lesson').innerHTML=voiceButton()+'<h2>'+(ok?'🏅 Rookie Agent badge earned!':'Not licensed yet')+'</h2><div class=bubble><b>Naomi</b><br>'+result+'</div><button class="go" onclick="'+(ok?'toFirm()':'modes()')+'">'+(ok?'Choose your firm':'Try again')+'</button>';speakNaomi(result);if(ok){G.badge=1;try{localStorage.setItem('rew-license-passed-v1','1');}catch(e){}}}
-function toFirm(){naomiPendingGreeting='';mentor(false);show('s4');}
+function toFirm(){
+  // Passing the exam must transition directly to the firm screen, not restart setup.
+  naomiPendingGreeting='';
+  G.badge=1;
+  try{localStorage.setItem('rew-license-passed-v1','1');}catch(e){}
+  if(window.rewMobileDebug)window.rewMobileDebug('PASS: toFirm transition; opening firm selection');
+  // On mobile, avoid doing any more 3D/audio teardown during this critical UI transition.
+  if(!(matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent)))mentor(false);
+  else{
+    naomiLoadToken++;
+    if(mentorG){scene.remove(mentorG);mentorG=null;mentorBody=null;}
+    if('speechSynthesis' in window)window.speechSynthesis.cancel();
+  }
+  ['s0','s1','s1b','s2','groupInstructionsPage'].forEach(id=>{const el=E(id);if(el)el.style.display='none';});
+  E('s4').style.display='block';
+  E('join').classList.remove('welcome-bg');
+  if(window.rewMobileDebug)window.rewMobileDebug('PASS: firm selection screen visible');
+}
 E('b0').onclick=()=>{rewStartMode='new';show('s1');};
 function enterCareerWorld(){
   // Start from the already-restored career; do not load it a second time or send the player through new-game setup.
