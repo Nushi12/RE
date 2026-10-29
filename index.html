@@ -125,6 +125,10 @@ const B=[],winList=[],GATES=[];let seed=11,world=null;
 // are deliberately not part of runtime filenames; public/assets uses canonical names.
 const worldAssetCache=new Map(),worldAssetPromises=new Map();
 function placeWorldAsset(file,x,z,targetSize,rotation=0,fitBy='max'){
+  // Mobile Safari was restarting during city entry when several decorative GLBs
+  // decoded at once. The procedural city remains playable without these props.
+  const mobileCityMode=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(mobileCityMode)return;
   const parent=world;
   if(!parent)return;
   let promise=worldAssetPromises.get(file);
@@ -958,6 +962,7 @@ function toFirm(){
 }
 E('b0').onclick=()=>{rewStartMode='new';show('s1');};
 function enterCareerWorld(){
+  if(window.rewMobileDebug)window.rewMobileDebug('ENTER CITY: begin firm='+FIRMS[selFirm]?.n+'; mobile='+((matchMedia('(max-width: 760px)').matches)||/iPhone|iPad|iPod/i.test(navigator.userAgent)));
   // Start from the already-restored career; do not load it a second time or send the player through new-game setup.
   G.joined=0;G.place='outdoor';G.cur=null;G.curB=null;G.near=null;G.focus=null;G.showing=false;
   selFirm=Number.isInteger(G.fi)&&FIRMS[G.fi]?G.fi:0;G.fi=selFirm;
@@ -1138,6 +1143,10 @@ function playNpcClip(n,role){
 }
 function attachNpcModel(n,file){
   n.modelFile=file||'';
+  // Keep phone city entry stable: use the existing procedural NPC body instead
+  // of starting several character GLB downloads at the same time as the city.
+  const mobileCityMode=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(mobileCityMode){const person=human(namedNpcLook(n.look||{},n.name),0x8a6b52);person.scale.multiplyScalar(0.94);n.g.add(person);n.person=person;return;}
   if(!file){const person=human(namedNpcLook(n.look||{},n.name),0x8a6b52);person.scale.multiplyScalar(0.94);n.g.add(person);n.person=person;return;}
   loadNpcGltf(file).then(gltf=>{
     if(!n.g.parent||n.g.parent!==scene)return;
