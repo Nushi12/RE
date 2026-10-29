@@ -622,8 +622,9 @@ function beginGenderSelection(gender){
 function renderAvatarChoices(){
   const el=document.getElementById('looks');if(!el)return;
   disposeAvatarCardPreviews();
-  // Mobile GPUs often allow only a small number of simultaneous WebGL contexts. The game already
-  // owns its main renderer, so use lightweight labeled choices on phones instead of one renderer per card.
+  // Keep the main game renderer as the only renderer on mobile. The selected rigged GLB
+  // is shown in the large main-scene preview via setPreview(); card choices stay lightweight
+  // so we do not create extra WebGL contexts for each thumbnail.
   const mobileLowGpu=matchMedia('(max-width: 760px)').matches||((navigator.deviceMemory||4)<=4&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
   const choices=AVATAR_IDS.filter(id=>AVATAR_MODELS[id]&&AVATAR_MODELS[id].gender===selectedGender);
   el.innerHTML='<div class="avatar-choices'+(mobileLowGpu?' avatar-choices-mobile':'')+'" id="avatarChoices"></div>';
@@ -653,7 +654,7 @@ function renderAvatarChoices(){
   });
   if(mobileLowGpu){
     const next=document.getElementById('b1');if(next)next.disabled=false;
-    statusAvatar('Choose a character below, then tap Continue to licensing.');
+    statusAvatar('Choose a character below. The selected real 3D character appears in the main preview.');
   }
 }
 
