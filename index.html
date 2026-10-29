@@ -515,14 +515,8 @@ function makeAvatar(p){
   const root=new THREE.Group();
   const avatarId=validAvatarId(p.avatar||selectedAvatarId);
   const body=new THREE.Group();body.userData.avatarId=avatarId;body.userData.skinTone=p.skinTone||'original';body.userData.outfitColor=p.outfitColor||'original';body.userData.hairColor=p.hairColor||'original';root.add(body);
-  // Same phone-only diagnostic in the city: skip GLB loading for the local player
-  // on phones only. Keep procedural walk hooks available. Laptops still load GLBs.
-  const phoneCartoonTest=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(phoneCartoonTest){
-    const cartoon=human(p.look||look,hex(f.c));body.add(cartoon);
-    body.userData.legs=cartoon.userData.legs;body.userData.arms=cartoon.userData.arms;
-    body.userData.phase=0;body.userData.amp=0;
-  }else loadSelectedModelInto(body,avatarId).catch(()=>{});
+  // Load the selected rigged GLB on phones and desktop. Keep NPCs and decorative props lightweight on phones.
+  loadSelectedModelInto(body,avatarId).catch(error=>console.warn('Local player avatar failed to load:',error));
   const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.36;root.add(nt);
   const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.06;root.add(ft);
   root.position.set(p.x,0,p.z);scene.add(root);
@@ -532,16 +526,7 @@ function setPreview(){
   if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
   const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;target.userData.avatarId=selectedAvatarId;target.userData.skinTone=selectedSkinTone;target.userData.outfitColor=selectedOutfitColor;target.userData.hairColor=selectedHairColor;preview=target;scene.add(target);
   const b=document.getElementById('b1');
-  // PHONE-ONLY DIAGNOSTIC: temporarily use the existing cartoon agent instead of
-  // loading the selected GLB. This tests whether GLB decoding is involved in Safari's
-  // selection loop. Laptop behavior and all GLB files remain untouched.
-  const phoneCartoonTest=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(phoneCartoonTest){
-    target.add(human(look,FIRMS[selFirm]&&FIRMS[selFirm].c));
-    if(b)b.disabled=false;
-    statusAvatar('Phone test: cartoon avatar active; rigged GLB files are preserved.');
-    return;
-  }
+  // Load the selected rigged GLB on phones and desktop.
   // Keep the real selected GLB preview on phones, but do not make the Continue
   // button depend on a network/model load completing. A slow or stalled GLB must
   // never trap the player on this screen. Desktop keeps its original loading gate.
