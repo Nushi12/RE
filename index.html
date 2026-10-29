@@ -112,9 +112,9 @@ const mat=c=>mc[c]||(mc[c]=new THREE.MeshLambertMaterial({color:c}));
 const wpos=(cx,cz,th,lx,lz)=>[cx+lx*Math.cos(th)+lz*Math.sin(th),cz-lx*Math.sin(th)+lz*Math.cos(th)];
 function wbox(cx,cz,th,lx,ly,lz,sx,sy,sz,c,sh){const[x,z]=wpos(cx,cz,th,lx,lz);const m=new THREE.Mesh(UB,mat(c));m.scale.set(sx,sy,sz);m.position.set(x,ly,z);m.rotation.y=th;m.castShadow=sh!==false;m.receiveShadow=true;world.add(m);return m;}
 function plane(w,d,x,z,y,c){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat(c));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=true;world.add(m);return m;}
-function label(text,color,scale){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.font='bold 52px system-ui,Arial';g.textAlign='center';g.textBaseline='middle';
- let tw=g.measureText(text).width;if(tw>440){g.font='bold '+Math.floor(52*440/tw)+'px system-ui,Arial';tw=440;}const w=tw+40;g.fillStyle='rgba(10,18,28,.75)';g.beginPath();g.rect(256-w/2,24,w,80);g.fill();g.fillStyle=color||'#fff';g.fillText(text,256,66);
- const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(scale,scale/4,1);s.renderOrder=10;return s;}
+function label(text,color,scale){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.font='bold 40px system-ui,Arial';g.textAlign='center';g.textBaseline='middle';
+ let tw=g.measureText(text).width;if(tw>440){g.font='bold '+Math.floor(40*440/tw)+'px system-ui,Arial';tw=440;}const w=tw+32;g.fillStyle='rgba(10,18,28,.75)';g.beginPath();g.rect(256-w/2,30,w,68);g.fill();g.fillStyle=color||'#fff';g.fillText(text,256,64);
+ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(scale*.82,scale*.205,1);s.renderOrder=10;return s;}
 
 const B=[],winList=[],GATES=[];let seed=11,world=null;
 // Reusable, cached GLB assets for neighbourhood dressing. Uploaded suffixes such as (1)
