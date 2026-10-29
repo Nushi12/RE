@@ -890,6 +890,7 @@ function mentor(on){
     setNaomiModelStatus('Phone stability test: training enabled without loading Naomi’s 3D model.',false,'loaded');
     if(naomiPendingGreeting){const greeting=naomiPendingGreeting;naomiPendingGreeting='';speakNaomi(greeting);}
     if(window.rewMobileDebug)window.rewMobileDebug('PHONE TEST: skipped Naomi GLB; Easy/Hard enabled');
+    setNaomiModelStatus('Phone stability test active: Naomi 3D model skipped; choose Easy or Hard.',false,'loaded');
     return;
   }
   // Desktop retains the real Naomi GLB loading path.
