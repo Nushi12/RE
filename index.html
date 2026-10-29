@@ -100,7 +100,7 @@ NB.forEach((n,i)=>n.i=i);
 // ---------- scene ----------
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9fc3e6);scene.fog=new THREE.Fog(0x9fc3e6,70,170);
 const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.3,300);
-const mobileRenderer=matchMedia('(max-width: 760px)').matches;const renderer=new THREE.WebGLRenderer({antialias:!mobileRenderer,logarithmicDepthBuffer:true,powerPreference:mobileRenderer?'low-power':'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileRenderer?1:2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;
+const mobileRenderer=matchMedia('(max-width: 760px)').matches;const renderer=new THREE.WebGLRenderer({antialias:!mobileRenderer,logarithmicDepthBuffer:!mobileRenderer,powerPreference:mobileRenderer?'low-power':'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileRenderer?0.75:2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;
 document.body.appendChild(renderer.domElement);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);fit();});
 scene.add(new THREE.HemisphereLight(0xffffff,0x8a8070,0.65));
@@ -517,21 +517,19 @@ function setPreview(){
   if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
   const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;target.userData.skinTone=selectedSkinTone;target.userData.outfitColor=selectedOutfitColor;target.userData.hairColor=selectedHairColor;preview=target;scene.add(target);
   const b=document.getElementById('b1');
-  // iOS Safari may terminate the page while an extra animated GLB is loaded
-  // during selection. Mobile choices are numbered, so skip this optional preview.
-  const ua=navigator.userAgent;
-  const mobileSafari=/iPhone|iPad|iPod/i.test(ua)&&/Safari/i.test(ua)&&!/CriOS|FxiOS|EdgiOS/i.test(ua);
-  if(mobileSafari){
-    // Do not load or animate a GLB while the iPhone is on character selection:
-    // this was causing Safari to reload the page. Keep the selected ID, then let
-    // the existing gameplay character loader create the real avatar after entry.
-    if(b)b.disabled=false;
-    statusAvatar('Selected '+(AVATAR_MODELS[selectedAvatarId]?.label||'character')+'. Continue to licensing.');
-    return;
-  }
+  // Keep the real selected GLB preview on phones. Mobile GPU cost is reduced by
+  // the main renderer settings; this reuses the existing renderer instead of
+  // creating another WebGL context for the preview.
   if(b)b.disabled=true;
   statusAvatar('Loading character…');
-  loadSelectedModelInto(target,selectedAvatarId).catch(()=>{});
+  loadSelectedModelInto(target,selectedAvatarId).then(()=>{
+    if(b)b.disabled=false;
+    statusAvatar('3D character ready. Continue to licensing.');
+  }).catch(error=>{
+    console.warn('Selected 3D character failed to load:',error);
+    if(b)b.disabled=false;
+    statusAvatar('Character preview could not load. You can still continue.');
+  });
 }
 function disposeAvatarCardPreviews(){
   for(const entry of avatarCardPreviews.values()){
@@ -801,15 +799,8 @@ function mentor(on){
   mentorG=new THREE.Group();mentorBody=new THREE.Group();mentorG.add(mentorBody);
   const t=label('Naomi · Senior Agent','#9be7a8',2.6);t.position.y=2.48;mentorG.add(t);
   mentorG.position.set(1.5,0,5.2);mentorG.rotation.y=-0.5;scene.add(mentorG);
-  const ua=navigator.userAgent;
-  const mobileSafari=/iPhone|iPad|iPod/i.test(ua)&&/Safari/i.test(ua)&&!/CriOS|FxiOS|EdgiOS/i.test(ua);
-  if(mobileSafari){
-    // Avoid loading the large mentor GLB on iPhone Safari. Keep the training
-    // interaction available with Naomi's nameplate while preserving desktop behavior.
-    naomiAssetState='loaded';
-    setNaomiModelStatus('iPhone mode: 3D mentor preview is off for stability. Training is available.',false,'loaded');
-    return;
-  }
+  // Keep Naomi's real GLB on mobile too. The mobile-only renderer settings
+  // reduce GPU load without skipping the mentor model.
   naomiAssetState='loading';
   setNaomiModelStatus('Loading Naomi’s 3D model…',false,'loading');
   loadNaomiModel().then(gltf=>{
