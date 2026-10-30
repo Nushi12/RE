@@ -515,14 +515,16 @@ function makeAvatar(p){
   const root=new THREE.Group();
   const avatarId=validAvatarId(p.avatar||selectedAvatarId);
   const body=new THREE.Group();body.userData.avatarId=avatarId;body.userData.skinTone=p.skinTone||'original';body.userData.outfitColor=p.outfitColor||'original';body.userData.hairColor=p.hairColor||'original';root.add(body);
-  // PHONE-ONLY TEST: use cartoon players to test the mobile game flow. Desktop
-  // continues loading the selected rigged GLB as before.
-  const phoneCartoonTest=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(phoneCartoonTest){
-    const cartoon=human(p.look||look,hex(f.c));body.add(cartoon);
-    body.userData.legs=cartoon.userData.legs;body.userData.arms=cartoon.userData.arms;
-    body.userData.phase=0;body.userData.amp=0;
-  }else loadSelectedModelInto(body,avatarId).catch(error=>console.warn('Local player avatar failed to load:',error));
+  // Use the selected rigged GLB on phones as well as desktop. Keep a
+  // procedural fallback so a slow/failed mobile download never hides the player.
+  loadSelectedModelInto(body,avatarId).catch(error=>{
+    console.warn('Local player 3D avatar failed to load; using fallback:',error);
+    if(!body.children.length){
+      const fallback=human(p.look||look,hex(f.c));body.add(fallback);
+      body.userData.legs=fallback.userData.legs;body.userData.arms=fallback.userData.arms;
+      body.userData.phase=0;body.userData.amp=0;
+    }
+  });
   const nt=label(p.name,'#ffffff',2.8);nt.position.y=2.36;root.add(nt);
   const ft=label(p.firm,hex(f.c),2.8);ft.position.y=2.06;root.add(ft);
   root.position.set(p.x,0,p.z);scene.add(root);
@@ -532,17 +534,10 @@ function setPreview(){
   if(preview){scene.remove(preview);avatarActors.delete(preview);preview=null;}
   const target=new THREE.Group();target.position.set(0,0,6);target.userData.isAvatarPreview=true;target.userData.avatarId=selectedAvatarId;target.userData.skinTone=selectedSkinTone;target.userData.outfitColor=selectedOutfitColor;target.userData.hairColor=selectedHairColor;preview=target;scene.add(target);
   const b=document.getElementById('b1');
-  // PHONE-ONLY TEST: use the cartoon agent to test the full mobile game flow
-  // independently of the rigged GLB loading issue. Desktop keeps rigged previews.
-  const phoneCartoonTest=matchMedia('(max-width: 760px)').matches||/iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(phoneCartoonTest){
-    target.add(human(look,FIRMS[selFirm]&&FIRMS[selFirm].c));
-    if(b)b.disabled=false;
-    statusAvatar('Phone test: cartoon avatar active; rigged GLB files are preserved.');
-    return;
-  }
+  // Mobile now uses the same selected rigged GLB as desktop. The shared
+  // loader keeps one selected model active and preserves the existing fallback UI.
   if(b)b.disabled=true;
-  statusAvatar('Loading character…');
+  statusAvatar('Loading 3D character…');
   loadSelectedModelInto(target,selectedAvatarId).then(()=>{
     if(preview!==target||target.userData.avatarId!==selectedAvatarId)return;
     if(b)b.disabled=false;
